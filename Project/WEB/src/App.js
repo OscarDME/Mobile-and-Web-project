@@ -8,18 +8,27 @@ const WrappedView = () => {
   const activeAccount = instance.getActiveAccount();
 
   const handleRedirect = () => {
-    instance.loginRedirect({
+    instance.loginPopup({
       ...loginRequest,
     prompt: 'create',
     })
     .catch((error) => console.log(error));
   };
 
+const handleLogout = () => {
+  instance.logoutPopup();
+}
+
 
   return (
     <div className="App">
       <AuthenticatedTemplate>
-        {activeAccount ? (<div>Welcome {activeAccount.name}</div>)
+        {activeAccount ? (<div>Welcome {activeAccount.name}
+        <div>Want to log out?
+        <button onClick={handleLogout}>Logout</button>
+        </div> 
+        </div>
+        )
         : (<div>Please login</div>)}
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
