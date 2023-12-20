@@ -1,5 +1,9 @@
+/**
+ * App component handles user authentication with Azure AD using MSAL React. 
+ * Renders login/logout buttons based on authentication state.
+*/
 import './App.css';
-import { useMsal, MsalProvider, AuthenticatedTemplate,UnauthenticatedTemplate } from '@azure/msal-react';
+import { useMsal, MsalProvider, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import { loginRequest } from './auth/authConfig';
 
 
@@ -43,11 +47,12 @@ const WrappedView = () => {
   );
 };
 
-const App = ({instance}) => {
+const App = ({ instance }) => {
   return (
     <MsalProvider instance={instance}>
       <WrappedView></WrappedView>
     </MsalProvider>
-    )
+  )
 };
+
 export default App;
