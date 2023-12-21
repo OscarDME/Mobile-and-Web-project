@@ -5,15 +5,29 @@
 
 import { LogLevel } from "@azure/msal-browser";
 
-/**
- * Configuration object to be passed to MSAL instance on creation. 
- * For a full list of MSAL.js configuration parameters, visit:
- * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md 
- */
+
+const b2cPolicies = {
+    names: {
+        signUpSignIn: "B2C_1_FitHub_Login",
+        editProfile: "B2C_1_Edit_Profile"
+    },
+    authorities: {
+        signUpSignIn: {
+            authority: "https://FitHubMX.onmicrosoft.com/FitHubMX.onmicrosoft.com/B2C_1_FitHub_Login",
+        },
+        editProfile: {
+            authority: "https://FitHubMX.onmicrosoft.com/FitHubMX.onmicrosoft.com/B2C_1_Edit_Profile"
+        }
+    },
+    authorityDomain: "FitHubMX.onmicrosoft.com"
+}
+
 export const msalConfig = {
     auth: {
       clientId:  "601e3e43-ea15-425c-a787-96626267d747",
-      authority: "https://login.microsoftonline.com/FitHubMX.onmicrosoft.com",
+      authority: b2cPolicies.authorities.signUpSignIn.authority,
+      knownAuthorities: [b2cPolicies.authorityDomain],
+      PolicyId: b2cPolicies.names.signUpSignIn,
       redirectUri: "/",
       postLogoutRedirectUri: "/",
       navigateToLoginRequestUrl: false, // Determines whether navigate to the original request URL after the auth flow is completed.
@@ -57,7 +71,7 @@ export const msalConfig = {
  */
 
 export const loginRequest = {
-    scopes: ["User.Read"]
+    scopes: ["User.Read", "profile", "offline_access","openid", ...apiConfig.b2cScopes]
 };
 
 /**
@@ -66,4 +80,14 @@ export const loginRequest = {
  */
 export const graphConfig = {
     graphMeEndpoint: "Enter_the_Graph_Endpoint_Herev1.0/me" //e.g. https://graph.microsoft.com/v1.0/me
+};
+
+/**
+ * Scopes you add here will be used to request a token from Azure AD B2C to be used for accessing a protected resource.
+ * To learn more about how to work with scopes and resources, see: 
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/resources-and-scopes.md
+ */
+const tokenRequest = {
+  scopes: [...apiConfig.b2cScopes],  // e.g. ["https://fabrikamb2c.onmicrosoft.com/helloapi/demo.read"]
+  forceRefresh: false // Set this to "true" to skip a cached token and go to the server to get a new token
 };

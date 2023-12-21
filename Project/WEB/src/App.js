@@ -1,47 +1,42 @@
-/**
- * App component handles user authentication with Azure AD using MSAL React. 
- * Renders login/logout buttons based on authentication state.
-*/
 import './App.css';
 import { useMsal, MsalProvider, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import { loginRequest } from './auth/authConfig';
 
-
-/**
- * WrappedView component handles user authentication state and conditional rendering of content.
- * Uses MSAL React hooks and components to check if user is authenticated,
- * and show login/logout buttons accordingly.
-*/
 const WrappedView = () => {
   const { instance } = useMsal();
   const activeAccount = instance.getActiveAccount();
 
-  const handleRedirect = () => {
-    instance.loginPopup({
+  const handleLoginRedirect = () => {
+    instance.loginRedirect({
       ...loginRequest,
-      prompt: 'create',
-    })
-      .catch((error) => console.log(error));
+      prompt: 'select_account',
+    });
   };
 
   const handleLogout = () => {
-    instance.logoutPopup();
+    instance.logoutRedirect();
   }
-
 
   return (
     <div className="App">
       <AuthenticatedTemplate>
-        {activeAccount ? (<div>Welcome {activeAccount.name}
-          <div>Want to log out?
-            <button onClick={handleLogout}>Logout</button>
+        {activeAccount ? (
+          <div className="WelcomeContainer">
+            <div>Welcome {activeAccount.name} - Username: {activeAccount.username} - OID: {activeAccount.idTokenClaims.oid}</div>
+            <div>
+              Want to log out?
+              <button className="LogoutButton" onClick={handleLogout}>Logout</button>
+            </div>
           </div>
-        </div>
-        )
-          : (<div>Please login</div>)}
+        ) : (
+          <div>Please login</div>
+        )}
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
-        <button onClick={handleRedirect}>Login</button>
+        <div className="LoginContainer">
+          <h2>Login to Your Account</h2>
+          <button className="LoginButton" onClick={handleLoginRedirect}>Login</button>
+        </div>
       </UnauthenticatedTemplate>
     </div>
   );
