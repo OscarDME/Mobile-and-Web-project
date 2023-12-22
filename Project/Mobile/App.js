@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
 import {
   exchangeCodeAsync,
   makeRedirectUri,
@@ -14,14 +13,14 @@ WebBrowser.maybeCompleteAuthSession();
 export default function App() {
   // Endpoint
   const discovery = useAutoDiscovery(
-    'https://login.microsoftonline.com/common/v2.0',
+    'https://FitHubMX.b2clogin.com/FitHubMX.onmicrosoft.com/B2C_1_FitHub_Login/v2.0/',
   );
-  
+
   /**
    * Generates a redirect URI for authentication using Expo's makeRedirectUri. 
    * The redirect URI contains the scheme and path that will be used 
    * after authentication is complete.
-  */
+   */
   const redirectUri = makeRedirectUri({
     scheme: 'FitHub',
     path: 'auth',
@@ -42,9 +41,11 @@ export default function App() {
     discovery,
   );
 
-  useEffect(() => {
-    const handleCodeExchange = async (codeResponse) => {
-      if (request && codeResponse?.type === 'success' && discovery) {
+  // Define handleCodeExchange outside of useEffect
+  const handleCodeExchange = async (codeResponse) => {
+    console.log('Code exchange initiated...');
+    if (request && codeResponse?.type === 'success' && discovery) {
+      try {
         const res = await exchangeCodeAsync(
           {
             clientId,
@@ -56,21 +57,46 @@ export default function App() {
           },
           discovery,
         );
-        setToken(res.accessToken);
+        console.log('Code exchange successful. Response:', res);
+        setToken(res.idToken);  // Change here to access the idToken
+      } catch (error) {
+        console.error('Error exchanging code for token:', error);
       }
-    };
+    }
+  };
 
-    promptAsync().then(handleCodeExchange);
+  useEffect(() => {
+    if (request) {
+      console.log('Authentication request ready.');
+      // No need to initiate prompt here. It will be triggered when the button is pressed.
+    }
   }, [request, discovery, redirectUri, clientId]);
+
+  const handleLoginPress = () => {
+    console.log('Login button pressed. Initiating prompt...');
+    promptAsync().then(handleCodeExchange).catch((error) => {
+      console.error('Authentication prompt error:', error);
+    });
+  };
+
+  const handleLogoutPress = () => {
+    console.log('Logout button pressed. Clearing token...');
+    setToken(null);
+  };
 
   return (
     <SafeAreaView>
       <Button
         disabled={!request}
         title="Inicia Sesion"
-        onPress={() => {}}
+        onPress={handleLoginPress}
       />
-      <Text>{token}</Text>
+      <Button
+        disabled={!token}
+        title="Logout"
+        onPress={handleLogoutPress}
+      />
+      <Text>Token: {token}</Text>
     </SafeAreaView>
   );
 }
