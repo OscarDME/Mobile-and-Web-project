@@ -5,10 +5,15 @@
 
 import { LogLevel } from "@azure/msal-browser";
 
+/**
+ * Configuration object to be passed to MSAL instance on creation. 
+ * For a full list of MSAL.js configuration parameters, visit:
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md 
+ */
 export const msalConfig = {
     auth: {
       clientId:  "397efb78-e816-419e-aa9f-71b4a475de92",
-      authority: 'https://FitHubMX.b2clogin.com/FitHubMX.onmicrosoft.com/B2C_1_FitHub_Login/v2.0/',
+      authority: "https://login.microsoftonline.com/common",
       redirectUri: "/",
       postLogoutRedirectUri: "/",
       navigateToLoginRequestUrl: false, // Determines whether navigate to the original request URL after the auth flow is completed.
@@ -50,9 +55,8 @@ export const msalConfig = {
  * For more information about OIDC scopes, visit: 
  * https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#openid-connect-scopes
  */
-
 export const loginRequest = {
-    scopes: ["User.Read,openid, profile, email, offline_access"]
+    scopes: ["User.Read"]
 };
 
 /**
