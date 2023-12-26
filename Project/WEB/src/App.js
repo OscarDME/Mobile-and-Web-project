@@ -2,6 +2,7 @@ import './App.css';
 import { useMsal, MsalProvider, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import { loginRequest } from './auth/authConfig';
 
+
 const WrappedView = () => {
   const { instance } = useMsal();
   const activeAccount = instance.getActiveAccount();
