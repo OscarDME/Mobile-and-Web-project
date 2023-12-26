@@ -1,4 +1,5 @@
 import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Button } from 'react-native';
 
 const UserData = ({ navigation }) => {
