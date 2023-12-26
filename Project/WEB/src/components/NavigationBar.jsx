@@ -55,30 +55,20 @@ export const NavigationBar = () => {
                             Edit Profile
                         </Button>
 
-                        <DropdownButton
+                        <Button
                             variant="warning"
                             drop="start"
                             title={activeAccount && activeAccount.username ? activeAccount.username : 'Unknown'}
-                        >
-                            <Dropdown.Item as="button" onClick={handleLogoutPopup}>
-                                Sign out using Popup
-                            </Dropdown.Item>
-                            <Dropdown.Item as="button" onClick={handleLogoutRedirect}>
+                            onClick={handleLogoutRedirect}>
                                 Sign out using Redirect
-                            </Dropdown.Item>
-                        </DropdownButton>
+                        </Button>
                     </div>
                 </AuthenticatedTemplate>
                 <UnauthenticatedTemplate>
                     <div className="collapse navbar-collapse justify-content-end">
-                        <DropdownButton variant="secondary" className="ml-auto" drop="start" title="Sign In">
-                            <Dropdown.Item as="button" onClick={handleLoginPopup}>
-                                Sign in using Popup
-                            </Dropdown.Item>
-                            <Dropdown.Item as="button" onClick={handleLoginRedirect}>
+                        <Button variant="secondary" className="ml-auto" onClick={handleLoginRedirect}>
                                 Sign in using Redirect
-                            </Dropdown.Item>
-                        </DropdownButton>
+                        </Button>
                     </div>
                 </UnauthenticatedTemplate>
             </Navbar>

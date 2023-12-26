@@ -7,7 +7,7 @@ export const PageLayout = (props) => {
             <NavigationBar />
             <br />
             <h5>
-                <center>Welcome to the Microsoft Authentication Library For React Tutorial</center>
+                <center>Por favor inicie sesion para comenzar</center>
             </h5>
             <br />
             {props.children}
@@ -15,15 +15,7 @@ export const PageLayout = (props) => {
             <AuthenticatedTemplate>
                 <footer>
                     <center>
-                        How did we do?
-                        <a
-                            href="https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR73pcsbpbxNJuZCMKN0lURpUMlRHSkc5U1NLUkxFNEtVN0dEOTFNQkdTWiQlQCN0PWcu"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            {' '}
-                            Share your experience!
-                        </a>
+                        Footer
                     </center>
                 </footer>
             </AuthenticatedTemplate>
