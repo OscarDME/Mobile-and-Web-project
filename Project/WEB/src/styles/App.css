@@ -1,3 +1,81 @@
+  :root {
+    --text: #333333;
+    --background: #ffffff;
+    --primary: #0790cf;
+    --primary-hover:#067BB1;
+    --secondary: #D8F2FE;
+    --secondary-background:#CCCCCC;
+    --accent: #aaff00;
+  }
+
+body{
+  margin: 0;
+  padding: 0;
+}
+
+.SideUsersList{
+  height: auto;
+  width: 100%;
+  padding: 0;
+  overflow-y: scroll;
+}
+
+.addclient{
+  border-radius: 5px;
+  margin: 10px;
+  border-color: transparent;
+  background-color: var(--primary);
+  color: var(--background);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+}
+
+.MainTitle{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.addclient:hover{
+  background-color: var(--primary-hover);
+}
+
+
+.SideUsersList .row {
+  padding: 3px;
+  list-style-type: none;
+  display: flex !important;
+  flex-direction: row !important;
+  margin: 10px;
+  border: 2px solid var(--secondary-background);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.SideUsersList .row:hover {
+  background-color: var(--secondary-background);
+  transform: scale(1.01); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+
+.sidedatadisplay{
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 25%;
+  background-color: var(--background);
+}
+
 footer {
   position: fixed;
   bottom: 5%;
@@ -5,7 +83,10 @@ footer {
 }
 
 .App {
-  text-align: center;
+  color: var(--text);
+  box-sizing: border-box;
+  height: 90vh;
+  width: 100%;
 }
 
 .data-area-div {
@@ -16,12 +97,14 @@ footer {
 }
 
 .navbarButton {
-  color: #fff !important;
+  background-color: var(--primary); 
+  color: var(--background) !important;
   padding: .5rem 1rem !important;
 }
 
 .navbarStyle {
   padding: .5rem 1rem !important;
+  background-color: var(--secondary) !important;
 }
 
 .table-responsive {
@@ -56,5 +139,11 @@ footer {
 
 .profileButton {
   margin: .5rem .5rem;
+}
+
+.cta-button {
+  background-color: var(--primary) !important; 
+  border-color: var(--primary) !important;
+  color: var(--background); 
 }
 
