@@ -4,7 +4,6 @@ import { MsalProvider, useMsal } from '@azure/msal-react';
 import { EventType } from '@azure/msal-browser';
 
 import { PageLayout } from './components/PageLayout';
-import { TodoList } from './pages/TodoList';
 import { Home } from './pages/Home';
 import { b2cPolicies, protectedResources } from './authConfig';
 import { compareIssuingPolicy } from './utils/claimUtils';
@@ -90,10 +89,8 @@ const Pages = () => {
         };
         // eslint-disable-next-line
     }, [instance]);
-
     return (
         <Routes>
-            <Route path="/todolist" element={<TodoList />} />
             <Route path="/" element={<Home />} />
         </Routes>
     );
@@ -108,11 +105,13 @@ const Pages = () => {
  */
 const App = ({ instance }) => {
     return (
+        <div className='App'>
         <MsalProvider instance={instance}>
             <PageLayout>
                 <Pages />
             </PageLayout>
         </MsalProvider>
+        </div>
     );
 };
 

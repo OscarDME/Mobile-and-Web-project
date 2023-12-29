@@ -2,6 +2,8 @@ import { Nav, Navbar, Dropdown, DropdownButton, Button } from 'react-bootstrap';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { InteractionStatus } from "@azure/msal-browser"; 
 import { loginRequest, b2cPolicies } from '../authConfig';
+import logo from '../assets/Logo.svg';
+import '../styles/App.css';
 
 export const NavigationBar = () => {
     const { instance, inProgress } = useMsal();
@@ -42,20 +44,21 @@ export const NavigationBar = () => {
     
     return (
         <>
-            <Navbar bg="primary" variant="dark" className="navbarStyle">
+            <Navbar bg="#D8F2FE" className="navbarStyle">
                 <a className="navbar-brand" href="/">
-                    Microsoft identity platform
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        height="65" 
+                        className="d-inline-block align-top"
+                    />
                 </a>
                 <AuthenticatedTemplate>
-                    <Nav.Link className="navbarButton" href="/todolist">
-                        Todolist
-                    </Nav.Link>
                     <div className="collapse navbar-collapse justify-content-end">
                         <Button variant="info" onClick={handleProfileEdit} className="profileButton">
                             Edit Profile
                         </Button>
-                        <Button
-                            variant="warning"
+                        <Button className="ml-auto cta-button"
                             onClick={handleLogoutRedirect}>
                                 Cerrar sesion: {activeAccount && activeAccount.username ? activeAccount.username : 'Unknown'}
                         </Button>
@@ -63,8 +66,8 @@ export const NavigationBar = () => {
                 </AuthenticatedTemplate>
                 <UnauthenticatedTemplate>
                     <div className="collapse navbar-collapse justify-content-end">
-                        <Button variant="secondary" className="ml-auto" onClick={handleLoginRedirect}>
-                                Sign in using Redirect
+                        <Button  className="ml-auto cta-button"onClick={handleLoginRedirect}>
+                                Iniciar sesion
                         </Button>
                     </div>
                 </UnauthenticatedTemplate>
