@@ -54,13 +54,10 @@ export const NavigationBar = () => {
                         <Button variant="info" onClick={handleProfileEdit} className="profileButton">
                             Edit Profile
                         </Button>
-
                         <Button
                             variant="warning"
-                            drop="start"
-                            title={activeAccount && activeAccount.username ? activeAccount.username : 'Unknown'}
                             onClick={handleLogoutRedirect}>
-                                Sign out using Redirect
+                                Cerrar sesion: {activeAccount && activeAccount.username ? activeAccount.username : 'Unknown'}
                         </Button>
                     </div>
                 </AuthenticatedTemplate>

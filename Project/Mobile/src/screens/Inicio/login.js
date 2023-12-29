@@ -104,7 +104,7 @@ const Login = () => {
         />
         <Button disabled={!token} title="Logout" onPress={handleLogoutPress} />
       </View>
-      <Text style={{ fontSize: 18 }}>Token: {token}</Text>
+      {/* <Text style={{ fontSize: 18 }}>Token: {token}</Text> */}
     </SafeAreaView>
   );
 };
