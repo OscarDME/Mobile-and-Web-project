@@ -1,13 +1,14 @@
 import { Router } from "express";
 import {
-    getUsers
-  //getUserById,
-  //getUserbyUsername
+    getUsers,
+    createUser
 } from "../Controllers/Usuario.Controller.js";
 
 const router = Router();
 
-router.get("/Users", getUsers);
+router.get("/users", getUsers);
+
+router.post("/users", createUser);
 
 //router.get("/UsersId", getUserById);
 

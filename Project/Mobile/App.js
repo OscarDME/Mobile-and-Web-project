@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import Login from './src/screens/Inicio/login';
+import MainRoot from './src/navigators/navigationRoutes';
 
 
 export default function App() {
 return (
-  <NavigationContainer>
-    <Login/>
-  </NavigationContainer>
+    <MainRoot/>
 );
 }

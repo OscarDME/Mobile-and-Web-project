@@ -3,7 +3,7 @@ export const querys = {
     getUsers: "SELECT * FROM Usuario",
     getUserById: "SELECT * FROM Usuario WHERE ID_Usuario = @ID_Usuario",
     getUserByUsername: "SELECT * FROM Usuario WHERE Nombre_Usuario = @Nombre_Usuario",
-    createUser: "INSERT INTO Usuario () VALUES",
+    createUser:  "INSERT INTO Usuario (nombre_usuario, nombre, apellido, correo, sexo, fecha_nacimiento, estatura, peso) VALUES (@username, @givenName, @surname, @email, @gender, @dateOfBirth, @height, @weight)",
     //Dias
     getDays: "SELECT * FROM Dia",
     addNewProduct:

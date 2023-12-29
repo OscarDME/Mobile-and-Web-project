@@ -5,10 +5,14 @@ import {
   useAuthRequest,
   useAutoDiscovery,
 } from "expo-auth-session";
-import { Button, View, Text, SafeAreaView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+
+import { useNavigation } from "@react-navigation/native";
+import { Button, View, Text, SafeAreaView } from "react-native";
+import React, { useState, useEffect } from "react";
 
 const Login = () => {
+  const navigation = useNavigation();
+
   WebBrowser.maybeCompleteAuthSession();
 
   // Endpoint
@@ -59,6 +63,9 @@ const Login = () => {
         );
         console.log("Code exchange successful. Response:", res);
         setToken(res.idToken); // Change here to access the idToken
+
+        // En el componente Login, después de obtener y establecer el token
+        navigation.navigate("Validation", {screen: 'WelcomeScreen', params: {token: res.idToken}});
       } catch (error) {
         console.error("Error exchanging code for token:", error);
       }

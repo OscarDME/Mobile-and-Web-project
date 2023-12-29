@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, Button } from 'react-native';
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeScreen = ({ navigation, route }) => {
+    console.log(route.params);
+    const { token } = route.params;
     const handleContinue = () => {
-        navigation.navigate('FirstPageForm'); // Navegar a la siguiente pantalla
+        navigation.navigate('FirstPageForm', { token }); // Navegar a la siguiente pantalla
       };
     
 

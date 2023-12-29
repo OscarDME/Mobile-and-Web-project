@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import UserRoutes from "./Routes/Usuario.Routes.js";
-import DayRoutes from "./Routes/Dia.Routes.js";
 import morgan from "morgan";
 
 import config from "./config.js";
@@ -19,6 +18,5 @@ app.use(express.json());
 
 // Routes
 app.use("/api", UserRoutes);
-app.use("/api", DayRoutes);
 
 export default app;
