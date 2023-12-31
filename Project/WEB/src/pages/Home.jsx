@@ -17,11 +17,9 @@ export const Home = () => {
     return (
         <>
             <AuthenticatedTemplate>
-                {
+                { 
                     activeAccount ?
-                    <Container>
-                            <IdTokenData idTokenClaims={activeAccount.idTokenClaims} />
-                    </Container>
+                    <div>Pagina de home</div>
                     :
                     null
                 }

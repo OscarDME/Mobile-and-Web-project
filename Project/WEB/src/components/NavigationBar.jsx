@@ -2,6 +2,7 @@ import { Nav, Navbar, Dropdown, DropdownButton, Button } from 'react-bootstrap';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { InteractionStatus } from "@azure/msal-browser"; 
 import { loginRequest, b2cPolicies } from '../authConfig';
+import {Link, BrowserRouter as Router, Route} from 'react-router-dom';
 import logo from '../assets/Logo.svg';
 import '../styles/App.css';
 
@@ -41,7 +42,7 @@ export const NavigationBar = () => {
            instance.acquireTokenRedirect(b2cPolicies.authorities.editProfile);
         }
     };
-    
+
     return (
         <>
             <Navbar bg="#D8F2FE" className="navbarStyle">
@@ -54,6 +55,8 @@ export const NavigationBar = () => {
                     />
                 </a>
                 <AuthenticatedTemplate>
+                <Nav.Link href="/Progress">Progreso</Nav.Link>
+                <Nav.Link href="/Routines">Rutinas</Nav.Link>
                     <div className="collapse navbar-collapse justify-content-end">
                         <Button variant="info" onClick={handleProfileEdit} className="profileButton">
                             Edit Profile

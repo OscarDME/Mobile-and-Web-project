@@ -7,6 +7,8 @@ import { PageLayout } from './components/PageLayout';
 import { Home } from './pages/Home';
 import { b2cPolicies, protectedResources } from './authConfig';
 import { compareIssuingPolicy } from './utils/claimUtils';
+import { Progress } from './pages/Progress';
+import {Routines} from './pages/Routines';
 
 import './styles/App.css';
 
@@ -91,6 +93,8 @@ const Pages = () => {
     }, [instance]);
     return (
         <Routes>
+            <Route path="/Routines" element={<Routines />} />
+            <Route path="/Progress" element={<Progress />} />
             <Route path="/" element={<Home />} />
         </Routes>
     );

@@ -1,6 +1,5 @@
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
 import { NavigationBar } from "./NavigationBar";
-import SideDataDisplay from "./SideDataDisplay"; 
 
 export const PageLayout = (props) => {
     return (
@@ -19,7 +18,7 @@ export const PageLayout = (props) => {
             <br />
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-            <SideDataDisplay/>
+                {props.children}
             </AuthenticatedTemplate>
         </>
     );

@@ -22,7 +22,7 @@ const FirstPageForm = ({ navigation, route }) => {
       return;
     }
     try {
-      const response = await fetch('http://192.168.100.30:3001/api/users', {
+      const response = await fetch('http://192.168.100.5:8081/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
