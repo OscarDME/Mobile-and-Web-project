@@ -3,14 +3,23 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { MsalProvider, useMsal } from '@azure/msal-react';
 import { EventType } from '@azure/msal-browser';
 
+import './styles/App.css';
 import { PageLayout } from './components/PageLayout';
 import { Home } from './pages/Home';
 import { b2cPolicies, protectedResources } from './authConfig';
 import { compareIssuingPolicy } from './utils/claimUtils';
 import { Progress } from './pages/Progress';
 import {Routines} from './pages/Routines';
+import {MyRoutines} from './pages/MyRoutines';
+import {Diets} from './pages/Diets';
+import {Clients} from './pages/Clients';
+import {Exercises} from './pages/Exercises';
+import {Food} from './pages/Food';
+import {Appointment} from './pages/Appointment';
+import {Requests} from './pages/Requests';
+import { Users } from './pages/Users';
 
-import './styles/App.css';
+
 
 const Pages = () => {
     /**
@@ -95,6 +104,14 @@ const Pages = () => {
         <Routes>
             <Route path="/Routines" element={<Routines />} />
             <Route path="/Progress" element={<Progress />} />
+            <Route path="/MyRoutines" element={<MyRoutines />} />
+            <Route path="/Diets" element={<Diets />} />
+            <Route path="/Clients" element={<Clients />} />
+            <Route path="/Exercises" element={<Exercises />} />
+            <Route path="/Food" element={<Food />} />
+            <Route path="/Appointment" element={<Appointment />} />
+            <Route path="/Requests" element={<Requests />} />
+            <Route path="/Users" element={<Users />} />
             <Route path="/" element={<Home />} />
         </Routes>
     );
@@ -109,13 +126,11 @@ const Pages = () => {
  */
 const App = ({ instance }) => {
     return (
-        <div className='App'>
         <MsalProvider instance={instance}>
             <PageLayout>
                 <Pages />
             </PageLayout>
         </MsalProvider>
-        </div>
     );
 };
 

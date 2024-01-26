@@ -13,74 +13,6 @@ body{
   padding: 0;
 }
 
-.SideUsersList{
-  height: auto;
-  width: 100%;
-  padding: 0;
-  overflow-y: scroll;
-}
-
-.addclient{
-  border-radius: 5px;
-  margin: 10px;
-  border-color: transparent;
-  background-color: var(--primary);
-  color: var(--background);
-  padding-top: 10px;
-  padding-bottom: 10px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-}
-
-.MainTitle{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 20px;
-}
-
-.addclient:hover{
-  background-color: var(--primary-hover);
-}
-
-
-.SideUsersList .row {
-  padding: 3px;
-  list-style-type: none;
-  display: flex !important;
-  flex-direction: row !important;
-  margin: 10px;
-  border: 2px solid var(--secondary-background);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 5px;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.SideUsersList .row:hover {
-  background-color: var(--secondary-background);
-  transform: scale(1.01); 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-}
-
-.SideUsersList .row.selected {
-  background-color: var(--secondary-background); 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-  transform: scale(1.01);
-}
-
-
-.sidedatadisplay{
-  padding-left: 10px;
-  padding-right: 10px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 25%;
-  background-color: var(--background);
-}
 
 footer {
   position: fixed;
@@ -99,7 +31,7 @@ footer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly
+  justify-content: space-evenly !important;
 }
 
 .navbarButton {
@@ -108,35 +40,12 @@ footer {
   padding: .5rem 1rem !important;
 }
 
-.navbarStyle {
+.NavigationBar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between;
   padding: .5rem 1rem !important;
   background-color: var(--secondary) !important;
-}
-
-.table-responsive {
-  max-height: 39rem !important;
-}
-
-.tableColumn {
-  word-break: break-all
-}
-
-.todo-form {
-  width: 60%;
-}
-
-.todo-list {
-  width: 60%;
-}
-
-.todo-label {
-  font-size: large;
-  margin-right: 22%;
-  margin-left: 3%;
-}
-
-.todo-view-btn {
-  float: right;
 }
 
 .iconText {
@@ -153,3 +62,48 @@ footer {
   color: var(--background); 
 }
 
+.Navbar-Links {
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+}
+
+.NavLinks {
+  margin: 20px;
+  text-decoration: none;
+  color: var(--text);
+  position: relative; 
+}
+
+.NavLinks::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0; 
+  height: 1px; 
+  background-color: var(--text);
+  transition: width 0.3s ease;
+}
+
+.NavLinks.active-link::before,
+.NavLinks:hover::before {
+  width: 100%; 
+}
+
+
+.NavLinks.active-link {
+  color: var(--text);
+  font-weight: bold;
+  border-bottom: 1px solid var(--text); /* Barra debajo del enlace activo */
+}
+
+.dropdown-item-text-light {
+  font-weight: 270;
+}
+
+
+.ProfileBtn{
+  background-color: transparent !important;
+  color: var(--text) !important;
+}

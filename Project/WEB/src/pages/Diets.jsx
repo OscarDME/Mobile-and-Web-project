@@ -1,15 +1,16 @@
 import { AuthenticatedTemplate } from "@azure/msal-react";
-import { useMsal } from "@azure/msal-react";
-import { Container } from "react-bootstrap";
 import SideDataDisplay from "../components/SideDataDisplay";
+import "../styles/workarea.css";
 
-export const Routines = () => {
+export const Diets = () => {
 
     return (
         <>
+        <div className="workarea">
             <AuthenticatedTemplate>
                 <SideDataDisplay/>
             </AuthenticatedTemplate>
+        </div>
         </>
     )
 }

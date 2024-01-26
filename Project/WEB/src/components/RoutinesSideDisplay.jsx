@@ -5,65 +5,59 @@ import { UserCard } from './UserCard';
 
 export default function SideDataDisplay() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedRoutine, setSelectedRoutine] = useState(null);
 
-  // Filtra la lista de usuarios basándote en el término de búsqueda
+  // Filtra la lista de rutinas basándote en el término de búsqueda
   const filteredUsers = UserCard.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleUserClick = (user) => {
+  const handleUserClick = (routine) => {
     // Actualiza el estado para el usuario seleccionado
-    setSelectedUser(user);
+    setSelectedRoutine(routine);
   };
 
   // Efecto para cargar la selección del usuario desde localStorage al cargar la página
   useEffect(() => {
-    const storedUser = localStorage.getItem('selectedUser');
-    if (storedUser) {
-      setSelectedUser(JSON.parse(storedUser));
+    const storedRoutine = localStorage.getItem('selectedUser');
+    if (storedRoutine) {
+        setSelectedRoutine(JSON.parse(storedRoutine));
     }
   }, []); // Agrega un arreglo vacío para que este efecto se ejecute solo una vez al montar el componente
 
   // Efecto para guardar la selección del usuario en localStorage cuando cambia
   useEffect(() => {
-    localStorage.setItem('selectedUser', JSON.stringify(selectedUser));
-  }, [selectedUser]);
+    localStorage.setItem('selectedUser', JSON.stringify(selectedRoutine));
+  }, [selectedRoutine]);
 
   return (
     <>
       <div className='sidedatadisplay'>
-        <h2 className='MainTitle'>Mis clientes</h2>
+        <h2 className='MainTitle'>Mis rutinas</h2>
+        <button className='addclient'>Añadir rutina</button>
         <div>
           {/* Muestra la tarjeta del usuario seleccionado */}
-          {selectedUser && (
-            <>
-            <div className='separator'>
-            <h4>Cliente Seleccionado</h4>
+          {selectedRoutine && (
             <div className={`selected-user-card`}>
-              <div className='icon'>{selectedUser.icon}</div>
+              <h4>Rutina Seleccionada</h4>
+              <div>{selectedRoutine.icon}</div>
               <div>
-                <div className='username'>{selectedUser.username}</div>
-                <div className='name'>{selectedUser.name}</div>
-                <div className='email'>{selectedUser.email}</div>
-              </div>
+                <div>{selectedRoutine.username}</div>
+                <div>{selectedRoutine.name}</div>
+                <div>{selectedRoutine.email}</div>
               </div>
             </div>
-            </>
           )}
         </div>
         {/* Agrega la barra de búsqueda y conecta su valor al estado */}
-        <div className='search-bar'>
-        <a className='addclient' href='/'><i class="bi bi-plus-square-fill h3"></i></a>
         <input
           type='text'
           placeholder='Buscar cliente...'
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
-        </div>
         <div>
           Mostrando {filteredUsers.length} clientes
         </div>
@@ -72,14 +66,14 @@ export default function SideDataDisplay() {
           {filteredUsers.map((user, key) => (
             <li
               key={key}
-              className={`card ${selectedUser && selectedUser.oid === user.oid ? 'selected' : ''}`}
+              className={`row ${selectedRoutine && selectedRoutine.oid === user.oid ? 'selected' : ''}`}
               onClick={() => handleUserClick(user)}
             >
-              <div  className='icon'>{user.icon}</div>
+              <div>{user.icon}</div>
               <div>
-                <div className='username'>{user.username}</div>
-                <div className='name'>{user.name}</div>
-                <div className='email'>{user.email}</div>
+                <div>{user.username}</div>
+                <div>{user.name}</div>
+                <div>{user.email}</div>
               </div>
             </li>
           ))}

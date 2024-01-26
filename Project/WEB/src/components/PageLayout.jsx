@@ -1,9 +1,11 @@
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
 import { NavigationBar } from "./NavigationBar";
+import '../styles/PageLayout.css';
 
 export const PageLayout = (props) => {
     return (
         <>
+            <div  className="PageLayout">
             <NavigationBar />
             <UnauthenticatedTemplate>
             <br />
@@ -17,9 +19,10 @@ export const PageLayout = (props) => {
             </h5>
             <br />
             </UnauthenticatedTemplate>
-            <AuthenticatedTemplate>
-                {props.children}
-            </AuthenticatedTemplate>
+                <AuthenticatedTemplate>
+                    {props.children}
+                </AuthenticatedTemplate>
+            </div>
         </>
     );
 }
