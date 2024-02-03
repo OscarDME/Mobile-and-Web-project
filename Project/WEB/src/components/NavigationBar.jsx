@@ -54,7 +54,7 @@ export const NavigationBar = () => {
                 </NavLink>
                 <AuthenticatedTemplate>
                     <div className="Navbar-Links">
-                        <NavLink id="Progress" to="/Progress" className='NavLinks'>
+                        {/*<NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
                         </NavLink>
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
@@ -83,6 +83,15 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
+                        </NavLink>*/}
+                        <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
+                            Gestión de Alimentos
+                        </NavLink>
+                        <NavLink id="Diets_management" to="/Diets_management" className='NavLinks'>
+                            Gestión de Dietas
+                        </NavLink>
+                        <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
+                            Gestión de Ejercicios
                         </NavLink>
                     </div>
                     <div>

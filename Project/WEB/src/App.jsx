@@ -18,6 +18,11 @@ import {Food} from './pages/Food';
 import {Appointment} from './pages/Appointment';
 import {Requests} from './pages/Requests';
 import { Users } from './pages/Users';
+import { Diets_management } from './pages/Diets_management';
+import { Exercises_management } from './pages/Exercises_management';
+import { Food_management } from './pages/Food_management';
+
+
 
 
 
@@ -112,6 +117,9 @@ const Pages = () => {
             <Route path="/Appointment" element={<Appointment />} />
             <Route path="/Requests" element={<Requests />} />
             <Route path="/Users" element={<Users />} />
+            <Route path="/Diets_management" element={<Diets_management />} />
+            <Route path="/Exercises_management" element={<Exercises_management />} />
+            <Route path="/Food_management" element={<Food_management/>} />
             <Route path="/" element={<Home />} />
         </Routes>
     );

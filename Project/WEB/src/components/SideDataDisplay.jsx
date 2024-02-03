@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/SideDataDisplay.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { UserCard } from './UserCard';
+import { UserCard } from './DATA_USER_CARD';
+import SearchBar from './SearchBar';
 
 export default function SideDataDisplay() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,13 +57,8 @@ export default function SideDataDisplay() {
         </div>
         {/* Agrega la barra de búsqueda y conecta su valor al estado */}
         <div className='search-bar'>
-        <a className='addclient' href='/'><i class="bi bi-plus-square-fill h3"></i></a>
-        <input
-          type='text'
-          placeholder='Buscar cliente...'
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
+        <div className='addclient'><i class="bi bi-search h4"></i></div>
+        <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </div>
         <div>
           Mostrando {filteredUsers.length} clientes

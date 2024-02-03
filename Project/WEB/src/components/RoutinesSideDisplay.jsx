@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/SideDataDisplay.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { UserCard } from './UserCard';
+import { UserCard } from './DATA_USER_CARD';
 
 export default function SideDataDisplay() {
   const [searchTerm, setSearchTerm] = useState('');
