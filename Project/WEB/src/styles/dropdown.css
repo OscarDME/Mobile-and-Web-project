@@ -1,0 +1,11 @@
+.dropdown{
+    padding: 10px 20px;
+    color: var(--text);
+    border-color: var(--secondary-background);
+    border-radius: 10px;
+}
+
+.item{
+    padding-top: 10px;
+    font-weight: 700;
+}

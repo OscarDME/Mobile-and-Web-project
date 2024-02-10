@@ -1,26 +1,31 @@
-import { Nav, Navbar, Dropdown, DropdownButton, Button } from 'react-bootstrap';
+import { Nav, Dropdown, DropdownButton, Button} from 'react-bootstrap';
+import { useState, useEffect } from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { InteractionStatus } from "@azure/msal-browser"; 
 import { loginRequest, b2cPolicies } from '../authConfig';
+import { NavLink, useLocation } from 'react-router-dom';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import logo from '../assets/Logo.svg';
 import '../styles/App.css';
 
 export const NavigationBar = () => {
     const { instance, inProgress } = useMsal();
-     let activeAccount;
+    let activeAccount;
+    const location = useLocation();
 
-     if (instance) {
-         activeAccount = instance.getActiveAccount();
-     }
+    useEffect(() => {
+        const links = document.querySelectorAll('.NavLinks');
+        links.forEach(link => {
+            const id = link.getAttribute('id');
+            const currentPath = location.pathname;
+            const isActive = currentPath === `/${id}`;
+            link.classList.toggle('active-link', isActive);
+        });
+    }, [location.pathname]);
 
-    const handleLoginPopup = () => {
-        instance
-            .loginPopup({
-                ...loginRequest,
-                redirectUri: '/redirect',
-            })
-            .catch((error) => console.log(error));
-    };
+    if (instance) {
+        activeAccount = instance.getActiveAccount();
+    }
 
     const handleLoginRedirect = () => {
         instance.loginRedirect(loginRequest).catch((error) => console.log(error));
@@ -30,48 +35,86 @@ export const NavigationBar = () => {
         instance.logoutRedirect();
     };
 
-    const handleLogoutPopup = () => {
-        instance.logoutPopup({
-            mainWindowRedirectUri: '/', // redirects the top level app after logout
-        });
-    };
-
     const handleProfileEdit = () => {
         if(inProgress === InteractionStatus.None){
            instance.acquireTokenRedirect(b2cPolicies.authorities.editProfile);
         }
     };
-    
+
     return (
         <>
-            <Navbar bg="#D8F2FE" className="navbarStyle">
-                <a className="navbar-brand" href="/">
+            <nav className="NavigationBar">
+                <NavLink className="navbar-brand" to={'/'} id='/'>
                     <img
                         src={logo}
                         alt="Logo"
                         height="65" 
                         className="d-inline-block align-top"
                     />
-                </a>
+                </NavLink>
                 <AuthenticatedTemplate>
-                    <div className="collapse navbar-collapse justify-content-end">
-                        <Button variant="info" onClick={handleProfileEdit} className="profileButton">
-                            Edit Profile
-                        </Button>
-                        <Button className="ml-auto cta-button"
-                            onClick={handleLogoutRedirect}>
+                    <div className="Navbar-Links">
+                        {/*<NavLink id="Progress" to="/Progress" className='NavLinks'>
+                            Progreso
+                        </NavLink>
+                        <NavLink id="Routines" to="/Routines" className='NavLinks'>
+                            Asignar Rutinas
+                        </NavLink>
+                        <NavLink id="MyRoutines" to="/MyRoutines" className='NavLinks'>
+                            Mis Rutinas
+                        </NavLink>
+                        <NavLink id="Diets" to="/Diets" className='NavLinks'>
+                            Asignar Dietas
+                        </NavLink>
+                        <NavLink id="Clients" to="/Clients" className='NavLinks'>
+                            Clientes
+                        </NavLink>
+                        <NavLink id="Exercises" to="/Exercises" className='NavLinks'>
+                            Ejercicios
+                        </NavLink>
+                        <NavLink id="Food" to="/Food" className='NavLinks'>
+                            Biblioteca de Alimentos
+                        </NavLink>
+                        <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
+                            Citas
+                        </NavLink>
+                        <NavLink id="Requests" to="/Requests" className='NavLinks'>
+                            Solicitudes
+                        </NavLink>
+                        <NavLink id="Users" to="/Users" className='NavLinks'>
+                            Usuarios
+                        </NavLink>*/}
+                        <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
+                            Gestión de Alimentos
+                        </NavLink>
+                        <NavLink id="Diets_management" to="/Diets_management" className='NavLinks'>
+                            Gestión de Dietas
+                        </NavLink>
+                        <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
+                            Gestión de Ejercicios
+                        </NavLink>
+                    </div>
+                    <div>
+                        <DropdownButton className="ProfileBtn"  drop="start" title={<i className="bi bi-person-fill h2"></i>}>
+                            <Dropdown.ItemText className='dropdown-item-text-light'>Mi Perfil</Dropdown.ItemText>
+                            <Dropdown.Item as="button" onClick={handleProfileEdit}>
+                                Editar Perfil
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item as="button" onClick={handleLogoutRedirect}>
                                 Cerrar sesion: {activeAccount && activeAccount.username ? activeAccount.username : 'Unknown'}
-                        </Button>
+                            </Dropdown.Item>
+                        </DropdownButton>
                     </div>
                 </AuthenticatedTemplate>
                 <UnauthenticatedTemplate>
-                    <div className="collapse navbar-collapse justify-content-end">
-                        <Button  className="ml-auto cta-button"onClick={handleLoginRedirect}>
-                                Iniciar sesion
+                    <div>
+                        <Button className="ml-auto cta-button" onClick={handleLoginRedirect}>
+                            Iniciar sesión
                         </Button>
                     </div>
                 </UnauthenticatedTemplate>
-            </Navbar>
+            </nav>
         </>
     );
 };
