@@ -1,98 +1,93 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { ThemedButton } from "react-native-really-awesome-button";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FirstPageForm = ({ navigation, route }) => {
-  const { name, givenName, surname, emails} = route.params;
-  const email = emails[0]; // Obtiene el primer correo electrónico de la lista
-  console.log("Datos del usuario:", name, givenName, surname, email);
+  const { oid, name, givenName, surname, emails } = route.params;
 
+  const email = emails[0];
+  console.log("Datos del usuario:", oid, name, givenName, surname, email);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [gender, setGender] = useState('');
+  const [selectedGender, setSelectedGender] = useState("");
+  const [genderError, setGenderError] = useState("");
 
 
   const handleContinue = async () => {
-    if (!name || !givenName || !surname || !email || !dateOfBirth || !height || !weight || !gender) {
-      console.error('Por favor, completa todos los campos');
+  await AsyncStorage.setItem('oid', oid);
+    if (
+      !oid ||
+      !name ||
+      !givenName ||
+      !surname ||
+      !email ||
+      !dateOfBirth ||
+      !selectedGender
+    ) {
+      if (!selectedGender) {
+        setGenderError("Por favor, selecciona tu género.");
+      }
       return;
     }
+
     try {
-      const response = await fetch('http://192.168.100.30:3001/api/users', {
-        method: 'POST',
+      const response = await fetch("http:/192.168.100.5:3001/api/users", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          oid: oid,
           name: name,
           givenName: givenName,
           surname: surname,
           email: email,
-          // Otros datos ingresados por el usuario
-          dateOfBirth: dateOfBirth.toISOString().split('T')[0],
-          height: height,
-          weight: weight,
-          gender: gender,
-          // Otros datos ingresados por el usuario
+          dateOfBirth: dateOfBirth.toISOString().split("T")[0],
+          gender: selectedGender,
         }),
       });
-  
+
       if (response.ok) {
-        // La solicitud fue exitosa, puedes navegar a la siguiente pantalla o realizar alguna acción adicional
-        navigation.navigate('TimeAndDaysForm');
+        navigation.replace("Questionnaire", {
+          screen: "FirstPageForm",
+          params: { oid: oid },
+        });
       } else {
-        // Manejar errores si la solicitud no fue exitosa
-        console.error('Error al guardar los datos');
+        console.error("Error al guardar los datos");
       }
     } catch (error) {
-      console.error('Error en la solicitud:', error);
+      console.error("Error en la solicitud:", error);
     }
   };
+
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || dateOfBirth;
     setShowDatePicker(false);
     setDateOfBirth(currentDate);
   };
 
-  const openDatePicker = async () => {
-    try {
-      const { action, year, month, day } = await DatePickerAndroid.open({
-        mode: 'spinner', // Cambia el modo de selección de fecha
-        date: new Date(),
-      });
-
-      if (action !== DatePickerAndroid.dismissedAction) {
-        // El usuario seleccionó una fecha
-        const selectedDate = new Date(year, month, day);
-        setDateOfBirth(selectedDate.toISOString().split('T')[0]); // Formato YYYY-MM-DD
-      }
-    } catch ({ code, message }) {
-      console.warn('Error al abrir el selector de fecha:', message);
-    }
-  };
-
-  const handleGenderChange = (text) => {
-    // Permitir solo 'H' o 'M' en el campo de género
-    const sanitizedText = text.toUpperCase().replace(/[^HM]/g, '');
-    setGender(sanitizedText);
-  };
-
-  const handleHeightChange = (text) => {
-    // Permitir solo números y un solo punto para la estatura
-    const sanitizedText = text.replace(/[^0-9.]/g, '');
-    setHeight(sanitizedText);
+  const handleGenderChange = (gender) => {
+    setSelectedGender(gender);
+    setGenderError("");
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.datePicker} onPress={() => setShowDatePicker(true)}>
+      <TouchableOpacity
+        style={styles.datePicker}
+        onPress={() => setShowDatePicker(true)}
+      >
         <Text style={styles.label}>Fecha de Nacimiento:</Text>
         <Text style={styles.dateText}>
-          {dateOfBirth.toISOString().split('T')[0] || 'Seleccionar Fecha'}
+          {dateOfBirth.toISOString().split("T")[0] || "Seleccionar Fecha"}
         </Text>
       </TouchableOpacity>
       {showDatePicker && (
@@ -103,35 +98,48 @@ const FirstPageForm = ({ navigation, route }) => {
           onChange={handleDateChange}
         />
       )}
+      <View style={styles.genderButtons}>
+        <TouchableOpacity
+          style={[
+            styles.genderButton,
+            selectedGender === "H" && styles.selectedMale,
+          ]}
+          onPress={() => handleGenderChange("H")}
+        >
+          <Text style={[
+    styles.genderButtonText,
+    selectedGender === "H" ? styles.selectedGenderText : {},
+  ]}>Hombre</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.genderButton,
+            selectedGender === "M" && styles.selectedFemale,
+          ]}
+          onPress={() => handleGenderChange("M")}
+        >
+          <Text style={[
+    styles.genderButtonText,
+    selectedGender === "M" ? styles.selectedGenderText : {},
+  ]}
+>Mujer</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Text style={styles.label}>Estatura:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Estatura (cm)"
-        value={height}
-        onChangeText={handleHeightChange}
-        keyboardType="numeric"
-      />
-
-      <Text style={styles.label}>Peso:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Peso (kg)"
-        value={weight}
-        onChangeText={(text) => setWeight(text)}
-        keyboardType="numeric"
-      />
-
-      <Text style={styles.label}>Sexo:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Sexo (H/M)"
-        value={gender}
-        onChangeText={handleGenderChange}
-        maxLength={1}
-      />
-
-      <Button title="Guardar datos" onPress={handleContinue} />
+      <ThemedButton
+        name="bruce"
+        type="primary"
+        onPress={handleContinue}
+        backgroundColor="#0790cf"
+        backgroundDarker="#0790cf"
+        borderColor="#0790cf"
+        height={55}
+        textSize={18}
+        style={styles.button}
+      >
+        Continuar
+      </ThemedButton>
+      {genderError ? <Text style={styles.errorText}>{genderError}</Text> : null}
     </View>
   );
 };
@@ -139,34 +147,61 @@ const FirstPageForm = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  label: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 50,
   },
   datePicker: {
-    width: '100%',
-    marginTop: 10,
+    width: "100%",
+    marginTop: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'gray',
-    paddingBottom: 10,
+    borderBottomColor: "gray",
+    paddingBottom: 20,
   },
   dateText: {
+    fontSize: 28,
+    color: "black",
+  },
+  label: {
+    marginTop: 30,
+    fontSize: 25,
+    fontWeight: "bold",
+  },
+  genderButtons: {
+    flexDirection: "row",
+    marginTop: 80,
+  },
+  selectedGenderText: {
+    color: "white", // Cambia el color del texto a blanco
+  },
+  genderButton: {
+    paddingHorizontal: 40,
+    paddingVertical: 10,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: "#ccc",
+  },
+  selectedMale: {
+    backgroundColor: "#0790cf",
+    borderColor: "#0790cf",
+  },
+  selectedFemale: {
+    backgroundColor: "pink",
+    borderColor: "pink",
+  },
+  genderButtonText: {
+    fontSize: 24,
+    color: "black",
+    fontWeight: "bold",
+  },
+  button: {
+    marginTop: 80,
+  },
+  errorText: {
+    color: 'red',
     fontSize: 16,
-    color: 'black',
+    marginTop: 5,
   },
 });
 

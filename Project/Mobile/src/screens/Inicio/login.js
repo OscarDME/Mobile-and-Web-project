@@ -7,13 +7,32 @@ import {
 } from "expo-auth-session";
 
 import { useNavigation } from "@react-navigation/native";
-import { Button, View, Text, SafeAreaView } from "react-native";
+import { Button, View, Text, SafeAreaView, StyleSheet, Image } from "react-native";
 import React, { useState, useEffect } from "react";
+import { decodeToken } from "../../navigators/navigationRoutes";
+import * as Network from "expo-network"; // Importa Expo Network
+import { ThemedButton } from "react-native-really-awesome-button";
+import { AwesomeButton } from "react-awesome-button";
+import Logo from "../../../assets/logo.png"
 
 const Login = () => {
   const navigation = useNavigation();
 
   WebBrowser.maybeCompleteAuthSession();
+  // const [ipAddress, setIPAddress] = useState(null);
+
+  // // Effect to fetch IPv4 address when component mounts
+  // useEffect(() => {
+  //   const fetchIP = async () => {
+  //     try {
+  //       const ip = await Network.getIpAddressAsync(); // Usa Expo Network.getIpAddressAsync()
+  //       setIPAddress(ip);
+  //     } catch (error) {
+  //       console.error('Error obteniendo la dirección IP:', error);
+  //     }
+  //   };
+  //   fetchIP();
+  // }, []);
 
   // Endpoint
   const discovery = useAutoDiscovery(
@@ -61,11 +80,48 @@ const Login = () => {
           },
           discovery
         );
+
         console.log("Code exchange successful. Response:", res);
         setToken(res.idToken); // Change here to access the idToken
 
-        // En el componente Login, después de obtener y establecer el token
-        navigation.navigate("Validation", {screen: 'WelcomeScreen', params: {token: res.idToken}});
+        const decodedToken = decodeToken(res.idToken); // Decodificar el token aqui
+        console.log(decodedToken.name);
+        // navigation.navigate("Validation", {screen: 'WelcomeScreen', params: {token: res.idToken}});
+
+        if (decodedToken) {
+          const oid = decodedToken.oid;
+          console.log(oid);
+          console.log("Llegue aqui 4");
+
+          // Asegúrate de obtener el campo correcto del token
+          // Verificar si el usuario existe en la base de datos antes de redirigir
+          const userExistsResponse = await fetch(
+            `http://192.168.100.5:3001/api/users/${oid}`,
+            {
+              method: "GET",
+            }
+          );
+          console.log("Llegue aqui 3");
+          const userExists = await userExistsResponse.text();
+          console.log("Llegue aqui");
+          if (userExistsResponse.status === 200) {
+            console.log("Llegue aqui 1");
+            navigation.replace("Main", {
+              screen: "MainMenu",
+              params: { token: res.idToken },
+            });
+          } else {
+            // El usuario no existe, realizar alguna acción (por ejemplo, mostrar mensaje de error)
+            console.log("Llegue aqui 2");
+            navigation.navigate("Validation", {
+              screen: "WelcomeScreen",
+              params: { token: res.idToken },
+            });
+          }
+        } else {
+          // Manda error
+          console.log("Error decoding token :::((((");
+        }
       } catch (error) {
         console.error("Error exchanging code for token:", error);
       }
@@ -96,17 +152,34 @@ const Login = () => {
     <SafeAreaView
       style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
     >
-      <View style={{ marginBottom: 20 }}>
-        <Button
+      <View style={{ marginBottom: 20, alignItems: "center"}}>
+      <Image source={Logo} style={{ width: 250, height: 250, marginBottom: 50,}}  />
+        <ThemedButton
+          name ="bruce"
+          type="primary"
           disabled={!request}
-          title="Inicia Sesion"
           onPress={handleLoginPress}
-        />
-        <Button disabled={!token} title="Logout" onPress={handleLogoutPress} />
+          backgroundColor = "#0790cf"
+          backgroundDarker = "#0790cf"
+          borderColor = "#0790cf"
+          height={55}
+          textSize={18}
+        >
+          Acceder
+        </ThemedButton>
+
+        {/* <ThemedButton disabled={!token} title="Logout" onPress={handleLogoutPress} /> */}
       </View>
       {/* <Text style={{ fontSize: 18 }}>Token: {token}</Text> */}
     </SafeAreaView>
   );
 };
 
+const styles = StyleSheet.create({
+  ThemedButton: {
+    activityColor: "#F0F0F0",
+  },
+});
+
 export default Login;
+
