@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './styles/Management.css';
-import Dropdown from '../DropDown';
-import CheckboxList from '../CheckBox';
+import '../../../styles/Management.css';
+import Dropdown from '../../DropDown';
+import CheckboxList from '../../CheckBox';
 
 
 export default function Exercises_management_edit({ exercise }) {

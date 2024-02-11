@@ -87,8 +87,8 @@ export const NavigationBar = () => {
                         <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
                             Gestión de Alimentos
                         </NavLink>
-                        <NavLink id="Diets_management" to="/Diets_management" className='NavLinks'>
-                            Gestión de Dietas
+                        <NavLink id="Recipes_management" to="/Recipes_management" className='NavLinks'>
+                            Gestión de Recetas
                         </NavLink>
                         <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
                             Gestión de Ejercicios

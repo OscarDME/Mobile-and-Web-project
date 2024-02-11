@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 function CheckboxList({ options, selectedOptions, onChange, idPrefix }) {
-  
+  const [isHovered, setIsHovered] = useState(false);
+
   const handleCheckboxChange = (event) => {
     const optionName = event.target.name;
     const isChecked = event.target.checked;
-
     // Si el checkbox está marcado, agregar la opción seleccionada al array
     // Si no, eliminarla del array
     const updatedSelectedOptions = isChecked 
@@ -17,9 +17,20 @@ function CheckboxList({ options, selectedOptions, onChange, idPrefix }) {
   };
 
   return (
-    <div style={{ borderRadius: "10px", maxHeight: '150px', overflowY: 'scroll', border: '1px solid #CCCCCC', padding: '10px' }}>
+    <div
+      style={{
+        borderRadius: "10px", 
+        maxHeight: '150px', 
+        overflowY: 'scroll', 
+        border: isHovered ? '1px solid var(--primary)' : '1px solid #CCCCCC', 
+        padding: '10px',
+        transition: 'border-color 0.3s ease-in-out' 
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {options.map((option, index) => (
-        <div key={index} style={{ padding: "5px" }} className="custom-control custom-checkbox">
+        <div key={index} style={{ padding: "5px"}} className="custom-control custom-checkbox">
           <input
             type="checkbox"
             className="form-check-input"

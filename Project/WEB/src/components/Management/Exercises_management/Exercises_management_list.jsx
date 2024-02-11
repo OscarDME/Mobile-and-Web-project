@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ExerciseCard } from "../DATA_EXERCISES";
-import SearchBar from '../SearchBar';
-import './styles/Management.css';
+import { ExerciseCard } from "../../DATA_EXERCISES";
+import SearchBar from '../../SearchBar';
+import '../../../styles/Management.css';
 import Exercises_management_add from './Exercises_management_add';
 import Exercises_management_edit from './Exercises_management_edit';
 
