@@ -93,7 +93,6 @@ export default function Food_management_list() {
                         <div className="exercise-info-row">Carbohidratos: {food.carbohydrates} kcal</div>
                         <div className="exercise-info-row">Proteína: {food.protein} kcal</div>
                         <div className="exercise-info-row">Grasa: {food.fats} kcal</div>
-
                       </div>
                     </div>
                   </>
