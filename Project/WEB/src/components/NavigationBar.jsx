@@ -65,7 +65,7 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
                         </NavLink>
@@ -74,16 +74,16 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Food" to="/Food" className='NavLinks'>
                             Biblioteca de Alimentos
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
                             Citas
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
                         </NavLink>
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
                             Gestión de Alimentos
                         </NavLink>
