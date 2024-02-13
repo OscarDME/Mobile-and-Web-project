@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { ExerciseCard } from "../DATA_EXERCISES";
-import SearchBar from '../SearchBar';
-import '../../styles/Management.css';
+import { ExerciseCard } from "../../DATA_EXERCISES";
+import SearchBar from '../../SearchBar';
+import '../../../styles/Management.css';
+import RequestExercisesEdit from './RequestExercisesEdit';
 
-export default function CurrentExercises() {
+
+export default function RequestExercises() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
@@ -42,7 +44,7 @@ export default function CurrentExercises() {
         setEditingExercise(exercise); // Muestra el formulario de edición para el ejercicio seleccionado
       }
     };
-
+    
     return (
       <div className="container2">
           <ul className='cardcontainer'>
@@ -52,6 +54,9 @@ export default function CurrentExercises() {
                   <div>
                     <div className='row_name'>{exercise.name}</div>
                     <div className='row_description'>{exercise.muscles.join(" - ")}</div>
+                  </div>
+                  <div className="row_edit">
+                    <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
                   </div>
                 </div>
                 {expandedRow === exercise.id && (
@@ -66,6 +71,11 @@ export default function CurrentExercises() {
                         <div className="exercise-info-row">Posición inicial: {exercise.preparation}</div>
                       </div>
                     </div>
+                  </>
+                )}
+                {editingExercise && editingExercise.id === exercise.id && (
+                  <>
+                    <RequestExercisesEdit exercise={editingExercise} />
                   </>
                 )}
               </li>

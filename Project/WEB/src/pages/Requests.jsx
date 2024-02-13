@@ -3,10 +3,10 @@ import { AuthenticatedTemplate } from "@azure/msal-react";
 import '../styles/WhiteBoard.css';
 import '../styles/MenuButtons.css';
 import MenuButtons from '../components/MenuButtons';
-import RequestExercises from '../components/Requests/RequestExercises';
-import RequestFoods from '../components/Requests/RequestFoods';
-import RequestRecipes from '../components/Requests/RequestRecipes';
-import RequestTrainersNutricionists from '../components/Requests/RequestTrainersNutricionists';
+import RequestExercises from '../components/Requests/RequestExercises/RequestExercises';
+import RequestFoods from '../components/Requests/RequestFoods/RequestFoods';
+import RequestRecipes from '../components/Requests/RequestRecipes/RequestRecipes';
+import RequestTrainersNutricionists from '../components/Requests/RequestTrainersNutricionist/RequestTrainersNutricionists';
 
 export const Requests = () => {
     const [activeComponent, setActiveComponent] = useState('Entrenador/Nutricionista');
@@ -39,7 +39,9 @@ export const Requests = () => {
             <div className='buttoncontainer'>
               <MenuButtons menuItems={customMenuItems} handleShowComponent={handleShowComponent} />
             </div>
+            <div className="workarea2">
             {renderComponent()}
+            </div>
           </div>
           </AuthenticatedTemplate>
         </>

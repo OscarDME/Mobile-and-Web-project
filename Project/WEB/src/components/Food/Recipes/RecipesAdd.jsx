@@ -3,7 +3,7 @@ import '../../../styles/Management.css';
 import { FoodCard } from "../../DATA_FOOD";
 import CheckboxList from '../../CheckBox';
 
-export default function Recipes_management_add({ onBackToList }) {
+export default function RecipesAdd({ onBackToList }) {
 
   const [name, setRecipeName] = useState('');
   const [preparation, setRecipePreparation] = useState('');
@@ -35,10 +35,10 @@ export default function Recipes_management_add({ onBackToList }) {
   };
 
   return (
-<div className='container'>
-      <div className='add_header'>
+<div className='container2'>
+      <div className='add_header2'>
         <button className="back_icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
-        <h1 className='mtitle'>Añadir una receta nueva</h1>
+        <h1 className='mtitle'>Solicitar una receta nueva</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area'>
@@ -63,7 +63,7 @@ export default function Recipes_management_add({ onBackToList }) {
           </div>
         </div>
       </div>
-        <button className='add_button'>Agregar receta</button>
+        <button className='add_button'>Solicitar receta</button>
       </form>
     </div>
   )

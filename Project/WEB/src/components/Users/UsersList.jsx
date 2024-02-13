@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { ExerciseCard } from "../DATA_EXERCISES";
-import SearchBar from '../SearchBar';
-import '../../styles/Management.css';
+import { ExerciseCard } from "../../DATA_EXERCISES";
+import SearchBar from '../../SearchBar';
+import '../../../styles/Management.css';
+import Exercises_management_add from './Exercises_management_add';
+import Exercises_management_edit from './Exercises_management_edit';
 
-export default function CurrentExercises() {
+
+export default function UsersList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
@@ -43,8 +46,30 @@ export default function CurrentExercises() {
       }
     };
 
+    const handleAddClick = () => {
+      setShowAddPage(true); // Actualiza el estado para mostrar el nuevo componente al hacer clic en el icono de agregar
+    };
+
+    const handleBackToList = () => {
+        setShowAddPage(false); // Volver a la lista de ejercicios
+    };
+    
+    // Si showAddPage es verdadero, renderiza el componente de agregar ejercicio
+    if (showAddPage) {
+        return <Exercises_management_add onBackToList={handleBackToList} />;
+    }
+    
     return (
-      <div className="container2">
+      <div className="container">
+          <div className="search-bar-container">
+            <div className='search-bar'>
+              <div className='addclient'><i className="bi bi-search h4"></i></div>
+              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            </div>
+            <div>
+              <a className="iconadd" role="button" onClick={handleAddClick}><i className="bi bi-plus-circle-fill"></i></a>
+            </div>
+          </div>
           <ul className='cardcontainer'>
             {filteredExercises.map((exercise) => (
               <li key={exercise.id} className={`row ${((selectedExercise && selectedExercise.id === exercise.id) || (editingExercise && editingExercise.id === exercise.id)) ? 'selected' : ''}`}>
@@ -52,6 +77,9 @@ export default function CurrentExercises() {
                   <div>
                     <div className='row_name'>{exercise.name}</div>
                     <div className='row_description'>{exercise.muscles.join(" - ")}</div>
+                  </div>
+                  <div className="row_edit">
+                    <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
                   </div>
                 </div>
                 {expandedRow === exercise.id && (
@@ -66,6 +94,11 @@ export default function CurrentExercises() {
                         <div className="exercise-info-row">Posición inicial: {exercise.preparation}</div>
                       </div>
                     </div>
+                  </>
+                )}
+                {editingExercise && editingExercise.id === exercise.id && (
+                  <>
+                    <Exercises_management_edit exercise={editingExercise} />
                   </>
                 )}
               </li>

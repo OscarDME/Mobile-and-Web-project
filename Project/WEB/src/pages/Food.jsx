@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
 import '../styles/WhiteBoard.css';
 import '../styles/MenuButtons.css';
-import Recipes from '../components/Food/Recipes';
-import PrimaryFood from '../components/Food/PrimaryFood';
+import Recipes from '../components/Food/Recipes/Recipes';
+import PrimaryFood from '../components/Food/PrimaryFood/PrimaryFood';
 import MenuButtons from '../components/MenuButtons';
 
 
@@ -33,7 +33,9 @@ export const Food = () => {
           <div className='buttoncontainer'>
             <MenuButtons menuItems={customMenuItems} handleShowComponent={handleShowComponent} />
           </div>
+          <div className='workarea2'>
           {renderComponent()}
+          </div>
         </div>
         </AuthenticatedTemplate>
       </>
