@@ -90,8 +90,6 @@
 }
 
 
-
-
 .row_header{
     justify-content: space-between;
     display: flex;
@@ -225,6 +223,13 @@
     margin: 30px 0;
 }
 
+.add_exercise_rows2{
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    align-items: center;
+}
+
 .container-edit{
     background-color: var(--background);
 }
@@ -232,4 +237,11 @@
 
 .row_buttons{
     display: flex;
+}
+
+.button_container{
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
