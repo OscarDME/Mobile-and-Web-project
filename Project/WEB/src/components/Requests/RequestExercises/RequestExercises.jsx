@@ -55,9 +55,17 @@ export default function RequestExercises() {
                     <div className='row_name'>{exercise.name}</div>
                     <div className='row_description'>{exercise.muscles.join(" - ")}</div>
                   </div>
-                  <div className="row_edit">
-                    <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
-                  </div>
+                  <div className='row_buttons'>
+                    <div className="row_edit">
+                      <i className="bi bi-database-add" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
+                    </div>
+                    <div className="row_edit">
+                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
+                    </div>
+                    <div className="row_edit">
+                      <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
+                    </div>
+                    </div>
                 </div>
                 {expandedRow === exercise.id && (
                   <>

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { RecipeCard } from "../../DATA_RECIPES";
 import SearchBar from '../../SearchBar';
 import '../../../styles/Management.css';
-import RecipesEdit from './RecipesEdit';
 import RecipesAdd from './RecipesAdd';
 
 
@@ -10,7 +9,6 @@ export default function Recipes() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRecipe, setSelectedRecipe] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
-    const [editingRecipe, setEditingRecipe] = useState(null);
     const [showAddPage, setShowAddPage] = useState(false); // Estado para controlar la visibilidad del nuevo componente
   
     const filteredRecipes = RecipeCard.filter(recipe =>
@@ -20,29 +18,10 @@ export default function Recipes() {
     const handleRowClick = (recipe) => {
       if (expandedRow === recipe.id) {
         setExpandedRow(null);
-        setEditingRecipe(null);
         setSelectedRecipe(null); // Deselecciona la fila al hacer clic nuevamente
       } else {
-        if (editingRecipe && editingRecipe.id === editingRecipe.id) {
-            setEditingRecipe(null); // Si el formulario de edición está abierto, ciérralo
-        }
-        setEditingRecipe(null);
         setExpandedRow(recipe.id);
         setSelectedRecipe(recipe); // Selecciona la fila al hacer clic
-      }
-    };
-    
-    const handleEditClick = (recipe) => {
-      if (editingRecipe && editingRecipe.id === recipe.id) {
-        setEditingRecipe(null); // Si la receta está seleccionada, oculta el formulario de edición
-      } else {
-        if (expandedRow && expandedRow !== recipe.id) {
-          setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
-          setSelectedRecipe(null);
-        }
-        setExpandedRow(null);
-        setSelectedRecipe(null);
-        setEditingRecipe(recipe); // Muestra el formulario de edición para el recetas seleccionado
       }
     };
 
@@ -72,8 +51,8 @@ export default function Recipes() {
           </div>
           <ul className='cardcontainer'>
             {filteredRecipes.map((recipe) => (
-              <li key={recipe.id} className={`row ${((selectedRecipe && selectedRecipe.id === recipe.id) || (editingRecipe && editingRecipe.id === recipe.id)) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(recipe)} className={`row_header ${((selectedRecipe && selectedRecipe.id === recipe.id) || (editingRecipe && editingRecipe.id === recipe.id)) ? 'selected' : ''}`}>
+              <li key={recipe.id} className={`row ${((selectedRecipe && selectedRecipe.id === recipe.id)) ? 'selected' : ''}`}>
+                <div onClick={() => handleRowClick(recipe)} className={`row_header ${((selectedRecipe && selectedRecipe.id === recipe.id)) ? 'selected' : ''}`}>
                   <div>
                     <div className='row_name'>{recipe.name}</div>
                     <div className='row_description'>{recipe.clasification.join(" - ")}</div>
@@ -94,11 +73,6 @@ export default function Recipes() {
                         <div className="exercise-info-row">Link de preparación: {recipe.link}</div>
                       </div>
                     </div>
-                  </>
-                )}
-                {editingRecipe && editingRecipe.id === recipe.id && (
-                  <>
-                    <RecipesEdit recipe={editingRecipe} />
                   </>
                 )}
               </li>

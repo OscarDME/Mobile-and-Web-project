@@ -67,8 +67,16 @@
                       <div className='row_name'>{food.name}</div>
                       <div className='row_description'>{food.category}</div>
                     </div>
+                    <div className='row_buttons'>
+                    <div className="row_edit">
+                      <i className="bi bi-database-add" onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
+                    </div>
+                    <div className="row_edit">
+                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
+                    </div>
                     <div className="row_edit">
                       <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
+                    </div>
                     </div>
                   </div>
                   {expandedRow === food.id && (

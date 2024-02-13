@@ -56,7 +56,7 @@
     flex-direction: row !important;
     margin: 10px;
     border: 2px solid var(--secondary-background);
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
     border-radius: 5px;
     align-items: center;
     overflow: hidden;
@@ -68,6 +68,8 @@
 
 .cardcontainer .row:hover{
     background-color: var(--secondary-background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    transform: scale(1.005);
 }
 
 
@@ -103,6 +105,7 @@
     align-items: center;
     padding-right: 25px;
     font-size: 32px;
+    cursor: pointer;
 }
 
 
@@ -224,4 +227,9 @@
 
 .container-edit{
     background-color: var(--background);
+}
+
+
+.row_buttons{
+    display: flex;
 }

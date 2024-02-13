@@ -48,7 +48,7 @@ export default function RecipesAdd({ onBackToList }) {
             <input type="text" className='add_exercise_input' value={name} onChange={handleRecipeNameChange}  />
           </div>
           <div className='add_exercise_rows'>
-            ¿Cuál es la preparación del ejercicio? 
+            ¿Cuál es la preparación de la receta? 
             <textarea className='add_exercise_textarea' value={preparation} onChange={handleRecipePreparationChange}  />
           </div>
           <div className='add_exercise_rows'>

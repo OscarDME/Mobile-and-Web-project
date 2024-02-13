@@ -3,14 +3,12 @@ import { FoodCard } from "../../DATA_FOOD";
 import SearchBar from '../../SearchBar';
 import '../../../styles/Management.css';
 import PrimaryFoodAdd from './PrimaryFoodAdd';
-import PrimaryFoodEdit from './PrimaryFoodEdit';
 
 
 export default function PrimaryFood() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedFood, setSelectedFood] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
-    const [editingFood, setEditingFood] = useState(null);
     const [showAddPage, setShowAddPage] = useState(false); // Estado para controlar la visibilidad del nuevo componente
   
     const filteredFoods = FoodCard.filter(food =>
@@ -20,29 +18,10 @@ export default function PrimaryFood() {
     const handleRowClick = (food) => {
       if (expandedRow === food.id) {
         setExpandedRow(null);
-        setEditingFood(null);
         setSelectedFood(null); // Deselecciona la fila al hacer clic nuevamente
       } else {
-        if (editingFood && editingFood.id === food.id) {
-            setEditingFood(null); // Si el formulario de edición está abierto, ciérralo
-        }
-        setEditingFood(null);
         setExpandedRow(food.id);
         setSelectedFood(food); // Selecciona la fila al hacer clic
-      }
-    };
-    
-    const handleEditClick = (food) => {
-      if (editingFood && editingFood.id === food.id) {
-        setEditingFood(null); // Si el mismo ejercicio está seleccionado, oculta el formulario de edición
-      } else {
-        if (expandedRow && expandedRow !== food.id) {
-          setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
-          setSelectedFood(null);
-        }
-        setExpandedRow(null);
-        setSelectedFood(null);
-        setEditingFood(food); // Muestra el formulario de edición para la comida seleccionado
       }
     };
 
@@ -72,8 +51,8 @@ export default function PrimaryFood() {
           </div>
           <ul className='cardcontainer'>
             {filteredFoods.map((food) => (
-              <li key={food.id} className={`row ${((selectedFood && selectedFood.id === food.id) || (editingFood && editingFood.id === food.id)) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(food)} className={`row_header ${((selectedFood && selectedFood.id === food.id) || (editingFood && editingFood.id === food.id)) ? 'selected' : ''}`}>
+              <li key={food.id} className={`row ${((selectedFood && selectedFood.id === food.id)) ? 'selected' : ''}`}>
+                <div onClick={() => handleRowClick(food)} className={`row_header ${((selectedFood && selectedFood.id === food.id) ) ? 'selected' : ''}`}>
                   <div>
                     <div className='row_name'>{food.name}</div>
                     <div className='row_description'>{food.category}</div>
@@ -92,11 +71,6 @@ export default function PrimaryFood() {
                         <div className="exercise-info-row">Grasa: {food.fats} kcal</div>
                       </div>
                     </div>
-                  </>
-                )}
-                {editingFood && editingFood.id === food.id && (
-                  <>
-                    <PrimaryFoodEdit food={editingFood} />
                   </>
                 )}
               </li>

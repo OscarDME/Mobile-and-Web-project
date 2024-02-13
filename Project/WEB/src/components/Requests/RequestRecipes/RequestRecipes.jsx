@@ -54,8 +54,16 @@ export default function RequestRecipes() {
                     <div className='row_name'>{recipe.name}</div>
                     <div className='row_description'>{recipe.clasification.join(" - ")}</div>
                   </div>
-                  <div className="row_edit">
-                    <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                  <div className='row_buttons'>
+                    <div className="row_edit">
+                      <i className="bi bi-database-add" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                    </div>
+                    <div className="row_edit">
+                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                    </div>
+                    <div className="row_edit">
+                      <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                    </div>
                   </div>
                 </div>
                 {expandedRow === recipe.id && (
