@@ -9,6 +9,8 @@ import {
 import * as Progress from "react-native-progress";
 import { AntDesign } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import config from "../../utils/conf";
+
 
 const UserInfoScreen = ({ navigation, route }) => {
   const [oid, setOid] = useState("");
@@ -65,7 +67,7 @@ const UserInfoScreen = ({ navigation, route }) => {
     try {
       // Reemplaza esta URL con la dirección de tu API y el endpoint apropiado
       const response = await fetch(
-        `http://192.168.100.5:3001/api/birthdate/${oid}`,
+        `${config.apiBaseUrl}/birthdate/${oid}`,
         {
           method: "GET", // o 'POST', dependiendo de tu API
           headers: {

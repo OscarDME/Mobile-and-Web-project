@@ -3,6 +3,7 @@ import { View, Text, Button, TouchableOpacity } from "react-native";
 import * as Progress from "react-native-progress";
 import { AntDesign } from '@expo/vector-icons'; // Asegúrate de tener instalado '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from "../../utils/conf";
 
 const PhysicAndSpace = ({ navigation, route }) => {
   const [oid, setOid] = useState(route.params?.oid || "");
@@ -66,7 +67,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
   const fetchMaterials = async () => {
     try {
       const materialsResponse = await fetch(
-        "http://192.168.100.5:3001/api/materials",
+        `${config.apiBaseUrl}/materials`,
         {
           method: "GET",
           // Puedes incluir headers o parámetros de autenticación si es necesario
@@ -161,7 +162,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
           params: { oid: oid, progress: 0.1 },
         });
         setTimeout(async () => {
-        const response = await fetch("http://192.168.100.5:3001/api/cues", {
+        const response = await fetch(`${config.apiBaseUrl}/cues`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
