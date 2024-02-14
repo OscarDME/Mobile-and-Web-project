@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import "./styles/Management.css";
+import '../../../styles/Management.css';
 import Dropdown from "../../DropdownCollections";
 import CheckboxList from "../../CheckBoxCollections";
-import RadioList from "../RadioList";
-import config from "../../utils/conf";
+import RadioList from "../../RadioList";
+import config from "../../../utils/conf";
+
 export default function Exercises_management_add({ onBackToList }) {
   const [exerciseName, setExerciseName] = useState("");
   const [affectedInjury, setAffectedInjury] = useState(null); // Cambiado a null para un estado inicial claro

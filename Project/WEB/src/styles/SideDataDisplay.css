@@ -85,7 +85,7 @@
     flex-direction: row !important;
     margin: 10px;
     border: 2px solid var(--secondary-background);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.07s ease, box-shadow 0.3s ease;
     border-radius: 5px;
     align-items: center;
     overflow: hidden;
@@ -94,6 +94,7 @@
   .SideUsersList .card:hover {
     background-color: var(--secondary-background);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    transform: scale(1.005);
   }
   
   .SideUsersList .card.selected {

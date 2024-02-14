@@ -8,7 +8,10 @@ export const UserCard = [
     username:'Brunosan',
     name:'Bruno Sanchez Padilla',
     email:'brunosanchezpadilla@gmail.com',
-    link:'/'
+    link:'/',
+    gender: "Hombre",
+    birthday: Date(15-12-2004),
+    rol:["Entrenador","Nutricionista"],
     },
     {
         oid:'b243e468-d8d4-4055-ba08-45106be2fb15',
@@ -16,7 +19,10 @@ export const UserCard = [
         username:'Araceli',
         name:'Araceli Padilla',
         email:'aracelihuerfanita@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Normal"],
     }
     ,
     {
@@ -25,7 +31,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Oscar Daniel',
         email:'Daniel@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Entrenador"],
     }
     ,
     {
@@ -35,7 +44,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Mario Brandon Muro',
         email:'Brandon@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Nutricionista"],
     }
     ,
     {
@@ -45,7 +57,11 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'123@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Administrador"],
+        
     }    ,
     {
     oid:'b243e468-d8d4-4055-ba08-45106be2fb16',
@@ -54,7 +70,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'1@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Cliente"],
     }   , 
     {
     oid:'b243e468-d8d4-4055-ba08-45106be2fb17',
@@ -62,7 +81,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'2@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Entrenador","Nutricionista"],
     }    ,
     {
     oid:'b243e468-d8d4-4055-ba08-45106be2fb18',
@@ -71,7 +93,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'3@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Entrenador"],
     } ,   
     {
     oid:'b243e468-d8d4-4055-ba08-45106be2fb19',
@@ -80,7 +105,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'4@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Normal"],
     }    
     ,   
     {
@@ -89,7 +117,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'5@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Normal"],
     }     ,   
     {
     oid:'b243e468-d8d4-4055-ba08-45106be2fb22',
@@ -97,7 +128,10 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'6@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Normal"],
     }     ,   
     {
     oid:'b243e468-d8d4-4055-ba08-45106be2fb23',
@@ -105,6 +139,9 @@ export const UserCard = [
         username:'Brunosan',
         name:'Bruno Sanchez Padilla',
         email:'7@gmail.com',
-        link:'/'
+        link:'/',
+        gender: "Hombre",
+        birthday: Date(15-12-2004),
+        rol:["Cliente"],
     }    
 ]

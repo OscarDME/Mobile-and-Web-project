@@ -33,7 +33,9 @@ export const Exercises = () => {
           <div className='buttoncontainer'>
             <MenuButtons menuItems={customMenuItems} handleShowComponent={handleShowComponent} />
           </div>
+          <div className='workarea2'>
           {renderComponent()}
+          </div>
         </div>
         </AuthenticatedTemplate>
       </>

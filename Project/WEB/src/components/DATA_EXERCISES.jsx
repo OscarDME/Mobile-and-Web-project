@@ -2,7 +2,8 @@ export const ExerciseCard = [
     {
         id:'1',
         name:"Curl",
-        muscles:["Bicep","Tricep"],	
+        totalcalories:"269",	
+        muscles:["Bicep"],	
         difficulty: "Baja",
         indications: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
         preparation: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",

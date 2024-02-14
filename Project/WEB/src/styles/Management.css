@@ -8,6 +8,17 @@
     max-width: none !important;
 }
 
+.container2{
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 80vh;
+    align-items: center;
+    margin: 0;
+    max-width: none !important;
+}
+
 .search-bar-container{
     display: flex;
     margin-top: 50px;
@@ -45,7 +56,7 @@
     flex-direction: row !important;
     margin: 10px;
     border: 2px solid var(--secondary-background);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
     border-radius: 5px;
     align-items: center;
     overflow: hidden;
@@ -57,6 +68,8 @@
 
 .cardcontainer .row:hover{
     background-color: var(--secondary-background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    transform: scale(1.005);
 }
 
 
@@ -77,8 +90,6 @@
 }
 
 
-
-
 .row_header{
     justify-content: space-between;
     display: flex;
@@ -92,6 +103,7 @@
     align-items: center;
     padding-right: 25px;
     font-size: 32px;
+    cursor: pointer;
 }
 
 
@@ -127,6 +139,14 @@
     width: 100%;
 }
 
+.add_header2{
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
 
 .add_button{
     background-color: var(--primary);
@@ -137,7 +157,7 @@
     padding-left: 50px;
     padding-right: 50px;
     border-radius: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     font-size: 18px;
     margin: 20px;
 }
@@ -166,6 +186,16 @@
     border-color: var(--secondary-background);
     color: var(--text);
     border-radius: 10px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.add_exercise_textarea:hover{
+    border-color: var(--primary);
+}
+
+.add_exercise_textarea:focus{
+    border-color: var(--primary);
+    border: 3px solid var(--primary);
 }
 
 .add_exercise_input{
@@ -174,6 +204,16 @@
     color: var(--text);
     border-radius: 10px;
     padding: 10px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.add_exercise_input:hover{
+    border-color: var(--primary);
+}
+
+.add_exercise_input:focus{
+    border-color: var(--primary);
+    border: 3px solid var(--primary);
 }
 
 .add_exercise_rows{
@@ -183,6 +223,25 @@
     margin: 30px 0;
 }
 
+.add_exercise_rows2{
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    align-items: center;
+}
+
 .container-edit{
     background-color: var(--background);
+}
+
+
+.row_buttons{
+    display: flex;
+}
+
+.button_container{
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

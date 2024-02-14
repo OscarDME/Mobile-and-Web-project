@@ -54,9 +54,10 @@ export const NavigationBar = () => {
                 </NavLink>
                 <AuthenticatedTemplate>
                     <div className="Navbar-Links">
-                        {/*<NavLink id="Progress" to="/Progress" className='NavLinks'>
+                        <NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
                         </NavLink>
+                        {/*
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
                             Asignar Rutinas
                         </NavLink>
@@ -65,7 +66,7 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
                         </NavLink>
@@ -74,21 +75,21 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Food" to="/Food" className='NavLinks'>
                             Biblioteca de Alimentos
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
                             Citas
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
                         </NavLink>
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
                             Gestión de Alimentos
                         </NavLink>
-                        <NavLink id="Diets_management" to="/Diets_management" className='NavLinks'>
-                            Gestión de Dietas
+                        <NavLink id="Recipes_management" to="/Recipes_management" className='NavLinks'>
+                            Gestión de Recetas
                         </NavLink>
                         <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
                             Gestión de Ejercicios

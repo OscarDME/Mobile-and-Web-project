@@ -1,23 +1,40 @@
-import React, { useState } from 'react';
-import '../../styles/Management.css';
-import Dropdown from '../DropDown';
-import CheckboxList from '../CheckBox';
+import React, { useState, useEffect } from 'react';
+import '../../../styles/Management.css';
+import Dropdown from '../../DropDown';
+import CheckboxList from '../../CheckBox';
 
-export default function NewExercises() {
-  const [exerciseName, setExerciseName] = useState('');
-  const [affectedInjury, setAffectedInjury] = useState('');
-  const [selectedMuscles, setSelectedMuscles] = useState([]);
-  const [exerciseType, setExerciseType] = useState('');
-  const [materialNeeded, setMaterialNeeded] = useState([]);
-  const [exercisePreparation, setExercisePreparation] = useState('');
-  const [exerciseIndications, setExerciseIndications] = useState('');
-  const [exerciseDificulty, setExerciseDificulty] = useState('');
 
-  const lesiones = ["Hombro", "Cadera", "Tobillo", "Espalda"];
-  const options = ["Baja", "Media", "Alta"];
-  const exercises = ["Cardiovascular", "Peso corporal", "Pesas"];
-  const materials = ["Mancuerna", "Barra"];
-  const muscles = ["Cuadricep", "Tricep", "Bicep","Pantorilla", "Femoral", "Gluteo"];
+export default function RequestExercisesEdit({ exercise }) {
+
+    const [exerciseName, setExerciseName] = useState(exercise.name || '');
+    const [affectedInjury, setAffectedInjury] = useState(exercise.injury || '');
+    const [selectedMuscles, setSelectedMuscles] = useState(exercise.muscles || []);
+    const [exerciseType, setExerciseType] = useState(exercise.type || '');
+    const [materialNeeded, setMaterialNeeded] = useState(exercise.material || []);
+    const [exercisePreparation, setExercisePreparation] = useState(exercise.preparation || '');
+    const [exerciseIndications, setExerciseIndications] = useState(exercise.indications || '');
+    const [exerciseDificulty, setExerciseDificulty] = useState(exercise.dificulty || '');  
+
+    const lesiones = ["Hombro", "Cadera", "Tobillo", "Espalda"];
+    const options = ["Baja", "Media", "Alta"];
+    const exercises = ["Cardiovascular", "Peso corporal", "Pesas"];
+    const materials = ["Mancuerna", "Barra"];
+    const muscles = ["Cuadricep", "Tricep", "Bicep","Pantorilla", "Femoral", "Gluteo"];
+
+    
+  useEffect(() => {
+    if (exercise) {
+      setExerciseName(exercise.name || '');
+      setAffectedInjury(exercise.injury || '');
+      setSelectedMuscles(exercise.muscles || []);
+      setExerciseType(exercise.type || '');
+      setMaterialNeeded(exercise.material || []);
+      setExercisePreparation(exercise.preparation || '');
+      setExerciseIndications(exercise.indications || '');
+      setExerciseDificulty(exercise.difficulty || '');
+    }
+  }, [exercise]);
+
 
   const handleExerciseNameChange = (event) => setExerciseName(event.target.value);
 
@@ -34,9 +51,7 @@ export default function NewExercises() {
 
   const handleExercisePreparationChange = (event) => setExercisePreparation(event.target.value);
 
-  const handleSelectedMusclesChange = (selectedOptions) => {
-    console.log(selectedOptions);
-    setSelectedMuscles(selectedOptions)};
+  const handleSelectedMusclesChange = (selectedOptions) => setSelectedMuscles(selectedOptions);
 
   const handleMaterialNeededChange = (selectedOptions) => setMaterialNeeded(selectedOptions);
 
@@ -53,10 +68,7 @@ export default function NewExercises() {
   };
 
   return (
-    <div className='container2'>
-      <div className='add_header2'>
-        <h1 className='mtitle'>Solicitar un ejercicio nuevo</h1>
-      </div>
+    <div className='container-edit'>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area'>
           <div>
@@ -69,6 +81,9 @@ export default function NewExercises() {
             </div>
             <div className='add_exercise_rows'>
               ¿Cuál es la dificultad del ejercicio? <Dropdown options={options} selectedOption={exerciseDificulty} onChange={handleAffectedDificultyChange}  />
+            </div>
+            <div className='add_exercise_rows'>
+              ¿Qué tipo de ejercicio es? <Dropdown options={exercises} selectedOption={exerciseType} onChange={handleExerciseTypeChange}  />
             </div>
             <div className='add_exercise_rows'>
               Indicaciones de preparación:
@@ -84,11 +99,6 @@ export default function NewExercises() {
               Indicaciones de ejecución:
               <textarea className='add_exercise_textarea' value={exerciseIndications} onChange={handleExerciseIndicationsChange}></textarea>
             </div>
-          </div>
-          <div>
-            <div className='add_exercise_rows'>
-              ¿Qué tipo de ejercicio es? <Dropdown options={exercises} selectedOption={exerciseType} onChange={handleExerciseTypeChange}  />
-            </div>
             {exerciseType === 'Pesas' && (
               <div className='add_exercise_rows'>
                 ¿Qué material necesita el ejercicio?
@@ -97,7 +107,7 @@ export default function NewExercises() {
             )}
           </div>
         </div>
-        <button type="submit" className='add_button'>Añadir ejercicio</button>
+        <button type="submit" className='add_button'>Guardar</button>
       </form>
     </div>
   );
