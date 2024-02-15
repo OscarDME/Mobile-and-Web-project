@@ -8,6 +8,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemedButton } from "react-native-really-awesome-button";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from "../../utils/conf";
 
 const FirstPageForm = ({ navigation, route }) => {
   const { oid, name, givenName, surname, emails } = route.params;
@@ -39,7 +40,7 @@ const FirstPageForm = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch("http:/192.168.100.5:3001/api/users", {
+      const response = await fetch(`${config.apiBaseUrl}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

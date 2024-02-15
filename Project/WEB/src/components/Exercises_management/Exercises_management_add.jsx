@@ -1,61 +1,20 @@
-import React, { useState, useEffect } from "react";
-import '../../../styles/Management.css';
+import React, { useState } from "react";
+import "./styles/Management.css";
 import Dropdown from "../../DropdownCollections";
 import CheckboxList from "../../CheckBoxCollections";
-import RadioList from "../../RadioList";
-import config from "../../../utils/conf";
-
-export default function Exercises_management_edit({ exercise, onBackToList  }) {
-  const [exerciseDetails, setExerciseDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
-
+import RadioList from "../RadioList";
+import config from "../../utils/conf";
+export default function Exercises_management_add({ onBackToList }) {
   const [exerciseName, setExerciseName] = useState("");
   const [affectedInjury, setAffectedInjury] = useState(null); // Cambiado a null para un estado inicial claro
   const [selectedMuscles, setSelectedMuscles] = useState([]); // Ahora solo para músculos secundarios
   const [primaryMuscle, setPrimaryMuscle] = useState(null); // Nuevo estado para músculo principal
   const [exerciseType, setExerciseType] = useState(null); // Cambiado a null
-  const [materialNeeded, setMaterialNeeded] = useState([]);
+  const [materialNeeded, setMaterialNeeded] = useState(null);
   const [exercisePreparation, setExercisePreparation] = useState("");
   const [exerciseIndications, setExerciseIndications] = useState("");
   const [exerciseDificulty, setExerciseDificulty] = useState(null); // Cambiado a null
   const [selectedModalidad, setSelectedModalidad] = useState(null);
-
-  useEffect(() => {
-    const fetchExerciseDetails = async () => {
-      try {
-        const response = await fetch(`${config.apiBaseUrl}/ejercicio/${exercise.ID_Ejercicio}`);
-        if (!response.ok) throw new Error('Failed to fetch exercise details');
-        const data = await response.json();
-        setExerciseDetails(data);
-        setExerciseName(data.ejercicio);
-        setPrimaryMuscle(data.ID_Musculo);
-        setExerciseType(data.ID_Tipo_Ejercicio);
-        const selectedMusclesMapped = data.musculosSecundarios.map(ms => {
-          const muscle = muscles.find(m => m.value === ms.ID_Musculo);
-          return muscle ? muscle.value : null; // Aquí asumimos que quieres los valores, ajusta según necesites
-        }).filter(ms => ms != null); // Elimina los nulos si el ID_Musculo no se encontró
-  
-        setSelectedMuscles(selectedMusclesMapped);
-  
-        // Similar para `materialNeeded`, ajusta según cómo estés manejando esos datos
-        // Si `ID_Equipo` es un único valor, pero `CheckboxList` espera un array, debes convertirlo:
-        setMaterialNeeded(data.ID_Equipo);        
-        setExercisePreparation(data.preparacion);
-        setExerciseIndications(data.ejecucion);
-        setExerciseDificulty(data.ID_Dificultad);
-        setSelectedModalidad(data.ID_Modalidad);
-        setAffectedInjury(data.ID_Lesion);
-
-        console.log(data);
-        // Aquí también podrías cargar las opciones de los dropdowns si son dinámicas
-      } catch (error) {
-        console.error("Error fetching exercise details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchExerciseDetails();
-  }, [exercise.ID_Ejercicio]);
 
   const lesiones = [
     { label: "Hombro", value: 1 },
@@ -135,63 +94,86 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
     setSelectedMuscles(selectedValues);
   };
 
-  const handleModalidadChange = (selectedOption) => {
+  const handleModalidadChange = (selectedOption) =>
     setSelectedModalidad(selectedOption ? selectedOption.value : null);
-  
-    if (selectedOption && selectedOption.value !== 2) { 
-      setMaterialNeeded(null); // Establece materialNeeded como null
-    }
-  };
-  
 
-    const handleMaterialNeededChange = (selectedOptions) => {
-      // Assuming selectedOptions is an array of integers
-      setMaterialNeeded(selectedOptions);
-    };
-    
+const handleMaterialNeededChange = (selectedOption) => {
+  // selectedOption ya es un valor único y no un array
+  setMaterialNeeded(selectedOption);
+};
+
   const esModalidadPesas = selectedModalidad === 2;
-  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
-    // Prepara los datos del formulario para enviarlos al backend
+    if (
+      !exerciseName.trim() ||
+      primaryMuscle === null ||
+      exerciseType === null ||
+      !exercisePreparation.trim() ||
+      !exerciseIndications.trim() ||
+      exerciseDificulty === null ||
+      (esModalidadPesas && materialNeeded === null) || // Solo es obligatorio si es modalidad pesas
+      selectedMuscles.length === 0 // Asumiendo que al menos un músculo secundario es necesario
+    ) {
+      alert("Por favor completa todos los campos obligatorios.");
+      return;
+    }
+
     const exerciseData = {
       ejercicio: exerciseName,
       preparacion: exercisePreparation,
       ejecucion: exerciseIndications,
       ID_Musculo: primaryMuscle,
+      ID_Lesion: affectedInjury,
       ID_Tipo_Ejercicio: exerciseType,
       ID_Dificultad: exerciseDificulty,
-      ID_Equipo: materialNeeded, 
+      ID_Equipo: materialNeeded, // Asume que tu backend puede manejar null o un array vacío
       ID_Modalidad: selectedModalidad,
-      ID_Lesion: affectedInjury,
-      musculosSecundarios: selectedMuscles.map(muscle => ({ ID_Musculo: muscle })) // Asegúrate de que este sea el formato esperado por tu backend
+      musculosSecundarios: selectedMuscles, // Asegúrate de que este campo envíe solo los IDs de los músculos secundarios
     };
-  
+
+    console.log(exerciseData);
+
     try {
-      const response = await fetch(`${config.apiBaseUrl}/ejercicio/${exercise.ID_Ejercicio}`, {
-        method: 'PUT', // o 'PATCH' dependiendo de tu backend
+      // Realizar la solicitud POST al servidor
+      const response = await fetch(`${config.apiBaseUrl}/ejercicios`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(exerciseData),
       });
-  
+
       if (!response.ok) {
-        throw new Error('Hubo un problema al actualizar el ejercicio');
+        throw new Error("Algo salió mal al guardar el ejercicio.");
       }
-  
+
+      // Respuesta del servidor
       const result = await response.json();
-      console.log(result); // Puedes mostrar un mensaje de éxito o redirigir al usuario
-      alert("Ejercicio modificado con éxito.");
+      console.log(result);
+      alert("Ejercicio añadido con éxito.");
+
+      // Aquí podrías redirigir al usuario o limpiar el formulario
+      onBackToList(); // Si deseas volver a la lista de ejercicios o manejar la navegación de otra manera
     } catch (error) {
-      alert("Error al modificar el ejercicio.");
-      console.error('Error al actualizar el ejercicio:', error);
-      // Aquí puedes manejar el error, por ejemplo, mostrando un mensaje al usuario
+      console.error("Error al guardar el ejercicio:", error);
+      alert("Error al guardar el ejercicio.");
     }
+
+    console.log("Guardando ejercicio:", {
+      exerciseName,
+      affectedInjury,
+      selectedMuscles,
+      exerciseType,
+      materialNeeded,
+      exercisePreparation,
+      exerciseIndications,
+      exerciseDificulty,
+    });
+
+    onBackToList();
   };
-  
 
   // Función auxiliar para encontrar el objeto de opción basado en el valor
   const findOptionByValue = (optionsArray, value) =>
@@ -199,6 +181,12 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
 
   return (
     <div className="container">
+      <div className="add_header">
+        <button className="back_icon" onClick={onBackToList}>
+          <i className="bi bi-arrow-left"></i>
+        </button>
+        <h1 className="mtitle">Añadir un ejercicio nuevo</h1>
+      </div>
       <form className="form_add_exercise" onSubmit={handleSubmit}>
         <div className="add_exercise_area">
           <div>
@@ -304,7 +292,7 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
           </div>
         </div>
         <button type="submit" className="add_button">
-          Modificar ejercicio
+          Añadir ejercicio
         </button>
       </form>
     </div>

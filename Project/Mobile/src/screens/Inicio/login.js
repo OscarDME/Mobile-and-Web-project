@@ -14,6 +14,7 @@ import * as Network from "expo-network"; // Importa Expo Network
 import { ThemedButton } from "react-native-really-awesome-button";
 import { AwesomeButton } from "react-awesome-button";
 import Logo from "../../../assets/logo.png"
+import config from "../../utils/conf";
 
 const Login = () => {
   const navigation = useNavigation();
@@ -96,7 +97,7 @@ const Login = () => {
           // Asegúrate de obtener el campo correcto del token
           // Verificar si el usuario existe en la base de datos antes de redirigir
           const userExistsResponse = await fetch(
-            `http://192.168.100.5:3001/api/users/${oid}`,
+            `${config.apiBaseUrl}/users/${oid}`,
             {
               method: "GET",
             }

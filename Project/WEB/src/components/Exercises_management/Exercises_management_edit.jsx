@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import '../../../styles/Management.css';
+import "./styles/Management.css";
 import Dropdown from "../../DropdownCollections";
 import CheckboxList from "../../CheckBoxCollections";
-import RadioList from "../../RadioList";
-import config from "../../../utils/conf";
+import RadioList from "../RadioList";
+import config from "../../utils/conf";
 
 export default function Exercises_management_edit({ exercise, onBackToList  }) {
   const [exerciseDetails, setExerciseDetails] = useState(null);

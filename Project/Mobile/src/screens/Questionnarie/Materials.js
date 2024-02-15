@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Button } from "react-native";
 import * as Progress from "react-native-progress";
 import { AntDesign } from '@expo/vector-icons'; // Asegúrate de tener instalado '@expo/vector-icons'
+import config from "../../utils/conf";
 
 const MaterialSelectionScreen = ({ navigation, route }) => {
   const [selectedMaterials, setSelectedMaterials] = useState([]);
@@ -23,7 +24,7 @@ const MaterialSelectionScreen = ({ navigation, route }) => {
   const fetchMaterials = async () => {
     try {
       const materialsResponse = await fetch(
-        "http://192.168.100.5:3001/api/materials",
+        `${config.apiBaseUrl}/materials`,
         {
           method: "GET",
         }
@@ -55,7 +56,7 @@ const MaterialSelectionScreen = ({ navigation, route }) => {
         params: { oid: oid, progress: 0.1 },
       });
       setTimeout(async () => {
-        const response = await fetch("http://192.168.100.5:3001/api/cues", {
+        const response = await fetch(`${config.apiBaseUrl}/cues`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
