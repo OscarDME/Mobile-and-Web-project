@@ -10,6 +10,7 @@ import { getMaterials } from "../Controllers/Materiales.Controllers.js";
 import { createCuestionario } from "../Controllers/Cuestionario.Controllers.js";
 import { createEjercicio, getExercises, getEjercicioById, updateEjercicio } from "../Controllers/EjerciciosControllers.js";
 import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento } from "../Controllers/Alimento.Controllers.js";
+import { createReceta } from "../Controllers/Recetas.Controllers.js";
 
 const router = Router();
 //Usuarios
@@ -34,5 +35,8 @@ router.put("/ejercicio/:id", updateEjercicio);
 router.post("/alimentos", createAlimento);
 router.get("/alimentos", getAllAlimentosWithMacronutrientes);
 router.put("/alimentos/:id", updateAlimento);
+
+//Recetas
+router.post("/recetas", createReceta);
 
 export default router;

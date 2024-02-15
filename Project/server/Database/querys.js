@@ -48,11 +48,17 @@ export const querys = {
     getAlimento:"select a.ID_Alimento, a.nombre, a.calorias, a.peso, c.categoria from Alimento as a JOIN categoria as c ON a.ID_Categoria = c.ID_Categoria",
     updateAlimento: `UPDATE Alimento SET nombre = @nombre, calorias = @calorias, peso = @peso, ID_Categoria = @ID_Categoria WHERE ID_Alimento = @ID_Alimento`,
   
-  
-    
+
     //Contiene (Macronutrientes del alimento)
     createContiene: "INSERT INTO Contiene(ID_Alimento, ID_Macronutriente, cantidad) VALUES (@ID_Alimento, @ID_Macronutriente, @cantidad)",
     getContiene: "select m.macronutriente, c.cantidad from Macronutriente as M join Contiene as c ON c.ID_Macronutriente = m.ID_Macronutriente where ID_Alimento=@ID_Alimento",
     updateContiene: `UPDATE Contiene SET cantidad = @cantidad WHERE ID_Alimento = @ID_Alimento AND ID_Macronutriente = @ID_Macronutriente`,
-    
+
+    //Recetas
+    createReceta: "INSERT INTO Receta(receta) VALUES(@receta)",
+
+    //TieneIngredientes
+    createTieneIngredientes: "INSERT INTO TieneIngredientes(ID_Receta, ID_Alimento) VALUES (@ID_Rectea, @ID_Alimento)",
+    //Clasficiacion Recetas
+
 };

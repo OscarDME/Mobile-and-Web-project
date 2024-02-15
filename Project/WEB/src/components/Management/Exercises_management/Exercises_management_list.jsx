@@ -118,8 +118,8 @@ export default function Exercises_management_list() {
                         </div>                     
                       </div>
                       <div className="exercise-info-column">
-                        <div className="exercise-info-row">Musculos secundarios: {exercise.preparacion}</div>
                         <div className="exercise-info-row">Posición inicial: {exercise.preparacion}</div>
+                        <div className="exercise-info-row">Ejecucion: {exercise.ejecucion}</div>
                         <div className="exercise-info-row">Indicaciones: {exercise.ejecucion}</div>
                       </div>
                     </div>
