@@ -245,3 +245,8 @@
     align-items: center;
     justify-content: center;
 }
+
+
+.UserCard{
+    display: flex;
+}

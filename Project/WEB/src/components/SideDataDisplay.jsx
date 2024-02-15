@@ -71,7 +71,12 @@ export default function SideDataDisplay() {
               className={`card ${selectedUser && selectedUser.oid === user.oid ? 'selected' : ''}`}
               onClick={() => handleUserClick(user)}
             >
-              <div  className='icon'>{user.icon}</div>
+            { user.gender === "Mujer" && (
+              <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
+            )}
+            {user.gender === "Hombre" &&(
+              <div  className='icon'><i class="bi bi-person-standing"></i></div>
+            )}
               <div>
                 <div className='username'>{user.username}</div>
                 <div className='name'>{user.name}</div>
