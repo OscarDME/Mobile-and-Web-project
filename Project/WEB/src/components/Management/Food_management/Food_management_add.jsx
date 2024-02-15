@@ -1,38 +1,81 @@
 import React, { useState} from 'react';
 import '../../../styles/Management.css';
 import NumberInput from '../../NumberInput';
-import Dropdown from '../../DropDown';
+import Dropdown from '../../DropdownCollections';
+import config from "../../../utils/conf";
 
 export default function Food_management_add({ onBackToList }) {
 
     const [FoodName, setFoodName] = useState('');
     const [calories, setFoodCalories] = useState('');
     const [weight, setFoodWeight] = useState('');
-    const [category, setFoodCategory] = useState('');
+    const [category, setFoodCategory] = useState(null); // o useState({});
     const [carbohydrates, setFoodCarbohydrates] = useState('');
     const [fats, setFoodFats] = useState('');
     const [protein, setFoodProtein] = useState('');
 
-    const categoria = ["Fruta", "Grano", "Lácteo", "Proteina"];
 
+    const categoria = [
+      { label: "Lacteo", value: 1 },
+      { label: "Granos", value: 2 },
+      { label: "Fruta", value: 3 },
+      { label: "Verdura", value: 4 },
+      { label: "Proteina", value: 5 },
+      { label: "Snack", value: 6 },
+    ];
 
   const handleFoodNameChange = (event) => setFoodName(event.target.value);
 
-  const handleFoodCategoryChange = (event) => setFoodCategory(event.target.value);
+  const handleFoodCategoryChange = (selectedOption) => {
+    setFoodCategory(selectedOption ?? null); // Ajusta para manejar un objeto de opción o nullificar
+    console.log(selectedOption);
+  };
 
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!FoodName  || !calories || !category || !weight || !calories || !carbohydrates || !fats || !protein) { 
+    if (!FoodName || !calories || !category || !weight || !carbohydrates || !fats || !protein) {
       alert('Por favor completa todos los campos.');
       return;
     }
 
-    
-    //TODO: GUARDAR EN BACK END DATOS AQUI
-    // TODO: refrescar la lista de comidas automaticamente
-    onBackToList();
+    const alimentoData = {
+      nombre: FoodName,
+      calorias: parseInt(calories, 10),
+      peso: parseFloat(weight),
+      ID_Categoria: category.value,
+      macronutrientes: [
+        { ID_Macronutriente: 1, cantidad: parseFloat(fats)},
+        { ID_Macronutriente: 2, cantidad: parseFloat(carbohydrates)}, 
+        { ID_Macronutriente: 3, cantidad: parseFloat(protein)}, 
+      ],
+    };
+
+    console.log(category);
+    console.log(alimentoData);
+
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/alimentos`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(alimentoData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear alimento');
+      }
+      
+      const result = await response.json();
+      console.log(result);
+      alert('Alimento agregado con éxito.');
+      onBackToList(); // Regresa a la lista de alimentos
+    } catch (error) {
+      console.error('Error al guardar el alimento:', error);
+      alert('Error al guardar el alimento.');
+    }
   };
+
 
   return (
 <div className='container'>
@@ -61,7 +104,7 @@ export default function Food_management_add({ onBackToList }) {
                 />
             </div>
             <div className='add_exercise_rows'>
-              ¿Cúantas calorías tiene el alimento?
+              ¿Cúantas calorias tiene el alimento?
               <NumberInput
                 placeholder="…"
                 value={Number(calories)}
@@ -73,7 +116,7 @@ export default function Food_management_add({ onBackToList }) {
           </div>
           <div>
             <div className='add_exercise_rows'>
-            ¿Cúantas calorías tiene el alimento de carbohidratos?
+            ¿Cúantos gramos tiene el alimento de carbohidratos?
                 <NumberInput
                 placeholder="…"
                 value={Number(carbohydrates)}
@@ -83,7 +126,7 @@ export default function Food_management_add({ onBackToList }) {
                 />
             </div>
             <div className='add_exercise_rows'>
-            ¿Cúantas calorías tiene el alimento de proteínas? 
+            ¿Cúantos gramos tiene el alimento de proteínas? 
             <NumberInput
                 placeholder="…"
                 value={Number(protein)}

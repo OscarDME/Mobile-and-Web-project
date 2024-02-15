@@ -1,52 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import '../../../styles/Management.css';
 import NumberInput from '../../NumberInput';
-import Dropdown from '../../DropDown';
-
-
+import Dropdown from '../../DropdownCollections';
+import config from "../../../utils/conf";
 
 export default function  Food_management_edit({ food }) {
 
-    const [FoodName, setFoodName] = useState(food.name || '');
-    const [calories, setFoodCalories] = useState(food.calories || '');
-    const [weight, setFoodWeight] = useState(food.weight || '');
-    const [category, setFoodCategory] = useState(food.category || '');
-    const [carbohydrates, setFoodCarbohydrates] = useState(food.carbohydrates || '');
-    const [fats, setFoodFats] = useState(food.fats || '');
-    const [protein, setFoodProtein] = useState(food.protein || '');
+  const [FoodName, setFoodName] = useState('');
+  const [calories, setFoodCalories] = useState('');
+  const [weight, setFoodWeight] = useState('');
+  const [category, setFoodCategory] = useState(null); // Asegúrate de usar null para el estado inicial
+  const [carbohydrates, setFoodCarbohydrates] = useState('');
+  const [fats, setFoodFats] = useState('');
+  const [protein, setFoodProtein] = useState('');
 
-    const categoria = ["Fruta", "Grano", "Lácteo", "Proteina"];
-
+    const categoria = [
+      { label: "Lacteo", value: 1 },
+      { label: "Granos", value: 2 },
+      { label: "Fruta", value: 3 },
+      { label: "Verdura", value: 4 },
+      { label: "Proteina", value: 5 },
+      { label: "Snack", value: 6 },
+    ];
     
-  useEffect(() => {
-    if (food) {
-        setFoodName(food.name || '');
-        setFoodCalories(food.calories || '');
-        setFoodWeight(food.weight || '');
-        setFoodCategory(food.category || '');
-        setFoodCarbohydrates(food.carbohydrates || '');
-        setFoodFats(food.fats || '');
-        setFoodProtein(food.protein || '');
-    }
+    useEffect(() => {
+      if (food) {
+          setFoodName(food.nombre || '');
+          setFoodCalories(food.calorias || '');
+          setFoodWeight(food.peso || '');
+          const categoryObject = categoria.find(c => c.label === food.categoria) || null;
+          setFoodCategory(categoryObject);         
+          setFoodCarbohydrates(food.macronutrientes.find(m => m.macronutriente === 'Carbohidratos')?.cantidad || 0);
+          setFoodFats(food.macronutrientes.find(m => m.macronutriente === 'Grasas')?.cantidad || 0);
+          setFoodProtein(food.macronutrientes.find(m => m.macronutriente === 'Proteinas')?.cantidad || 0);
+      }
   }, [food]);
 
 
   const handleFoodNameChange = (event) => setFoodName(event.target.value);
 
-  const handleFoodCategoryChange = (event) => setFoodCategory(event.target.value);
+  const handleFoodCategoryChange = (selectedOption) => {
+    setFoodCategory(selectedOption ?? null); // Ajusta para manejar un objeto de opción o nullificar
+    console.log(selectedOption);
+  };
 
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!FoodName  || !calories || !category || !weight || !calories || !carbohydrates || !fats || !protein) { 
+  
+    // Verificar que todos los campos estén completos
+    if (!FoodName || !calories || !category || !weight || !carbohydrates || !fats || !protein) {
       alert('Por favor completa todos los campos.');
       return;
     }
-
-    
-    //TODO: GUARDAR EN BACK END DATOS AQUI
-    // TODO: refrescar la lista de comidas automaticamente
+  
+    // Preparar el cuerpo de la solicitud con los datos del alimento y sus macronutrientes
+    const updateData = {
+      ID_Alimento: food.ID_Alimento, // Asegúrate de tener el ID del alimento para actualizar
+      nombre: FoodName,
+      calorias: parseInt(calories),
+      peso: parseFloat(weight),
+      ID_Categoria: category.value, // Asumiendo que category es un objeto con un campo value
+      macronutrientes: [
+        { ID_Macronutriente: 1, cantidad: parseFloat(carbohydrates) }, // Carbohidratos
+        { ID_Macronutriente: 2, cantidad: parseFloat(fats) }, // Grasas
+        { ID_Macronutriente: 3, cantidad: parseFloat(protein) }  // Proteínas
+      ]
+    };
+  
+    try {
+      // Hacer la solicitud de actualización al backend
+      const response = await fetch(`${config.apiBaseUrl}/alimentos/${food.ID_Alimento}`, {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Hubo un problema al actualizar el alimento');
+      }
+  
+      const result = await response.json();
+      console.log(result);
+      alert('Alimento actualizado con éxito.');
+  
+      // TODO: Aquí podrías llamar a una función para cerrar el modal de edición y/o recargar la lista de alimentos
+    } catch (error) {
+      console.error('Error al actualizar el alimento:', error);
+      alert('Error al actualizar el alimento.');
+    }
   };
+  
 
   return (
     <div className='container-edit'>
