@@ -3,7 +3,7 @@ import '../../styles/Management.css';
 import Dropdown from '../DropDown';
 import CheckboxList from '../CheckBox';
 
-export default function NewExercises() {
+export default function NewExercises({ onBackToList }) {
   const [exerciseName, setExerciseName] = useState('');
   const [affectedInjury, setAffectedInjury] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState([]);
@@ -50,12 +50,14 @@ export default function NewExercises() {
     
     //TODO: GUARDAR EN BACK END DATOS AQUI
     //Mandar a la lista de ejercicios después de guardar uno, TODO: refrescar la lista de ejercicios automaticamente
+    onBackToList();
   };
 
   return (
-    <div className='container2'>
-      <div className='add_header2'>
-        <h1 className='mtitle'>Solicitar un ejercicio nuevo</h1>
+    <div className='container'>
+      <div className='add_header'>
+        <button className="back_icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
+        <h1 className='mtitle'>Añadir un ejercicio nuevo</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area'>
@@ -97,7 +99,7 @@ export default function NewExercises() {
             )}
           </div>
         </div>
-        <button type="submit" className='add_button'>Añadir ejercicio</button>
+        <button type="submit" className='add_button'>Solicitar ejercicio</button>
       </form>
     </div>
   );
