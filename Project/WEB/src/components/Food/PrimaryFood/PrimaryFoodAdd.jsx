@@ -37,7 +37,7 @@ export default function PrimaryFoodAdd({ onBackToList }) {
   return (
 <div className='container2'>
       <div className='add_header2'>
-        <button className="back_icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
+        <button className="back_icon card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
         <h1 className='mtitle'>Solicitar un alimento nuevo</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>

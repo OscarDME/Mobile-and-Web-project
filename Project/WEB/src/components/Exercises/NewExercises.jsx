@@ -56,7 +56,7 @@ export default function NewExercises({ onBackToList }) {
   return (
     <div className='container'>
       <div className='add_header'>
-        <button className="back_icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
+        <button className="back_icon card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
         <h1 className='mtitle'>Añadir un ejercicio nuevo</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>

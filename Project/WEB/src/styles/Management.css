@@ -64,11 +64,12 @@
 
 .cardcontainer .row.selected{
     background-color: var(--secondary-background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
 }
 
 .cardcontainer .row:hover{
     background-color: var(--secondary-background);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
     transform: scale(1.005);
 }
 
@@ -267,4 +268,115 @@
 
 .UserCard{
     display: flex;
+}
+
+  .card-icon{
+    color: var(--text);
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+
+  }
+
+  .card-icon:hover{
+    color: var(--primary);
+  }
+
+.cardcontainer-colors{
+    list-style: none !important;
+    background-color: transparent;
+    width: 920px;
+    padding: 0;
+    overflow-x:hidden;
+    overflow-y:scroll !important;
+    margin-bottom: 0;
+}
+  .cardcontainer-colors .row-hard{
+    color: var(--text);
+    width: auto !important;
+    list-style-type: none;
+    display: flex !important;
+    flex-direction: row !important;
+    background-color: var(--hard);
+    margin: 10px;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 5px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cardcontainer-colors .row-hard.selected{
+    color: var(--background);
+    background-color: var(--hard-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.cardcontainer-colors .row-hard:hover{
+    background-color: var(--hard-hover);
+    color: var(--background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    transform: scale(1.005);
+}
+
+
+.cardcontainer-colors .row-medium{
+    color: var(--text);
+    width: auto !important;
+    list-style-type: none;
+    display: flex !important;
+    flex-direction: row !important;
+    background-color: var(--medium);
+    margin: 10px;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 5px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cardcontainer-colors .row-medium.selected{
+    color: var(--background);
+    background-color: var(--medium-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+
+}
+
+.cardcontainer-colors .row-medium:hover{
+    background-color: var(--medium-hover);
+    color: var(--background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    transform: scale(1.005);
+}
+
+.cardcontainer-colors .row-easy{
+    color: var(--text);
+    width: auto !important;
+    list-style-type: none;
+    display: flex !important;
+    flex-direction: row !important;
+    background-color: var(--easy);
+    margin: 10px;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 5px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cardcontainer-colors .row-easy.selected{
+    color: var(--background);
+    background-color: var(--easy-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.cardcontainer-colors .row-easy:hover{
+    background-color: var(--easy-hover);
+    color: var(--background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    transform: scale(1.005);
+}
+
+.routine-info{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background);
+    color: var(--text);
 }

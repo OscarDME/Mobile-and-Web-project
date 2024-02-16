@@ -105,13 +105,13 @@ export default function RequestExercises() {
                   </div>
                   <div className='row_buttons'>
                     <div className="row_edit">
-                      <i className="bi bi-database-add" onClick={(e) => { e.stopPropagation(); handleAddClick(exercise); }}></i>
+                      <i className="bi bi-database-add card-icon" onClick={(e) => { e.stopPropagation(); handleAddClick(exercise); }}></i>
                     </div>
                     <div className="row_edit">
-                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleDeleteClick(exercise); }}></i>
+                      <i className="bi bi-trash card-icon" onClick={(e) => { e.stopPropagation(); handleDeleteClick(exercise); }}></i>
                     </div>
                     <div className="row_edit">
-                      <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
+                      <i className="bi bi-pencil-square card-icon" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
                     </div>
                     </div>
                 </div>

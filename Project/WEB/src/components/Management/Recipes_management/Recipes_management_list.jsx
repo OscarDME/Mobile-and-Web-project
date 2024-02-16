@@ -79,7 +79,7 @@ export default function Recipes_management_list() {
                     <div className='row_description'>{recipe.clasification.join(" - ")}</div>
                   </div>
                   <div className="row_edit">
-                    <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                    <i className="bi bi-pencil-square card-icon" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
                   </div>
                 </div>
                 {expandedRow === recipe.id && (

@@ -184,7 +184,7 @@ const handleMaterialNeededChange = (selectedOption) => {
     <div className="container">
       <div className="add_header">
         <button className="back_icon" onClick={onBackToList}>
-          <i className="bi bi-arrow-left"></i>
+          <i className="bi bi-arrow-left card-icon"></i>
         </button>
         <h1 className="mtitle">Añadir un ejercicio nuevo</h1>
       </div>

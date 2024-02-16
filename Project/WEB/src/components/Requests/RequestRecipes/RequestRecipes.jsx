@@ -111,13 +111,13 @@ export default function RequestRecipes() {
                   </div>
                   <div className='row_buttons'>
                     <div className="row_edit">
-                      <i className="bi bi-database-add" onClick={(e) => { e.stopPropagation(); handleAddClick(recipe); }}></i>
+                      <i className="bi bi-database-add card-icon" onClick={(e) => { e.stopPropagation(); handleAddClick(recipe); }}></i>
                     </div>
                     <div className="row_edit">
-                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleDeleteClick(recipe); }}></i>
+                      <i className="bi bi-trash card-icon" onClick={(e) => { e.stopPropagation(); handleDeleteClick(recipe); }}></i>
                     </div>
                     <div className="row_edit">
-                      <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                      <i className="bi bi-pencil-square card-icon" onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
                     </div>
                   </div>
                 </div>

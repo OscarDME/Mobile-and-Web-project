@@ -78,7 +78,7 @@ export default function MyClients() {
                   </div>
                   </div>
                   <div className="row_edit">
-                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}></i>
+                      <i className="bi bi-trash card-icon" onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}></i>
                     </div>
                 </div>
                 {expandedRow === user.id && (

@@ -56,7 +56,7 @@ export default function AddClient() {
       <div className="container2">
           <div className="search-bar-container2">
             <div className='search-bar'>
-            <div className='addclient'><i className="bi bi-search h4"></i></div>
+            <div className='addclient card-icon'><i className="bi bi-search h4"></i></div>
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function AddClient() {
                   </div>
                   </div>
                   <div className="row_edit">
-                      <i className="bi bi-plus-circle-fill" onClick={(e) => { e.stopPropagation(); handleAddClick(user); }}></i>
+                      <i className="bi bi-plus-circle-fill card-icon" onClick={(e) => { e.stopPropagation(); handleAddClick(user); }}></i>
                     </div>
                 </div>
                 {expandedRow === user.id && (

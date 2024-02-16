@@ -9,6 +9,12 @@
     --accent-hover:#88CC00;
     --delete:#E53E3E;
     --delete-hover:#C53030;
+    --easy: #68D391; 
+    --easy-hover: #4FD080; 
+    --medium: #F6E05E; 
+    --medium-hover: #ECC94B; 
+    --hard: #9F7AEA; 
+    --hard-hover: #805AD5;
   }
 
 body{
