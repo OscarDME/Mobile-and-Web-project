@@ -162,6 +162,24 @@
     margin: 20px;
 }
 
+.delete_button{
+    background-color: var(--delete);
+    color: var(--background);
+    border: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 50px;
+    padding-right: 50px;
+    border-radius: 20px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    font-size: 18px;
+    margin: 20px;
+}
+
+.delete_button:hover{
+    background-color: var(--delete-hover);
+}
+
 .add_button:hover{
     background-color: var(--primary-hover);
 }

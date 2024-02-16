@@ -43,7 +43,7 @@ export default function  RequestRecipesDelete({ recipe }) {
               Razón de rechazo:
               <textarea className='add_exercise_textarea' value={reason} onChange={handleReasonChange} ></textarea>
             </div>
-        <button className='add_button'>Rechazar solicitud</button>
+        <button className='delete_button'>Rechazar solicitud</button>
         </div>
       </form>
     </div>
