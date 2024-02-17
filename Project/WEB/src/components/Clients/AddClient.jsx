@@ -76,8 +76,8 @@ export default function AddClient() {
                     <div className='row_description'>{user.role.join(" - ")}</div>
                   </div>
                   </div>
-                  <div className="row_edit">
-                      <i className="bi bi-plus-circle-fill card-icon" onClick={(e) => { e.stopPropagation(); handleAddClick(user); }}></i>
+                    <div className="row_edit">
+                      <i className={`bi bi-plus-circle-fill card-icon ${addClient && addClient.id === user.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleAddClick(user); }}></i>
                     </div>
                 </div>
                 {expandedRow === user.id && (

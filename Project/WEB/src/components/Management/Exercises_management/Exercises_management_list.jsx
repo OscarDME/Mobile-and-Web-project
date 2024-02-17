@@ -101,8 +101,8 @@ export default function Exercises_management_list() {
 
                   </div>
                   <div className="row_edit">
-                    <i className="bi bi-pencil-square card-icon" onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
-                  </div>
+                      <i className={`bi bi-pencil-square card-icon ${editingExercise && editingExercise.ID_Ejercicio === exercise.ID_Ejercicio ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
+                    </div>
                 </div>
                 {expandedRow === exercise.ID_Ejercicio && (
                   <>

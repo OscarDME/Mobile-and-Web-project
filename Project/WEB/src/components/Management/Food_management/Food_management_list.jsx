@@ -101,8 +101,8 @@ export default function Food_management_list() {
                     <div className='row_description'>{food.categoria}</div>
                   </div>
                   <div className="row_edit">
-                    <i className="bi bi-pencil-square card-icon" onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
-                  </div>
+                      <i className={`bi bi-pencil-square card-icon ${editingFood && editingFood.ID_Alimento === food.ID_Alimento ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
+                    </div>
                 </div>
                 {expandedRow === food.ID_Alimento && (
                   <>

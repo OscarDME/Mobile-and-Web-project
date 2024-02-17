@@ -76,14 +76,14 @@ export default function RequestTrainersNutricionists() {
                     <div className='row_name'>{user.name}</div>
                     <div className='row_description'>{user.role.join(" - ")}</div>
                   </div>
-                  <div className='row_buttons'>
+                  <div className="row_buttons">
                     <div className="row_edit">
-                      <i className="bi bi-database-add card-icon" onClick={(e) => { e.stopPropagation(); handleAddClick(user); }}></i>
+                      <i className={`bi bi-database-add card-icon ${addingUser && addingUser.id === user.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleAddClick(user); }}></i>
                     </div>
                     <div className="row_edit">
-                      <i className="bi bi-trash card-icon" onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}></i>
+                        <i className={`bi bi-trash card-icon ${eliminatingUser && eliminatingUser.id === user.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}></i>
                     </div>
-                    </div>
+                  </div>
                 </div>
                 {expandedRow === user.id && (
                   <>

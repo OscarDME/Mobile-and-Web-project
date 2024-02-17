@@ -14,11 +14,83 @@ export const RoutinesCard=[
                                 muscleGroup: [1,2], /*ID del musculo o musculos a trabajar en este bloque*/
                                 exercises: [
                                     {
-                                        exerciseId: 1,
+                                        exerciseId:     {
+                                            id:'2',
+                                            name:"Sentadilla",
+                                            muscles:["Cuadricep","Pantorilla", "Femoral"],	
+                                            difficulty: "Alta",
+                                            indications: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                                            preparation: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                            material: ["Barra"],
+                                            type: "Pesas",
+                                            injury: "",
+                                        },
+                                        sets: 3,
+                                        reps: 10,
+                                        weight: 100,
+                                        restBetweenSets: 60,
+                                    },                                    
+                                    {
+                                        exerciseId:{
+                                            id:'5',
+                                            name:"Trote",
+                                            muscles:["Gluteo"],	
+                                            difficulty: "Media",
+                                            indications: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                                            preparation: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                            material: [],
+                                            type: "Cardiovascular",
+                                            injury: ""
+                                        },
+                                        sets: 1,
+                                        time: 10,
+                                    },
+                                ]
+                            },
+                            {
+                                muscleGroup: [1,2], /*ID del musculo o musculos a trabajar en este bloque*/
+                                exercises: [
+                                    {
+                                        exerciseId:{
+                                            id:'1',
+                                            name:"Curl",
+                                            totalcalories:"269",	
+                                            muscles:["Bicep"],	
+                                            difficulty: "Baja",
+                                            indications: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                                            preparation: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                            material: ["Mancuerna", "Barra"],
+                                            type: "Pesas",
+                                            injury: "",
+                                        },
                                         sets: 3,
                                         reps: 10,
                                         restBetweenSets: 60,
-                                        restAfterExercise: 120
+                                    }
+                                ]
+                            },
+                        ]
+                    },                    
+                    Miercoles: /*id del dia de la semana*/ {
+                        blocks: [
+                            {
+                                muscleGroup: [1,2], /*ID del musculo o musculos a trabajar en este bloque*/
+                                exercises: [
+                                    {
+                                        exerciseId:    {
+                                            id:'3',
+                                            name:"Pull up",
+                                            muscles:["Bicep","Espalda"],	
+                                            difficulty: "Baja",
+                                            indications: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                                            preparation: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                            material: [],
+                                            type: "Peso corporal",
+                                            injury: "Hombro",
+                                        },
+                                        sets: 3,
+                                        reps: 10,
+                                        restBetweenSets: 60,
                                     }
                                 ]
                             }
@@ -29,7 +101,7 @@ export const RoutinesCard=[
             },
             {
                 id: 2,
-                name: "Pechos de operada",
+                name: "Pecho",
                 author: "Usuario123", /* Id del usuario */
                 isPublic: true,
                 daysPerWeek: 3,
@@ -46,7 +118,6 @@ export const RoutinesCard=[
                                         sets: 3,
                                         reps: 10,
                                         restBetweenSets: 60,
-                                        restAfterExercise: 120
                                     }
                                 ]
                             }
@@ -74,7 +145,6 @@ export const RoutinesCard=[
                                         sets: 3,
                                         reps: 10,
                                         restBetweenSets: 60,
-                                        restAfterExercise: 120
                                     }
                                 ]
                             }
@@ -100,7 +170,6 @@ export const RoutinesCard=[
                                         sets: 3,
                                         reps: 10,
                                         restBetweenSets: 60,
-                                        restAfterExercise: 120
                                     }
                                 ]
                             }
@@ -126,7 +195,6 @@ export const RoutinesCard=[
                                         sets: 3,
                                         reps: 10,
                                         restBetweenSets: 60,
-                                        restAfterExercise: 120
                                     }
                                 ]
                             }
@@ -152,7 +220,6 @@ export const RoutinesCard=[
                                         sets: 3,
                                         reps: 10,
                                         restBetweenSets: 60,
-                                        restAfterExercise: 120
                                     }
                                 ]
                             }
