@@ -4,48 +4,43 @@ import NumberInput from '../NumberInput';
 import Dropdown from '../DropDown';
 import { ExerciseCard } from '../DATA_EXERCISES';
 
+
 export default function MyRoutinesAdd({ onBackToList }) {
   const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
     const [routineName, setRoutineName] = useState('');
     const [daysPerWeek, setDaysPerWeek] = useState(1);
-    const [exercises, setExercises] = useState(Array.from({ length: daysPerWeek }, () => []));
+    const initialState = Array.from({ length: daysPerWeek }, () => []);
+    const [exercises, setExercises] = useState(initialState);    
     const [selectedDays, setSelectedDays] = useState(Array(daysPerWeek).fill(''));
 
 
     useEffect(() => {
       setSelectedDays(prev => {
-        const newSelectedDays = prev.slice(0, daysPerWeek);
-        while (newSelectedDays.length < daysPerWeek) {
-          newSelectedDays.push('');
-        }
-        return newSelectedDays;
+        const newSize = Array(daysPerWeek).fill('');
+        return prev.length < daysPerWeek ? [...prev, ...newSize.slice(prev.length)] : prev.slice(0, daysPerWeek);
       });
+    
       setExercises(prev => {
-        const newExercises = prev.slice(0, daysPerWeek);
-        while (newExercises.length < daysPerWeek) {
-          newExercises.push([]);
-        }
-        return newExercises;
+        const newSize = Array.from({ length: daysPerWeek }, () => []);
+        return prev.length < daysPerWeek ? [...prev, ...newSize.slice(prev.length)] : prev.slice(0, daysPerWeek);
       });
     }, [daysPerWeek]);
     
-    
-
 
   const handleRoutineNameChange = (event) => setRoutineName(event.target.value);
 
   const addExercise = (dayIndex) => {
-    setExercises(currentExercises =>
-      currentExercises.map((dayExercises, index) =>
-        index === dayIndex
-          ? [...dayExercises, { type: "", time: 0, sets: 0, reps: 0, rest: 0 }]
+    setExercises(currentExercises => 
+      currentExercises.map((dayExercises, index) => 
+        index === dayIndex 
+          ? [...dayExercises, { type: "", time: 0, sets: 0, reps: 0, rest: 0 }] 
           : dayExercises
       )
     );
   };
+  
+  
 
-  
-  
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!routineName) { 
@@ -77,6 +72,8 @@ export default function MyRoutinesAdd({ onBackToList }) {
           <i className="bi bi-plus-circle add-routine-icon"></i> Añadir un ejercicio
           </button>
           {renderExercises(i)}
+          {console.log(selectedDays)}
+          {console.log(exercises)}
           </div>
         </div>
       );
@@ -90,31 +87,28 @@ export default function MyRoutinesAdd({ onBackToList }) {
     newSelectedDays[dayIndex] = value;
     setSelectedDays(newSelectedDays);
   };
-  
 
-    function renderExercises(dayIndex) {
 
-      if (!Array.isArray(exercises[dayIndex])) {
-        console.error(`No exercises found for day index ${dayIndex}`);
-        return <></>;
-      }
-
-     return exercises[dayIndex].map((exercise, index) => (
-    <div key={index} className="exercise-row">
+  function renderExercises(dayIndex) {
+    if (!exercises[dayIndex]) {
+      return <></>;
+    }
+    return exercises[dayIndex].map((exercise, index) => (
+    <div key={index} className="routine-exercise-row">
       <Dropdown
-        options={ExerciseCard.map((exercise) => exercise.name)}
-        selectedOption={exercise.type}
-        onChange={(e) => handleExerciseTypeChange(e.target.value, index)}
+        options={ExerciseCard.map(exercise => exercise.name)}
+        selectedOption={exercise.name}
+        onChange={(e) => handleExerciseTypeChange(e.target.value, dayIndex, index)}
       />
       {exercise.type === "Cardiovascular" && (
         <input
           type="number"
           placeholder="Tiempo (minutos)"
           value={exercise.time}
-          onChange={(e) => handleExerciseChange(index, "time", e.target.value)}
+          onChange={(e) => handleExerciseChange(index, "tie", e.target.value)}
         />
       )}
-      {(exercise.type === "Pesas" || exercise.type === "Peso Corporal") && (
+      {(exercise.type === "Pesas" || exercise.type === "Peso corporal") && (
         <>
           <input
             type="number"
@@ -136,26 +130,44 @@ export default function MyRoutinesAdd({ onBackToList }) {
           />
         </>
       )}
+        <i className="bi bi-trash exercise-btn-delete" onClick={() => removeExercise(dayIndex, index)} type="button" ></i> 
     </div>
   ));
 }
 
-const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
-  const selectedExercise = ExerciseCard.find(exercise => exercise.name === selectedName);
-  
-  setExercises(currentExercises => currentExercises.map((dayExercises, index) => {
-    if (index === dayIndex) {
-      const updatedDayExercises = [...dayExercises];
-      updatedDayExercises[exerciseIndex] = {
-        ...updatedDayExercises[exerciseIndex],
-        type: selectedExercise.type, 
-        id: selectedExercise.id 
-      };
-      return updatedDayExercises;
-    }
-    return dayExercises;
-  }));
+const removeExercise = (dayIndex, exerciseIndex) => {
+  setExercises(currentExercises => 
+    currentExercises.map((dayExercises, index) => {
+      if (index === dayIndex) {
+        return dayExercises.filter((_, idx) => idx !== exerciseIndex);
+      }
+      return dayExercises;
+    })
+  );
 };
+
+
+
+  const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
+    const selectedExercise = ExerciseCard.find(exercise => exercise.name === selectedName);
+    setExercises(currentExercises => 
+      currentExercises.map((dayExercises, index) => {
+        if (index === dayIndex) {
+          const updatedExercises = [...dayExercises];
+          updatedExercises[exerciseIndex] = {
+            ...updatedExercises[exerciseIndex],
+            type: selectedExercise.type, 
+            id: selectedExercise.id,
+            name: selectedExercise.name
+          };
+          return updatedExercises;
+        }
+        return dayExercises;
+      })
+    );
+  };
+  
+
 
 
 const handleExerciseChange = (exerciseIndex, field, value, dayIndex) => {

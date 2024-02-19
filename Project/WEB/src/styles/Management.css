@@ -13,7 +13,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 83vh;
+    height: 80vh;
     align-items: center;
     margin: 0;
     max-width: none !important;
@@ -542,7 +542,8 @@
   }
 
   .days-main-container{
-    max-height: 57vh;
+    padding: 0 10px;
+    max-height: 52vh;
     flex-direction: column;
     overflow-y: scroll;
   }
@@ -581,4 +582,18 @@
 
   .routine-header-container{
     display: flex;
+  }
+
+  .exercise-btn-delete{
+    color: var(--text);
+    font-size: 32px;
+  }
+
+  .exercise-btn-delete:hover{
+    color: var(--delete);
+  }
+
+  .routine-exercise-row{
+    display: flex;
+    width: 100%;
   }
