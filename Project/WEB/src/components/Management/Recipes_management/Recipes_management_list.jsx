@@ -165,6 +165,10 @@ export default function Recipes_management_list() {
                       Link de preparación: {recipe.link}
                     </div>
                   </div>
+                  <div className="row_edit">
+                      <i className={`bi bi-pencil-square card-icon ${editingRecipe && editingRecipe.id === recipe.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleEditClick(recipe); }}></i>
+                    </div>
+
                 </div>
               </>
             )}

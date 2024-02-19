@@ -13,7 +13,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 80vh;
+    height: 83vh;
     align-items: center;
     margin: 0;
     max-width: none !important;
@@ -64,11 +64,12 @@
 
 .cardcontainer .row.selected{
     background-color: var(--secondary-background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
 }
 
 .cardcontainer .row:hover{
     background-color: var(--secondary-background);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
     transform: scale(1.005);
 }
 
@@ -162,6 +163,24 @@
     margin: 20px;
 }
 
+.delete_button{
+    background-color: var(--delete);
+    color: var(--background);
+    border: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 50px;
+    padding-right: 50px;
+    border-radius: 20px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    font-size: 18px;
+    margin: 20px;
+}
+
+.delete_button:hover{
+    background-color: var(--delete-hover);
+}
+
 .add_button:hover{
     background-color: var(--primary-hover);
 }
@@ -250,3 +269,234 @@
 .UserCard{
     display: flex;
 }
+
+  .card-icon{
+    color: var(--text);
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+
+  }
+
+  .card-icon:hover{
+    color: var(--primary);
+  }
+
+  .card-icon.selected{
+    color: var(--primary);
+  }
+
+.cardcontainer-colors{
+    list-style: none !important;
+    background-color: transparent;
+    width: 920px;
+    padding: 0;
+    overflow-x:hidden;
+    overflow-y:scroll !important;
+    margin-bottom: 0;
+}
+  .cardcontainer-colors .row-hard{
+    color: var(--text);
+    width: auto !important;
+    list-style-type: none;
+    display: flex !important;
+    flex-direction: row !important;
+    background-color: var(--hard);
+    margin: 10px;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 5px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cardcontainer-colors .row-hard.selected{
+    color: var(--background);
+    background-color: var(--hard-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.cardcontainer-colors .row-hard:hover{
+    background-color: var(--hard-hover);
+    color: var(--background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    transform: scale(1.005);
+}
+
+
+.cardcontainer-colors .row-medium{
+    color: var(--text);
+    width: auto !important;
+    list-style-type: none;
+    display: flex !important;
+    flex-direction: row !important;
+    background-color: var(--medium);
+    margin: 10px;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 5px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cardcontainer-colors .row-medium.selected{
+    color: var(--background);
+    background-color: var(--medium-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+
+}
+
+.cardcontainer-colors .row-medium:hover{
+    background-color: var(--medium-hover);
+    color: var(--background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    transform: scale(1.005);
+}
+
+.cardcontainer-colors .row-easy{
+    color: var(--text);
+    width: auto !important;
+    list-style-type: none;
+    display: flex !important;
+    flex-direction: row !important;
+    background-color: var(--easy);
+    margin: 10px;
+    transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 5px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cardcontainer-colors .row-easy.selected{
+    color: var(--background);
+    background-color: var(--easy-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.cardcontainer-colors .row-easy:hover{
+    background-color: var(--easy-hover);
+    color: var(--background);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    transform: scale(1.005);
+}
+
+.routine-info{
+    margin: 0;
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background);
+    color: var(--text);
+}
+
+.routine-day{
+    width: 100%;
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 10px 10px;
+}
+
+.routine-day:hover{
+    font-weight:700;
+}
+.routine-day.selected{
+    font-weight:700;
+}
+
+.routine-day-info{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.day-icon{
+    margin-left: 20px;
+    font-size: 15px;
+    padding-right: 10px;
+    color: var(--text);
+}
+
+.day-even {
+    background-color: var(--third-background)
+}
+
+.day-odd {
+    background-color: var(--fourth-background)
+}
+
+.day-block{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.exercise-block{
+    width: 100%;
+}
+
+.exercise-list{
+    list-style: none;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    row-gap: 20px;
+}
+
+.exercise-even{
+    background-color: var(--background);
+}
+
+.exercise-odd{
+    background-color: transparent;
+}
+
+.exercise-row{
+    padding-left: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.exercise-name{
+    overflow: visible !important;
+    display: flex;
+    column-gap: 10px;
+    align-items: center;
+}
+
+.info-icon{
+    color: var(--text);
+    font-size: 15px;
+    padding-bottom: 8px;
+}
+
+.info-icon:hover{
+    color: var(--primary);
+}
+  
+  .filters-container {
+    margin-left: 50px;
+    position: absolute;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px; 
+  }
+
+  .filter-row{
+    flex-direction: column;
+    display: flex;
+    margin-bottom: 40px;
+    row-gap: 10px;
+  }
+  

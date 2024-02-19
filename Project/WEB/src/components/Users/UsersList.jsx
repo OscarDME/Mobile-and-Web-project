@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, {useState } from 'react';
 import { UserCard } from "../DATA_USER_CARD";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
@@ -112,10 +112,6 @@ export default function UsersList() {
                         <div className="exercise-info-row">Experiencia: {}</div>
                       </div>
                     </div>
-                    </>
-                  )}
-                  {user.role.includes("Nutricionista") && (
-                    <>
                     </>
                   )}
                 </>

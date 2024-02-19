@@ -1,5 +1,5 @@
-import { Nav, Dropdown, DropdownButton, Button} from 'react-bootstrap';
-import { useState, useEffect } from 'react';
+import { Dropdown, DropdownButton, Button} from 'react-bootstrap';
+import { useEffect } from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { InteractionStatus } from "@azure/msal-browser"; 
 import { loginRequest, b2cPolicies } from '../authConfig';
@@ -57,43 +57,42 @@ export const NavigationBar = () => {
                         <NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
                         </NavLink>
-                        {/*
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
                             Asignar Rutinas
                         </NavLink>
                         <NavLink id="MyRoutines" to="/MyRoutines" className='NavLinks'>
-                            Mis Rutinas
+                            Rutinas
                         </NavLink>
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Exercises" to="/Exercises" className='NavLinks'>
                             Ejercicios
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Food" to="/Food" className='NavLinks'>
-                            Biblioteca de Alimentos
-                        </NavLink>{/*
+                            Alimentos y Recetas
+                        </NavLink>
                         <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
                             Citas
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
                         </NavLink>
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
                             Gestión de Alimentos
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Recipes_management" to="/Recipes_management" className='NavLinks'>
                             Gestión de Recetas
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
                             Gestión de Ejercicios
-                        </NavLink>
+                        </NavLink>*/}
                     </div>
                     <div>
                         <DropdownButton className="ProfileBtn"  drop="start" title={<i className="bi bi-person-fill h2"></i>}>

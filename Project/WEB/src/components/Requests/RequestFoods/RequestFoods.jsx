@@ -109,17 +109,17 @@
                       <div className='row_name'>{food.name}</div>
                       <div className='row_description'>{food.category}</div>
                     </div>
-                    <div className='row_buttons'>
+                    <div className="row_buttons">
                     <div className="row_edit">
-                      <i className="bi bi-database-add" onClick={(e) => { e.stopPropagation(); handleAddClick(food); }}></i>
-                    </div>
-                    <div className="row_edit">
-                      <i className="bi bi-trash" onClick={(e) => { e.stopPropagation(); handleDeleteClick(food); }}></i>
+                      <i className={`bi bi-database-add card-icon ${addingFood && addingFood.id === food.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleAddClick(food); }}></i>
                     </div>
                     <div className="row_edit">
-                      <i className="bi bi-pencil-square" onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
+                        <i className={`bi bi-trash card-icon ${eliminatingFood && eliminatingFood.id === food.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleDeleteClick(food); }}></i>
                     </div>
+                    <div className="row_edit">
+                      <i className={`bi bi-pencil-square card-icon ${editingFood && editingFood.id === food.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleEditClick(food); }}></i>
                     </div>
+                  </div>
                   </div>
                   {expandedRow === food.id && (
                     <>

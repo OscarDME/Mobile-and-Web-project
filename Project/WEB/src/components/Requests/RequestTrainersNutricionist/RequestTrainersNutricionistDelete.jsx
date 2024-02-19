@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../../styles/Management.css';
 
-export default function RequestExercisesDelete({ exercise }) {
+export default function RequestTrainersNutricionistDelete({ user }) {
 
     const [reason, setReason] = useState('');
 
@@ -24,18 +24,18 @@ export default function RequestExercisesDelete({ exercise }) {
     <div className='container-edit'>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area'>
-        <div className="exercise-info">
-                      <div className="exercise-info-column">
-                        <div className="exercise-info-row">Dificultad: {exercise.difficulty}</div>
-                        <div className="exercise-info-row">Tipo de ejercicio: {exercise.type}</div>
-                        <div className="exercise-info-row">Indicaciones: {exercise.indications}</div>
+                    <div className="exercise-info">
+                    <div className="exercise-info-column">
+                        <div className="exercise-info-row">{}</div>{/*Foto de perfil*/}
                       </div>
                       <div className="exercise-info-column">
-                        <div className="exercise-info-row">Material: {exercise.material.join(" - ")}</div>
-                        <div className="exercise-info-row">Posición inicial: {exercise.preparation}</div>
+                        <div className="exercise-info-row">Email: {user.email}</div>
+                        <div className="exercise-info-row">Nacimiento: {user.birthday.toLocaleDateString()}</div>
+                        <div className="exercise-info-row">Certificado: {}</div>
+                        <div className="exercise-info-row">Experiencia: {}</div>
                       </div>
                     </div>
-        </div>
+                    </div>
             <div className='add_exercise_rows2'>
               Razón de rechazo:
               <textarea className='add_exercise_textarea' value={reason} onChange={handleReasonChange} ></textarea>
