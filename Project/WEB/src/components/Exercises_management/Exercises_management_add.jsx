@@ -27,11 +27,6 @@ export default function Exercises_management_add({ onBackToList }) {
     { label: "Media", value: 2 },
     { label: "Alta", value: 3 },
   ];
-  const exercises = [
-    { label: "Cardiovascular", value: 1 },
-    { label: "Peso corporal", value: 3 },
-    { label: "Pesas", value: 2 },
-  ];
   const materials = [
     { label: "Mancuerna", value: 1 },
     { label: "Ligas Resistencia", value: 2 },

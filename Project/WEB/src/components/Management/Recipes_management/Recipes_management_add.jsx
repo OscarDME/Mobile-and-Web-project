@@ -1,7 +1,8 @@
-import React, { useState} from 'react';
+import React, { useState, useEffect} from 'react';
 import '../../../styles/Management.css';
 import { FoodCard } from "../../DATA_FOOD";
-import CheckboxList from '../../CheckBox';
+import CheckboxList from '../../CheckBoxCollectionsInputs';
+import config from "../../../utils/conf";
 
 export default function Recipes_management_add({ onBackToList }) {
 
@@ -9,29 +10,71 @@ export default function Recipes_management_add({ onBackToList }) {
   const [preparation, setRecipePreparation] = useState('');
   const [link, setRecipeLink] = useState('');
   const [ingredients, setRecipeIngredients] = useState([]);
+  const [foodOptions, setFoodOptions] = useState([]); // Estado para almacenar las opciones de alimentos obtenidas desde la API
 
-  const foodOptions = FoodCard.map(food => food.name); 
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/alimentos`);
+        if (!response.ok) throw new Error('No se pudieron obtener los alimentos');
+        const data = await response.json();
+        const options = data.map(food => ({ label: food.nombre, value: food.ID_Alimento }));
+        setFoodOptions(options);
+      } catch (error) {
+        console.error("Error al obtener los alimentos:", error);
+      }
+    };
+    fetchFoods();
+  }, []);
 
 
   const handleRecipeNameChange = (event) => setRecipeName(event.target.value);
-
-  const handleRecipePreparationChange= (event) => setRecipePreparation(event.target.value);
-  
+  const handleRecipePreparationChange = (event) => setRecipePreparation(event.target.value);
   const handleRecipeLinkChange = (event) => setRecipeLink(event.target.value);
-  
-  const handleRecipeIngredientChange = (selectedOptions) => setRecipeIngredients(selectedOptions);
+  const handleRecipeIngredientChange = (updatedIngredients) => {
+    setRecipeIngredients(updatedIngredients);
+  };
 
-  const handleSubmit = (event) => {
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!name  || ingredients.length === 0 || !preparation) { 
+  
+    if (!name || ingredients.length === 0 || !preparation || !link) {
       alert('Por favor completa todos los campos.');
       return;
     }
   
-    
-    //TODO: GUARDAR EN BACK END DATOS AQUI
-    //Mandar a la lista de ejercicios después de guardar uno
-    onBackToList();
+    const recetaData = {
+      receta: name,
+      preparacion: preparation,
+      link: link,
+      calorias: 0, // Define cómo calcular las calorías si es necesario
+      ID_Clasificacion: 1, // Debe ser determinado por algún input o selección del usuario
+      ingredientes: ingredients, // Debe estar en la forma [{ID_Alimento, porcion}, ...]
+      macronutrientes: [] // Si necesitas incluir esto
+    };
+
+    console.log(recetaData);
+  
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/recetas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recetaData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error al crear la receta');
+      }
+  
+      const result = await response.json();
+      console.log(result);
+      alert('Receta agregada con éxito.');
+      onBackToList();
+    } catch (error) {
+      console.error('Error al guardar la receta:', error);
+      alert('Error al guardar la receta.');
+    }
   };
 
   return (

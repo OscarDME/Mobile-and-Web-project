@@ -10,7 +10,9 @@ import { getMaterials } from "../Controllers/Materiales.Controllers.js";
 import { createCuestionario } from "../Controllers/Cuestionario.Controllers.js";
 import { createEjercicio, getExercises, getEjercicioById, updateEjercicio } from "../Controllers/EjerciciosControllers.js";
 import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento } from "../Controllers/Alimento.Controllers.js";
-import { createReceta } from "../Controllers/Recetas.Controllers.js";
+import { createReceta, getReceta, updateReceta, getIngredientes } from "../Controllers/Recetas.Controllers.js";
+
+//El que come callado repite
 
 const router = Router();
 //Usuarios
@@ -38,5 +40,8 @@ router.put("/alimentos/:id", updateAlimento);
 
 //Recetas
 router.post("/recetas", createReceta);
+router.get("/recetas", getReceta);
+router.put("/recetas/:id", updateReceta);
+router.get("/ingredientes/:id", getIngredientes);
 
 export default router;
