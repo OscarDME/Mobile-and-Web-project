@@ -89,10 +89,10 @@ export const NavigationBar = () => {
                         </NavLink>*/}
                         <NavLink id="Recipes_management" to="/Recipes_management" className='NavLinks'>
                             Gestión de Recetas
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
                             Gestión de Ejercicios
-                        </NavLink>*/}
+                        </NavLink>
                     </div>
                     <div>
                         <DropdownButton className="ProfileBtn"  drop="start" title={<i className="bi bi-person-fill h2"></i>}>

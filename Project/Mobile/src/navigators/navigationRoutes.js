@@ -61,6 +61,7 @@ import CooperInput from "../screens/PhysicalTestScreens/CooperTestIn";
 import Cardiac from "../screens/PhysicalTestScreens/Cardiac";
 import UserInfo from "../screens/PhysicalTestScreens/UserInfo"
 import CongratulationsScreen from "../screens/PhysicalTestScreens/Congratulations";
+import DetallesEjercicio from "../screens/Biblioteca/DetallesEjercicio";
 
 import Header from "../components/Header";
 {
@@ -155,7 +156,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
   return (
     <View>
       {/* Renderizar tab bar items */}
-      <View style={{ flexDirection: "row" }}>
+      <View style={{ flexDirection: "row", paddingVertical: 10 }}>
         <TabBarItem
           label="Rutinas"
           iconName={IRutinas}
@@ -206,7 +207,7 @@ const FooterTabs = () => {
       <Tab.Screen name="Perfil" component={Perfil} />
       <Tab.Screen name="Descubre" component={Descubre} />
       <Tab.Screen name="Comidas" component={Comidas} />
-      <Tab.Screen name="Biblioteca" component={Biblioteca} />
+      <Tab.Screen name="Biblioteca" component={BibliotecaStack} />
       <Tab.Screen name="Advertencias" component={Advertencias} />
       <Tab.Screen name="Viaje" component={Viaje} />
 
@@ -230,6 +231,27 @@ const MainStack = () => {
     >
       <StackMain.Screen name="Login" component={Login} />
     </StackMain.Navigator>
+  );
+};
+
+const StackBiblioteca = createNativeStackNavigator();
+const BibliotecaStack = () => {
+  return (
+    <StackBiblioteca.Navigator
+      initialRouteName="Biblioteca"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <StackBiblioteca.Screen
+        name="Biblioteca"
+        component={Biblioteca}
+      />
+      <StackBiblioteca.Screen
+        name="DetallesEjercicio"
+        component={DetallesEjercicio}
+      />
+    </StackBiblioteca.Navigator>
   );
 };
 
