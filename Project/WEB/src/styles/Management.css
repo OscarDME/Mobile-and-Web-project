@@ -560,14 +560,15 @@
 
   .btn-add-exercise{
     width: 100%;
-    background-color: var(--secondary);
+    background-color: var(--primary);
     border-color: transparent;
     padding: 6px 0;
     color: var(--text);
   }
 
   .btn-add-exercise:hover{
-    background-color: var(--secondary-hover);
+    background-color: var(--primary-hover);
+    color: var(--background);
   }
 
   .routine-area-add{
@@ -603,9 +604,56 @@
   }
 
   .routine-exercise-header{
+    border-right: 1px solid var(--secondary-background);
+    width: 20%;
+    justify-content: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     row-gap: 10px;
     padding: 10px;
+  }
+
+  .set-container{
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+  }
+
+  .all-sets-container{
+    height: 100%;
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .btn-add-exercise-set{
+    width: 100%;
+    border-color: transparent;
+    padding: 5px;
+    background-color: var(--secondary);
+  }
+
+  .btn-add-exercise-set:hover{
+    background-color: var(--secondary-hover);
+  }
+
+  .routine-exercise-container{
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    align-items: center;
+  }
+
+  .routine-exercise-container-delete{
+    width: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .routine-superset-box{
+    background-color: var(--background);
+    border-radius: 5px;
   }

@@ -3,6 +3,7 @@ import '../../styles/Management.css';
 import NumberInput from '../NumberInput';
 import Dropdown from '../DropDown';
 import { ExerciseCard } from '../DATA_EXERCISES';
+import Switch from '@mui/material/Switch';
 
 
 export default function MyRoutinesAdd({ onBackToList }) {
@@ -12,6 +13,8 @@ export default function MyRoutinesAdd({ onBackToList }) {
     const initialState = Array.from({ length: daysPerWeek }, () => ([]));
     const [exercises, setExercises] = useState(initialState);    
     const [selectedDays, setSelectedDays] = useState(Array(daysPerWeek).fill(''));
+  const [checked, setChecked] = useState(false);
+
 
 
     useEffect(() => {
@@ -29,18 +32,23 @@ export default function MyRoutinesAdd({ onBackToList }) {
 
   const handleRoutineNameChange = (event) => setRoutineName(event.target.value);
 
+
+
+  const handleChange = (event) => {
+    setChecked(event.target.checked);
+  };
   const addExercise = (dayIndex, exerciseType = 'Pesas') => {
     let newExercise = {
-      sets: [], // Inicializar sets vacío
+      sets: [], 
       rest: 0,
+      time:0,
       isSuperset: false,
     };
   
-    // Añadir un set inicial basado en el tipo de ejercicio
     if (exerciseType === 'Cardiovascular') {
-      newExercise.sets.push({ time: 0 }); // Para cardio, inicializar con tiempo
+      newExercise.sets.push({ time: 0 });
     } else {
-      newExercise.sets.push({ reps: 0, weight: 0 }); // Para pesas, inicializar con reps y weight
+      newExercise.sets.push({ reps: 0, weight: 0 });
     }
 
     setExercises(exercises => 
@@ -51,24 +59,43 @@ export default function MyRoutinesAdd({ onBackToList }) {
 };
   
   
-  
-// Función para añadir sets a un ejercicio existente
-const addSetToExercise = (dayIndex, exerciseIndex, exerciseType) => {
-  setExercises(currentExercises =>
-    currentExercises.map((day, dIndex) => {
-      if (dIndex === dayIndex) {
-        return day.map((exercise, eIndex) => {
-          if (eIndex === exerciseIndex) {
-            const newSet = exerciseType === 'Cardiovascular' ? { time: 0 } : { reps: 0, weight: 0 };
-            return { ...exercise, sets: [...exercise.sets, newSet] };
-          }
-          return exercise;
-        });
-      }
-      return day;
-    })
-  );
+const addSetToExercise = (dayIndex, exerciseIndex) => {
+  // Verifica si el switch está activado para determinar si se debe añadir un dropset
+  if (checked && exerciseIndex > 0) {
+    // Añade el set como un dropset al ejercicio anterior
+    let prevExerciseIndex = exerciseIndex - 1;
+    setExercises(currentExercises =>
+      currentExercises.map((day, dIndex) =>
+        dIndex === dayIndex
+          ? day.map((exercise, eIndex) => {
+              if (eIndex === prevExerciseIndex) {
+                let newSet = { reps: 0, weight: 0 }; 
+                let newSets = [...exercise.sets, newSet];
+                return { ...exercise, sets: newSets };
+              }
+              return exercise;
+            })
+          : day
+      )
+    );
+  } else {
+    setExercises(currentExercises =>
+      currentExercises.map((day, dIndex) =>
+        dIndex === dayIndex
+          ? day.map((exercise, eIndex) => {
+              if (eIndex === exerciseIndex) {
+                let newSet = { reps: 0, weight: 0 }
+                let newSets = [...exercise.sets, newSet];
+                return { ...exercise, sets: newSets };
+              }
+              return exercise;
+            })
+          : day
+      )
+    );
+  }
 };
+
 
 
 
@@ -121,53 +148,86 @@ const addSetToExercise = (dayIndex, exerciseIndex, exerciseType) => {
           />
           <i className="bi bi-trash exercise-btn-delete" onClick={() => removeExercise(dayIndex, exerciseIndex)}></i> 
         </div>
-  
+        <div className='routine-exercise-header'>
+{exercise.type !== "Cardiovascular" && (
+  <div className="exercise-time-input">
+    <label>Tiempo descanso: </label>
+    <NumberInput
+      placeholder="Tiempo en minutos"
+      value={Number(exercise.time)}
+      min={1}
+      max={600}
+      onChange={(event, time) => handleExerciseChange(dayIndex, exerciseIndex, 'time', time)}
+    />
+  </div>
+)}
+</div>
+        <div className='all-sets-container'>     
+        {exercise.type !== "Cardiovascular" && (
+          <button type="button" className='btn-add-exercise-set' onClick={(e) => {
+             e.stopPropagation();
+            addSetToExercise(dayIndex, exerciseIndex, exercise.type);
+            }}>
+            <i className="bi bi-plus-circle add-routine-icon"></i> 
+              Añadir un Set para {exercise.name}
+          </button>
+        )}
         {exercise.sets.map((set, setIndex) => (
           <div key={setIndex} className="set-container">
             {exercise.type !== "Cardiovascular" ? (
               <>
-                Repeticiones:
+              <div className='routine-exercise-container'>
+              <div className='routine-superset-box'>
+              <div>
+                <Switch
+        checked={checked}
+        onChange={handleChange}
+        inputProps={{ 'aria-label': 'controlled' }}
+      />
+    </div>
+              
+              </div>
+              <div>
+              Repeticiones:
+              </div>
                 <NumberInput
+                placeholder="..."
                   value={set.reps || 0}
-                  onChange={(event) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'reps', event.target.value)}
+                  min={0}
+                  max={1000}
+                  onChange={(event, reps) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'reps', reps)}
                 />
-                Peso:
-                <NumberInput
-                  value={set.weight || 0}
-                  onChange={(event) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'weight', event.target.value)}
-                />
+              </div>
               </>
             ) : (
               <>
+              <div className='routine-exercise-container'>
                 Tiempo:
                 <NumberInput
+                placeholder="..."
+                min={0}
+                max={1000}
                   value={set.time || 0}
-                  onChange={(event) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'time', event.target.value)}
+                  onChange={(event, time) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'time', time)}
                 />
+                </div>
               </>
             )}
+            <div className='routine-exercise-container-delete'>
             {exercise.type !== "Cardiovascular" && (
-            <button className="btn-remove-set" onClick={(e) => {
+              <i className='bi bi-trash exercise-btn-delete' onClick={(e) => {
               e.preventDefault();
               e.stopPropagation(); 
               removeSetFromExercise(dayIndex, exerciseIndex, setIndex);
-            }}>
-              Eliminar Set
-            </button>
+            }} ></i>
             )}
+            </div>
           </div>
         ))}
-        
-        {exercise.type !== "Cardiovascular" && (
-          <button type="button" onClick={(e) => {
-             e.stopPropagation();
-            addSetToExercise(dayIndex, exerciseIndex, exercise.type);
-            }}>
-              Añadir Set
-          </button>
-        )}
+      </div>
       </div>
     ));
+    
   }
   
   
