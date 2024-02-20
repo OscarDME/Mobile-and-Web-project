@@ -1,4 +1,3 @@
-// Dropdown.js
 import React from 'react';
 import '../styles/dropdown.css';
 
@@ -16,4 +15,3 @@ function Dropdown({ options, selectedOption, onChange }) {
 }
 
 export default Dropdown;
-

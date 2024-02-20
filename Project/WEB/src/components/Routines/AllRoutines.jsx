@@ -122,7 +122,7 @@ export default function AllRoutines() {
                                   </div>
                                     {(exercise.exerciseId.type === "Pesas" || exercise.exerciseId.type === "Peso corporal") && (
                                       <div>
-                                      {exercise.sets} Sets, {exercise.reps} Repticiones, {exercise.restBetweenSets} segundos de descanso
+                                      {exercise.sets} Sets, {exercise.reps} Repeticiones, {exercise.restBetweenSets} segundos de descanso
                                       </div>
                                   )}
 
