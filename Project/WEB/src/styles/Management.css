@@ -566,6 +566,10 @@
     color: var(--text);
   }
 
+  .btn-add-exercise:hover{
+    background-color: var(--secondary-hover);
+  }
+
   .routine-area-add{
     display: flex;
     flex-direction: column;
@@ -596,4 +600,12 @@
   .routine-exercise-row{
     display: flex;
     width: 100%;
+  }
+
+  .routine-exercise-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 10px;
+    padding: 10px;
   }
