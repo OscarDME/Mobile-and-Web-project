@@ -8,7 +8,7 @@ import {
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
 import { createCuestionario } from "../Controllers/Cuestionario.Controllers.js";
-import { createEjercicio, getExercises, getEjercicioById, updateEjercicio } from "../Controllers/EjerciciosControllers.js";
+import { createEjercicio, getExercises, getEjercicioById, updateEjercicio, getAlternativeExercises } from "../Controllers/EjerciciosControllers.js";
 import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento } from "../Controllers/Alimento.Controllers.js";
 import { createReceta, getReceta, updateReceta, getIngredientes } from "../Controllers/Recetas.Controllers.js";
 
@@ -32,6 +32,7 @@ router.post("/ejercicios", createEjercicio);
 router.get("/ejercicio", getExercises);
 router.get("/ejercicio/:id", getEjercicioById);
 router.put("/ejercicio/:id", updateEjercicio);
+router.get("/alternativas/:id", getAlternativeExercises);
 
 //Alimentos
 router.post("/alimentos", createAlimento);

@@ -46,7 +46,7 @@ export const getExercises = async (req, res) => {
     try {
         const pool = await getConnection();
         const result = await pool.request().query(querys.getEjercicios);
-        
+
         const exercises = result.recordset;
         for (let exercise of exercises) {
             // Para cada ejercicio, buscar sus músculos secundarios
@@ -55,6 +55,7 @@ export const getExercises = async (req, res) => {
                 .query(querys.getMusculosSecundarios);
             exercise.musculosSecundarios = musculosResult.recordset;
         }
+
 
         res.json(exercises);
     } catch (error) {
@@ -118,5 +119,21 @@ export const updateEjercicio = async (req, res) => {
   } catch (error) {
     console.error("Error al actualizar el ejercicio:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const getAlternativeExercises = async (req, res) => {
+  const  ID_Musculo  = req.params.id; // Asumiendo que pasas el ID del músculo como parámetro en la ruta
+
+  try {
+    const pool = await getConnection();
+    const result = await pool.request()
+      .input('ID_Musculo', sql.VarChar, ID_Musculo)
+      .query(querys.getAlternativas);
+      
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('Error al obtener ejercicios alternativos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
