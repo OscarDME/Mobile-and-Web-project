@@ -641,7 +641,7 @@
   .routine-exercise-container{
     padding: 10px 0;
     display: flex;
-    flex-direction: column;
+    justify-content: space-evenly;
     width: 80%;
     align-items: center;
   }

@@ -13,7 +13,7 @@ export default function MyRoutinesAdd({ onBackToList }) {
     const initialState = Array.from({ length: daysPerWeek }, () => ([]));
     const [exercises, setExercises] = useState(initialState);    
     const [selectedDays, setSelectedDays] = useState(Array(daysPerWeek).fill(''));
-  const [checked, setChecked] = useState(false);
+    const [checked, setChecked] = useState(false);
 
 
 
@@ -32,71 +32,74 @@ export default function MyRoutinesAdd({ onBackToList }) {
 
   const handleRoutineNameChange = (event) => setRoutineName(event.target.value);
 
-
-
-  const handleChange = (event) => {
-    setChecked(event.target.checked);
-  };
-  const addExercise = (dayIndex, exerciseType = 'Pesas') => {
+  
+  const addExercise = (dayIndex, type = "Default") => {
+    let newSet = { time: null, isDropset: false };
+    
+    // Si el tipo de ejercicio no es cardiovascular, añade propiedades adicionales
+    if (type !== "Cardiovascular") {
+      newSet = { ...newSet, reps: null, weight: null };
+    }
+  
     let newExercise = {
-      sets: [], 
+      sets: [newSet], 
       rest: 0,
-      time:0,
       isSuperset: false,
     };
   
-    if (exerciseType === 'Cardiovascular') {
-      newExercise.sets.push({ time: 0 });
-    } else {
-      newExercise.sets.push({ reps: 0, weight: 0 });
-    }
-
     setExercises(exercises => 
       exercises.map((day, index) => 
         index === dayIndex ? [...day, newExercise] : day
       )
     );
-};
+  };
   
-  
-const addSetToExercise = (dayIndex, exerciseIndex) => {
-  // Verifica si el switch está activado para determinar si se debe añadir un dropset
-  if (checked && exerciseIndex > 0) {
-    // Añade el set como un dropset al ejercicio anterior
-    let prevExerciseIndex = exerciseIndex - 1;
-    setExercises(currentExercises =>
-      currentExercises.map((day, dIndex) =>
-        dIndex === dayIndex
-          ? day.map((exercise, eIndex) => {
-              if (eIndex === prevExerciseIndex) {
-                let newSet = { reps: 0, weight: 0 }; 
-                let newSets = [...exercise.sets, newSet];
-                return { ...exercise, sets: newSets };
-              }
-              return exercise;
-            })
-          : day
-      )
-    );
-  } else {
-    setExercises(currentExercises =>
-      currentExercises.map((day, dIndex) =>
-        dIndex === dayIndex
-          ? day.map((exercise, eIndex) => {
-              if (eIndex === exerciseIndex) {
-                let newSet = { reps: 0, weight: 0 }
-                let newSets = [...exercise.sets, newSet];
-                return { ...exercise, sets: newSets };
-              }
-              return exercise;
-            })
-          : day
-      )
-    );
-  }
-};
 
 
+const toggleDropset = (dayIndex, exerciseIndex, setIndex) => {
+  setExercises(exercises =>
+    exercises.map((day, dIndex) => {
+      if (dIndex === dayIndex) {
+        return day.map((exercise, eIndex) => {
+          if (eIndex === exerciseIndex && exercise.sets.length > setIndex) {
+            // Aquí, asegúrate de que el set y el subarray de sets existan
+            const updatedSets = exercise.sets.map((setGroup, sGroupIndex) => {
+              if (sGroupIndex === setIndex && setGroup.length) {
+                // Cambiar isDropset en el último elemento del subarray de sets
+                const lastSet = setGroup[setGroup.length - 1];
+                return [...setGroup.slice(0, setGroup.length - 1), { ...lastSet, isDropset: !lastSet.isDropset }];
+              }
+              return setGroup;
+            });
+            return { ...exercise, sets: updatedSets };
+          }
+          return exercise;
+        });
+      }
+      return day;
+    })
+  );
+};
+
+  
+const addSetToExercise = (dayIndex, exerciseIndex, newSet = {}) => {
+  setExercises(currentExercises => {
+    return currentExercises.map((day, dIndex) => {
+      if (dIndex === dayIndex) {
+        return day.map((exercise, eIndex) => {
+          if (eIndex === exerciseIndex) {
+            let setToAdd = { reps: null, weight: null, time: null, isDropset: false };
+            // Añade el nuevo set al ejercicio, manteniendo la estructura de datos correcta
+            const updatedSets = [...exercise.sets, setToAdd];
+            return { ...exercise, sets: updatedSets };
+          }
+          return exercise;
+        });
+      }
+      return day;
+    });
+  });
+};
 
 
   function generateDayContainers(daysCount) {
@@ -154,10 +157,10 @@ const addSetToExercise = (dayIndex, exerciseIndex) => {
     <label>Tiempo descanso: </label>
     <NumberInput
       placeholder="Tiempo en minutos"
-      value={Number(exercise.time)}
+      value={Number(exercise.rest)}
       min={1}
       max={600}
-      onChange={(event, time) => handleExerciseChange(dayIndex, exerciseIndex, 'time', time)}
+      onChange={(event, rest) => handleExerciseChange(dayIndex, exerciseIndex, 'rest', rest)}
     />
   </div>
 )}
@@ -173,27 +176,26 @@ const addSetToExercise = (dayIndex, exerciseIndex) => {
           </button>
         )}
         {exercise.sets.map((set, setIndex) => (
-          <div key={setIndex} className="set-container">
+          <div key={`${exerciseIndex}-${setIndex}`} className="set-container">
             {exercise.type !== "Cardiovascular" ? (
               <>
               <div className='routine-exercise-container'>
               <div className='routine-superset-box'>
-              <div>
-                <Switch
-        checked={checked}
-        onChange={handleChange}
-        inputProps={{ 'aria-label': 'controlled' }}
-      />
-    </div>
-              
+              <div className={`${exerciseIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
+              <Switch
+                defaultChecked={set.isDropset}
+                onChange={() => toggleDropset(dayIndex, exerciseIndex, setIndex)}
+                inputProps={{ 'aria-label': 'controlled' }}
+              />
+              </div>    
               </div>
               <div>
               Repeticiones:
               </div>
                 <NumberInput
                 placeholder="..."
-                  value={set.reps || 0}
-                  min={0}
+                  value={set.reps}
+                  min={1}
                   max={1000}
                   onChange={(event, reps) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'reps', reps)}
                 />
@@ -205,9 +207,9 @@ const addSetToExercise = (dayIndex, exerciseIndex) => {
                 Tiempo:
                 <NumberInput
                 placeholder="..."
-                min={0}
+                value={set.time}
+                min={1}
                 max={1000}
-                  value={set.time || 0}
                   onChange={(event, time) => handleSetChange(dayIndex, exerciseIndex, setIndex, 'time', time)}
                 />
                 </div>
@@ -230,26 +232,35 @@ const addSetToExercise = (dayIndex, exerciseIndex) => {
     
   }
   
-  
   const handleSetChange = (dayIndex, exerciseIndex, setIndex, field, value) => {
-    // Actualiza el estado de los ejercicios con el nuevo valor del set
     setExercises(currentExercises =>
-      currentExercises.map((dayExercises, dIndex) =>
-        dIndex === dayIndex
-          ? dayExercises.map((exercise, eIndex) =>
-              eIndex === exerciseIndex
-                ? {
-                    ...exercise,
-                    sets: exercise.sets.map((set, sIndex) =>
-                      sIndex === setIndex ? { ...set, [field]: Number(value) } : set
-                    ),
+      currentExercises.map((dayExercises, dIndex) => {
+        if (dIndex === dayIndex) {
+          return dayExercises.map((exercise, eIndex) => {
+            if (eIndex === exerciseIndex) {
+              // Verificar si el ejercicio es cardiovascular y actualizar el tiempo directamente
+              const updatedSets = exercise.sets.map((set, sIndex) => {
+                if (sIndex === setIndex) {
+                  if (exercise.type === 'Cardiovascular' && field === 'time') {
+                    // Actualiza directamente el valor del tiempo para ejercicios cardiovasculares
+                    return { ...set, time: Number(value) };
+                  } else {
+                    // Maneja otros casos como antes (por ejemplo, reps para ejercicios no cardiovasculares)
+                    return { ...set, [field]: Number(value) };
                   }
-                : exercise
-            )
-          : dayExercises
-      )
+                }
+                return set;
+              });
+              return { ...exercise, sets: updatedSets };
+            }
+            return exercise;
+          });
+        }
+        return dayExercises;
+      })
     );
   };
+  
   
 
 const removeExercise = (dayIndex, exerciseIndex) => {
@@ -274,17 +285,16 @@ const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
     currentExercises.map((dayExercises, dIndex) => {
       if (dIndex === dayIndex) {
         const updatedExercises = [...dayExercises];
+        // Establecer rest en 0 si el tipo es Cardiovascular, de lo contrario, mantener el valor actual
+        const restValue = selectedExercise.type === 'Cardiovascular' ? 0 : updatedExercises[exerciseIndex].rest;
         const updatedExercise = {
           ...updatedExercises[exerciseIndex],
           type: selectedExercise.type, 
           exerciseId: selectedExercise.id,
           name: selectedExercise.name,
-          sets: selectedExercise.type === 'Cardiovascular' ? [{ time: 0 }] : updatedExercises[exerciseIndex].sets
+          rest: restValue, // Actualiza aquí
+          sets: [{ reps: null, weight: null, time: null, isDropset: false }]
         };
-        // Si es cardiovascular y ya tiene más de 1 set, se resetea a solo 1 set
-        if (selectedExercise.type === 'Cardiovascular' && updatedExercise.sets.length > 1) {
-          updatedExercise.sets = [{ time: 0 }]; // Resetear a 1 set con tiempo
-        }
         updatedExercises[exerciseIndex] = updatedExercise;
         return updatedExercises;
       }
@@ -292,6 +302,7 @@ const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
     })
   );
 };
+
 
 const removeSetFromExercise = (dayIndex, exerciseIndex, setIndex) => {
   setExercises(currentExercises =>
