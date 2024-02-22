@@ -93,7 +93,6 @@ const Login = () => {
           const oid = decodedToken.oid;
           console.log(oid);
           console.log("Llegue aqui 4");
-
           // Asegúrate de obtener el campo correcto del token
           // Verificar si el usuario existe en la base de datos antes de redirigir
           const userExistsResponse = await fetch(
@@ -102,18 +101,14 @@ const Login = () => {
               method: "GET",
             }
           );
-          console.log("Llegue aqui 3");
           const userExists = await userExistsResponse.text();
-          console.log("Llegue aqui");
           if (userExistsResponse.status === 200) {
-            console.log("Llegue aqui 1");
             navigation.replace("Main", {
               screen: "MainMenu",
               params: { token: res.idToken },
             });
           } else {
             // El usuario no existe, realizar alguna acción (por ejemplo, mostrar mensaje de error)
-            console.log("Llegue aqui 2");
             navigation.navigate("Validation", {
               screen: "WelcomeScreen",
               params: { token: res.idToken },
@@ -149,6 +144,7 @@ const Login = () => {
     console.log("Logout button pressed. Clearing token...");
     setToken(null);
   };
+
   return (
     <SafeAreaView
       style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
