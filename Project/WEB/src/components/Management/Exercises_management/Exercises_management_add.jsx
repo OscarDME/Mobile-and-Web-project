@@ -106,7 +106,26 @@ const handleMaterialNeededChange = (selectedOption) => {
   const esModalidadPesas = selectedModalidad === 2;
 
   const handleSubmit = async (event) => {
+
     event.preventDefault();
+    const regex = /^[a-zA-Z0-9 _-]+$/;
+
+    
+    if (exerciseName.length > 50 || !regex.test(exerciseName)) {
+      alert("El nombre del ejercicio contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones y guiones bajos.");
+      return;
+    }
+
+    if (exercisePreparation.length > 500 || !regex.test(exercisePreparation)) {
+      alert("Las indicaciones de preparación contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+      return; 
+    }
+
+    if (exerciseIndications.length > 500 || !regex.test(exerciseIndications)) {
+      alert("Las indicaciones de ejecución contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+      return; 
+    }
+
     if (
       !exerciseName.trim() ||
       primaryMuscle === null ||

@@ -73,6 +73,30 @@ const handleRecipeIngredientChange = (updatedIngredients) => {
 const handleSubmit = async (event) => {
   event.preventDefault();
 
+ // Expresión regular para validar el nombre y la preparación
+ const regex = /^[a-zA-Z0-9 _\-,\.]+$/;
+
+ // Expresión regular para validar el link
+ const urlRegex = /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/;
+
+ // Validación del nombre de la receta
+ if (name.length > 50 || !regex.test(name)) {
+   alert('El nombre de la receta contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones, guiones bajos, puntos y comas.');
+   return;
+ }
+
+ // Validación de la preparación
+ if (preparation.length > 500 || !regex.test(preparation)) {
+   alert('La preparación de la receta contiene caracteres no permitidos o es demasiado larga. Debe tener 500 caracteres o menos y solo puede contener letras, números, espacios, guiones, guiones bajos, puntos y comas.');
+   return;
+ }
+
+ // Validación del link
+ if (link && !urlRegex.test(link)) {
+   alert('El link proporcionado no es un URL válido. Por favor, verifica el formato.');
+   return;
+ }
+
   if (!name || ingredients.length === 0 || !preparation) {
     alert('Por favor completa todos los campos.');
     return;

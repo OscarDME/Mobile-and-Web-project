@@ -46,7 +46,13 @@ export default function  Food_management_edit({ food }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+    const regex = /^[a-zA-Z0-9 _\-,\.]+$/;
+
+  // Validación del nombre del alimento
+  if (FoodName.length > 50 || !regex.test(FoodName)) {
+    alert('El nombre del alimento contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones, guiones bajos, puntos y comas.');
+    return;
+  }
     // Verificar que todos los campos estén completos
     if (!FoodName || !calories || !category || !weight || !carbohydrates || !fats || !protein) {
       alert('Por favor completa todos los campos.');
@@ -121,7 +127,7 @@ export default function  Food_management_edit({ food }) {
                 placeholder="…"
                 value={Number(calories)}
                 min={0}
-                max={5000}
+                max={10000}
                 onChange={(event, calories) => setFoodCalories(calories)}
                 />
             </div>

@@ -508,7 +508,7 @@
     transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
     overflow: hidden;
     margin-top: 10px;
-    width: 920px;
+    width: 1200px;
     border: 2px solid var(--secondary-background);
     border-radius: 10px;
   }
@@ -520,7 +520,7 @@
   .add_exercise_area2{
     flex-direction: column;
     align-items: center !important;
-    width: 920px;
+    width: 1200px;
     justify-content: center !important;
     display: flex;
   }
@@ -615,9 +615,9 @@
   }
 
   .set-container{
+    border-top: 1px solid var(--secondary-background);
     display: flex;
     justify-content: space-between;
-    padding: 0 10px;
   }
 
   .all-sets-container{
@@ -641,13 +641,12 @@
   .routine-exercise-container{
     padding: 10px 0;
     display: flex;
-    flex-direction: column;
-    width: 80%;
+    justify-content: space-evenly;
+    width: 100%;
     align-items: center;
   }
 
   .routine-exercise-container-delete{
-    width: 10%;
     display: flex;
     justify-content: center;
     align-items: center;

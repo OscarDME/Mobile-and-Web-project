@@ -25,10 +25,12 @@ export const RoutineCard = [
                             injury: "",
                         },
                         rest: 90,
-                        isSuperSet: true, /*Si el estado es false, se ejecutan todos los sets de este ejercicio de corrido,
+                        isSuperSet: true, 
+                        /*Si el estado es false, se ejecutan todos los sets de este ejercicio de corrido,
                         si el estado es true se ejecuta el primer set de este ejercicio y el primer set del siguiente ejercicio,
                          y despues el segundo set de este ejercicio y el segundo set del otro ejercicio hasta terminar
                         con los sets de ambos ejercicios, se van alternando*/
+
                         sets:[
                             //primer set es un dropset
                             [
@@ -48,13 +50,12 @@ export const RoutineCard = [
                         //segundo set es un set normal
                         [
                             {
-                                id: 125,
-                                reps:5,
-                                weight: 0,
-                                time: 0,
-                            }
-                        ]
-
+                               id:123,
+                               reps: 10, 
+                               weight: 0,
+                               time: 0,
+                            },
+                       ]
                         ]
                     },
                     {
@@ -79,6 +80,15 @@ export const RoutineCard = [
                             //primer set es set normal, los ejercicios cardiovasculares solamente tienen un set
                             [
                              {
+                                isDropSet: false,
+                                id: 126,
+                                reps:0,
+                                weight: 0,
+                                time: 40,
+                             }
+                        ],                            [
+                             {
+                                isDropSet: false,
                                 id: 126,
                                 reps:0,
                                 weight: 0,

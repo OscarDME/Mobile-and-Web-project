@@ -2,7 +2,7 @@
   "expo": {
     "name": "FitHub",
     "slug": "FitHub",
-    "scheme": "FitHub",
+    "scheme": "fithub",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -30,8 +30,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "bundleIdentifier": "com.anonymous.FitHub"
+        "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.FitHub"
     },
