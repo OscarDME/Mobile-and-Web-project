@@ -104,4 +104,13 @@ export const getBirthDate = async (req, res) => {
   }
 };
 
-
+export const getUserAndType = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query(querys.getUserAndType); 
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('Error al obtener el ejercicio con su tipo:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};

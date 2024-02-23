@@ -67,9 +67,10 @@ const Login = () => {
 
   // Define handleCodeExchange outside of useEffect
   const handleCodeExchange = async (codeResponse) => {
-    console.log("Code exchange initiated...");
+    console.log("Code exchange initiated..");
     if (request && codeResponse?.type === "success" && discovery) {
       try {
+        console.log("Checking if user exists...");
         const res = await exchangeCodeAsync(
           {
             clientId,

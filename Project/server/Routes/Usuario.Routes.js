@@ -4,6 +4,7 @@ import {
     checkIfUserExists,
     createUser,
     getBirthDate,
+    getUserAndType
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
@@ -20,6 +21,7 @@ router.get("/users", getUsers);
 router.get("/users/:oid", checkIfUserExists);
 router.get("/birthdate/:oid", getBirthDate);
 router.post("/users", createUser);
+router.get("/usertype", getUserAndType);
 
 //Materiales
 router.get("/materials", getMaterials); 

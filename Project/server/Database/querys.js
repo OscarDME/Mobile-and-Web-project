@@ -5,10 +5,14 @@ export const querys = {
     checkUserExists: "SELECT ID_Usuario FROM Usuario WHERE ID_Usuario = @oid",
     createUser:  "INSERT INTO Usuario (ID_Usuario, nombre_usuario, nombre, apellido, correo, sexo, fecha_nacimiento) VALUES (@oid, @username, @givenName, @surname, @email, @gender, @dateOfBirth)",
     getBirthDate: "SELECT fecha_nacimiento, sexo FROM Usuario WHERE ID_Usuario = @ID_Usuario",
+    getUserAndType: "SELECT Usuario.*, CASE WHEN Usuario_WEB.ID_Usuario IS NOT NULL THEN 'Web' WHEN UsuarioMovil.ID_Usuario IS NOT NULL THEN 'Móvil' ELSE 'Ninguno' END AS TipoDeUsuario, COALESCE(tipo_web.tipo, tipo.Descripcion) AS DescripcionTipo FROM Usuario LEFT JOIN Usuario_WEB ON Usuario.ID_Usuario = Usuario_WEB.ID_Usuario LEFT JOIN tipo_web ON Usuario_WEB.ID_Tipo_WEB = tipo_web.ID_Tipo_Web LEFT JOIN UsuarioMovil ON Usuario.ID_Usuario = UsuarioMovil.ID_Usuario LEFT JOIN tipo ON UsuarioMovil.ID_Tipo = tipo.ID_Tipo",
 
     //Usuario Movil
     createMovileUser: "INSERT INTO UsuarioMovil (ID_Tipo, ID_Usuario) VALUES (1, @ID_Usuario)",
     getMobileUser: "SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario",
+
+    //UsuarioWeb
+    getWebUser: "SELECT ID_Usuario_WEB FROM Usuario_WEB WHERE ID_Usuario = @ID_Usuario",
 
     //Equipo
     getMaterials: "SELECT equipo FROM Equipo",
@@ -84,7 +88,7 @@ export const querys = {
     createDiasEntreno: "INSERT INTO Dias_Entreno(ID_Rutina, ID_Dia) VALUES (@ID_Rutina, @ID_Dia)",
 
     //Cantidad_series
-    createCantidadSeries: "INSERT INTO Cantidad_series(ID_Rutina, descripcion) VALUES (@ID_Rutina, @descripcion)",
+    createDiaSerie: "INSERT INTO DiaSerie(ID_Dias_Entreno, descripcion) VALUES (@ID_Dias_Entreno, @descripcion)",
 
     //Serie
     createSerie: "INSERT INTO (ID_Ejercicio, tiempo_ejercicio_cardiovascular, descanso, repeticiones) VALUES (@ID_Ejercicio, @tiempo_ejercicio_cardiovascular, @descanso, @repeticiones)",

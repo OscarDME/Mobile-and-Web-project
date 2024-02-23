@@ -62,6 +62,9 @@ import Cardiac from "../screens/PhysicalTestScreens/Cardiac";
 import UserInfo from "../screens/PhysicalTestScreens/UserInfo"
 import CongratulationsScreen from "../screens/PhysicalTestScreens/Congratulations";
 import DetallesEjercicio from "../screens/Biblioteca/DetallesEjercicio";
+import AddRutina from "../screens/Rutinas/AddRutina";
+import AddEjercicio from "../screens/Rutinas/AddEjercicio";
+import AddSets from "../screens/Rutinas/AddSets";
 
 import Header from "../components/Header";
 {
@@ -197,7 +200,7 @@ const FooterTabs = () => {
         header: ({ navigation }) => <Header navigation={navigation} />,
       }}
     >
-      <Tab.Screen name="Rutinas" component={Rutinas} />
+      <Tab.Screen name="Rutinas" component={RutinasStack} />
       <Tab.Screen name="Entrenamiento" component={Entrenamiento} />
       <Tab.Screen name="Calendario" component={Calendario} />
       <Tab.Screen name="Progreso" component={Progreso} />
@@ -234,7 +237,25 @@ const MainStack = () => {
   );
 };
 
+const StackRutinas = createNativeStackNavigator();
+const RutinasStack = () => {
+return (
+    <StackRutinas.Navigator
+      initialRouteName="Rutinas"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <StackRutinas.Screen name="Rutinas" component={Rutinas} />
+      <StackRutinas.Screen name="AddRutina" component={AddRutina} />
+      <StackRutinas.Screen name="AddEjercicio" component={AddEjercicio} />
+      <StackRutinas.Screen name="AddSets" component={AddSets} />
+    </StackRutinas.Navigator>
+  );
+};
+
 const StackBiblioteca = createNativeStackNavigator();
+
 const BibliotecaStack = () => {
   return (
     <StackBiblioteca.Navigator
