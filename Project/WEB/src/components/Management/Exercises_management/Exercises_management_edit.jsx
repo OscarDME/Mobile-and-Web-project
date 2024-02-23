@@ -154,7 +154,24 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+    const regex = /^[a-zA-Z0-9 _-]+$/;
+
+    
+    if (exerciseName.length > 50 || !regex.test(exerciseName)) {
+      alert("El nombre del ejercicio contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones y guiones bajos.");
+      return;
+    }
+
+    if (exercisePreparation.length > 500 || !regex.test(exercisePreparation)) {
+      alert("Las indicaciones de preparación contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+      return; 
+    }
+
+    if (exerciseIndications.length > 500 || !regex.test(exerciseIndications)) {
+      alert("Las indicaciones de ejecución contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+      return; 
+    }
+
     // Prepara los datos del formulario para enviarlos al backend
     const exerciseData = {
       ejercicio: exerciseName,
@@ -171,7 +188,7 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
   
     try {
       const response = await fetch(`${config.apiBaseUrl}/ejercicio/${exercise.ID_Ejercicio}`, {
-        method: 'PUT', // o 'PATCH' dependiendo de tu backend
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -183,12 +200,11 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
       }
   
       const result = await response.json();
-      console.log(result); // Puedes mostrar un mensaje de éxito o redirigir al usuario
+      console.log(result);
       alert("Ejercicio modificado con éxito.");
     } catch (error) {
       alert("Error al modificar el ejercicio.");
       console.error('Error al actualizar el ejercicio:', error);
-      // Aquí puedes manejar el error, por ejemplo, mostrando un mensaje al usuario
     }
   };
   
@@ -294,9 +310,9 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
               <div className="add_exercise_rows">
                 ¿Qué material necesita el ejercicio?
                 <RadioList
-                  options={materials} // Tus opciones
-                  selectedOption={materialNeeded} // Asegúrate de que este sea un único valor, no un array
-                  onChange={setMaterialNeeded} // Actualiza para manejar el cambio a un único valor
+                  options={materials}
+                  selectedOption={materialNeeded}
+                  onChange={setMaterialNeeded} 
                   idPrefix="material"
                 />
               </div>

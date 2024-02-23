@@ -53,40 +53,40 @@ export const NavigationBar = () => {
                     />
                 </NavLink>
                 <AuthenticatedTemplate>
-                    <div className="Navbar-Links">
+                    <div className="Navbar-Links">{/*
                         <NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
                         </NavLink>
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
                             Asignar Rutinas
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="MyRoutines" to="/MyRoutines" className='NavLinks'>
                             Rutinas
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
                         </NavLink>
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
-                        </NavLink>{/*
+                        </NavLink>*/}
                         <NavLink id="Exercises" to="/Exercises" className='NavLinks'>
                             Ejercicios
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Food" to="/Food" className='NavLinks'>
                             Alimentos y Recetas
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
                             Citas
                         </NavLink>
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Food_management" to="/Food_management" className='NavLinks'>
                             Gestión de Alimentos
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Recipes_management" to="/Recipes_management" className='NavLinks'>
                             Gestión de Recetas
                         </NavLink>
