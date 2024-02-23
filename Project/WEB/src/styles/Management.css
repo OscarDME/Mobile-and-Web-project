@@ -617,6 +617,7 @@
   .set-container{
     border-top: 1px solid var(--secondary-background);
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
   }
 
@@ -653,6 +654,49 @@
   }
 
   .routine-superset-box{
+    display: flex;
+    flex-direction: column;
     background-color: var(--background);
     border-radius: 5px;
+  }
+
+  .container-center{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .exercise-time-input{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+  }
+
+  .dropset-button{
+    width: 100%;
+    padding: 5px;
+    background-color: var(--accent);
+    border-color: transparent;
+    color: var(--text);
+
+  }
+
+  .dropset-button:hover{
+    background-color: var(--accent-hover);
+    color: var(--background);
+  }
+
+  .container-left{
+    align-items: center;
+    display: flex;
+    column-gap: 40px;
+  }
+
+  .container-left2{
+    align-items: center;
+    display: flex;
+    column-gap: 10px;
   }

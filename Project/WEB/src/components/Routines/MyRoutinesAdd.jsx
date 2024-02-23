@@ -142,8 +142,10 @@ export default function MyRoutinesAdd({ onBackToList }) {
                         <div className='routine-exercise-header'>
                         {exercise.type !== "Cardiovascular" && (
       <>
+      <div className='container-center'>
       <div>
-            ¿Es superserie? <ToolTipInfo message={"Al seleccionar esta opción, se iniciará la primera serie de un ejercicio y, tras finalizarla, comenzará la primera serie del ejercicio siguiente, continuando así hasta completar todas las series."}><i class="bi bi-info-circle-fill info-icon"/></ToolTipInfo>
+      ¿Es superserie? <ToolTipInfo message={"Al seleccionar esta opción, se iniciará la primera serie de un ejercicio y, tras finalizarla, comenzará la primera serie del ejercicio siguiente, continuando así hasta completar todas las series."}><i class="bi bi-info-circle-fill info-icon"/></ToolTipInfo>
+      </div>
             <Switch
                     checked={exercise.isSuperset}
                     onChange={(e) => handleIsSupersetChange(dayIndex, exerciseIndex, 'isSuperset', e.target.checked)}
@@ -157,7 +159,7 @@ export default function MyRoutinesAdd({ onBackToList }) {
             />
             </div>
             <div className="exercise-time-input">
-        <label>Descanso entre sets (segundos) </label>
+        <label className='container-center'>Descanso entre sets (segs) </label>
         <NumberInput
           placeholder="Tiempo en segundos"
           value={Number(exercise.rest)}
@@ -187,19 +189,8 @@ export default function MyRoutinesAdd({ onBackToList }) {
                                         {exercise.type !== "Cardiovascular" ? (
               <>
                 {setIndex === 0 ? ( 
-                  <div className='routine-exercise-container'>
-                    <div className='routine-superset-box'>
-                      <div className={`${exerciseIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
-                        Set {groupIndex + 1}
-                        {exercise.type !== "Cardiovascular" && !isCurrentOrPreviousSuperset && (
-                          
-                          <i className='bi bi-trash exercise-btn-delete' onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation(); 
-                            removeSetFromExercise(dayIndex, exerciseIndex, groupIndex, setIndex);
-                          }} ></i>
-                        )}
-                        <button onClick={(e) => {
+                  <>
+                  <button className='dropset-button' onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation(); 
                           const newSet = { time: null, reps: null, weight: null };
@@ -208,9 +199,19 @@ export default function MyRoutinesAdd({ onBackToList }) {
                           <i className="bi bi-plus-circle add-routine-icon"></i>
                           Añadir dropset
                         </button>
-                      </div>
-                    </div>
-                    <div>
+                  <div className='routine-exercise-container'>
+                  <div className='container-left'>
+                  {exercise.type !== "Cardiovascular" && !isCurrentOrPreviousSuperset && (
+                          
+                          <i className='bi bi-trash exercise-btn-delete' onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation(); 
+                            removeSetFromExercise(dayIndex, exerciseIndex, groupIndex, setIndex);
+                          }} ></i>
+                        )}
+                      <h4>Set {groupIndex + 1}</h4>
+                        </div>
+                    <div className='container-center'>
                       <div>Repeticiones:</div>
                       <NumberInput
                         placeholder="..."
@@ -220,10 +221,20 @@ export default function MyRoutinesAdd({ onBackToList }) {
                         onChange={(event, reps) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'reps', reps)}
                       />
                     </div>
-                  </div>
+                  </div></>
+
                 ) : ( 
-                  <div className='routine-exercise-dropset-container'>
-                    <div>Dropset {setIndex + 1} Repeticiones:</div>
+                  <div className='routine-exercise-container'>
+                  <div className='container-left2'>
+                  <i className="bi bi-eraser-fill exercise-btn-delete" onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  removeDropSetFromExercise(dayIndex, exerciseIndex, groupIndex, setIndex);
+                }}></i>
+                    <h6>Drop-Set {setIndex + 1}</h6> 
+                    </div>
+                    <div className='container-center'>
+                    Repeticiones:
                     <NumberInput
                       placeholder="..."
                       value={set.reps}
@@ -231,11 +242,7 @@ export default function MyRoutinesAdd({ onBackToList }) {
                       max={1000}
                       onChange={(event, reps) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'reps', reps)}
                     />
-                                <i className="bi bi-eraser-fill exercise-btn-delete" onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  removeDropSetFromExercise(dayIndex, exerciseIndex, groupIndex, setIndex);
-                }}></i>
+                    </div>
                   </div>
                 )}
               </>
