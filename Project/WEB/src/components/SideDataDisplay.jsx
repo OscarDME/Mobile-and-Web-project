@@ -44,7 +44,12 @@ export default function SideDataDisplay() {
             <div className='separator'>
             <h4>Cliente Seleccionado</h4>
             <div className={`selected-user-card`}>
-              <div className='icon'>{selectedUser.icon}</div>
+            { selectedUser.gender === "Mujer" && (
+              <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
+            )}
+            {selectedUser.gender === "Hombre" &&(
+              <div  className='icon'><i class="bi bi-person-standing"></i></div>
+            )}
               <div>
                 <div className='username'>{selectedUser.username}</div>
                 <div className='name'>{selectedUser.name}</div>
@@ -63,12 +68,11 @@ export default function SideDataDisplay() {
         <div>
           Mostrando {filteredUsers.length} clientes
         </div>
-        {/* Muestra la lista filtrada de usuarios */}
         <ul className='SideUsersList'>
           {filteredUsers.map((user, key) => (
             <li
               key={key}
-              className={`card ${selectedUser && selectedUser.oid === user.oid ? 'selected' : ''}`}
+              className={`card ${selectedUser && selectedUser.oid === user.id ? 'selected' : ''}`}
               onClick={() => handleUserClick(user)}
             >
             { user.gender === "Mujer" && (

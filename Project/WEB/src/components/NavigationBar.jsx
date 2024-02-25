@@ -53,10 +53,10 @@ export const NavigationBar = () => {
                     />
                 </NavLink>
                 <AuthenticatedTemplate>
-                    <div className="Navbar-Links">{/*
+                    <div className="Navbar-Links">
                         <NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
                             Asignar Rutinas
                         </NavLink>*/}

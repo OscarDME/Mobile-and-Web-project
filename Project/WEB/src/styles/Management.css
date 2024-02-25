@@ -700,3 +700,12 @@
     display: flex;
     column-gap: 10px;
   }
+
+  .superset-text{
+    padding-top: 20px;
+    font-weight: 300;
+  }
+
+  .set-text{
+    padding-left: 30px;
+  }
