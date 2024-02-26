@@ -103,6 +103,7 @@
 }
 
 .row_edit{
+  column-gap: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -708,4 +709,11 @@
 
   .set-text{
     padding-left: 30px;
+  }
+
+  .center-delete-routine-btn{
+    background-color: var(--third-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }

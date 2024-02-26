@@ -5,6 +5,7 @@ import {ToolTip} from '../ToolTip';
 import SelectFilter from '../SelectFilter';
 import MyRoutinesAdd from './MyRoutinesAdd';
 import SearchBar from '../SearchBar';
+import MyRoutinesEdit from './MyRoutinesEdit';
 
 export default function MyRoutines() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,9 @@ export default function MyRoutines() {
     const [difficultyFilter, setDifficultyFilter] = useState('');
     const [daysFilter, setDaysFilter] = useState('');
     const [showAddPage, setShowAddPage] = useState(false);
+    const [showEditPage, setShowEditPage] = useState(false);
+    const [deleteRoutine, setDeleteRoutine] = useState(null);
+
 
     const difficultyOptions = [
       { value: 'Fácil', label: 'Fácil' },
@@ -57,17 +61,37 @@ export default function MyRoutines() {
     const handleRowClick = (routine) => {
       if (expandedRow === routine.id) {
         setExpandedRow(null);
+        setDeleteRoutine(null);
         setExpandedDay(null);
         setSelectedRoutine(null); // Deselecciona la fila al hacer clic nuevamente
       } else {
         setExpandedDay(null);
+        setDeleteRoutine(null);
         setExpandedRow(routine.id);
         setSelectedRoutine(routine); // Selecciona la fila al hacer clic
       }
     };
 
     const handleDeleteClick = (routine) => {
+      if (deleteRoutine && deleteRoutine.id === routine.id) {
+        setDeleteRoutine(null); 
+      } else {
+        if (expandedRow && expandedRow !== routine.id) {
+          setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
+          setSelectedRoutine(null);
+          setExpandedDay(null);
+        setExpandedRow(null);
+        }
+        setExpandedRow(null);
+        setExpandedDay(null);
+        setSelectedRoutine(null);
+        setDeleteRoutine(routine); 
+      }
+    };
 
+    const handleEditClick = (routine) => {
+      setSelectedRoutine(routine);
+      setShowEditPage(true); 
     }
 
     const handleDayClick = (day) => {
@@ -79,12 +103,21 @@ export default function MyRoutines() {
     };
 
     const handleBackToList = () => {
+        setShowEditPage(false);
         setShowAddPage(false); // Volver a la lista
     };
+
+    const handleDeleteRoutineButton = (routine) =>{
+
+      //TODO: eliminar rutina :)
+    }
     
     // Si showAddPage es verdadero, renderiza el componente de agregar 
     if (showAddPage) {
         return <MyRoutinesAdd onBackToList={handleBackToList} />;
+    }
+    if (showEditPage) {
+      return <MyRoutinesEdit onBackToList={handleBackToList} routine={selectedRoutine}/>;
     }
 
     return (
@@ -129,7 +162,12 @@ export default function MyRoutines() {
                   <div className='row_description'>{routine.difficulty}</div>
                   <div className='row_description'>{routine.days.length.toString()} día(s) a la semana</div>
                 </div>
+                    <div className="row_edit">
+                    <i className={`bi bi-pencil-square card-icon-routine `} onClick={(e) => { e.stopPropagation(); handleEditClick(routine); }}></i>
+                      <i className={`bi bi-trash card-icon-routine `} onClick={(e) => { e.stopPropagation(); handleDeleteClick(routine); }}></i>
+                    </div>
               </div>
+              
               {expandedRow === routine.id && (
                 <div className="routine-info">
                 {routine.days.map((day, dayIndex) => (
@@ -182,6 +220,13 @@ export default function MyRoutines() {
                   ))}
                 </div>
               )}
+
+              {deleteRoutine && deleteRoutine.id === routine.id &&(
+                <form className='center-delete-routine-btn'>
+                  <button type="submit" className='delete_button' onClick={(e) => { e.stopPropagation(); handleDeleteRoutineButton(routine); }}>Eliminar rutina {routine.name}</button>
+                  </form>
+                )}
+
             </li>
           ))}
         </ul>
