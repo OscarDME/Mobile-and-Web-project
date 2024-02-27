@@ -55,7 +55,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
+    padding: 6px 8px;
     
 }
 
@@ -75,9 +75,8 @@
 .btn-remove-meal{
     color: var(--background);
     background-color: var(--delete);
-    margin-right: 10px;
     border-radius: 5px;
-    padding: 5px 14px;
+    padding: 5px 6px;
     border-color: transparent;
 }
 
@@ -87,5 +86,30 @@
 
 .meal-food-container{
     display: flex;
-    
+    padding: 10px 8px;
+    justify-content: space-between !important;
+    align-items: center;
+
 }
+
+.recipe-icon{
+    width: 100%;
+    font-size: 18px;
+    margin-right: 5px;
+  }
+
+  .meal-icon{
+    font-size: 30px;
+    color: var(--text);
+  }
+
+  .meal-icon:hover{
+    color: var(--delete);
+  }
+
+  .align-center{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }

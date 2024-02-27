@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FoodCard } from '../DATA_FOOD';
 import { RecipeCard } from '../DATA_RECIPES';
 import Dropdown from '../DropDown';
+import NumberInput from '../NumberInput';
 
 export default function AssignDietsCreate( {client, onDietCreate } ) {
 
@@ -102,6 +103,9 @@ export default function AssignDietsCreate( {client, onDietCreate } ) {
 
   };
   
+  const handleFoodPortionChange= (dayOfWeek, mealIndex, foodIndex, value) => {
+
+  };
 
   const addFoodToMeal = (dayOfWeek, mealIndex, food) => {
     const updatedDietPlan = { ...dietPlan };
@@ -152,19 +156,29 @@ export default function AssignDietsCreate( {client, onDietCreate } ) {
                 placeholder="Alumerzo, comida, cena, etc."
                 />
                 <div className="row_buttons">
-                    <button onClick={() => addFoodToMeal(day.day, mealIndex, { name: null , portion: null})} className='btn-add-meal'>Añadir Alimento</button>
-                    <button onClick={() => removeMeal(day.day, mealIndex)} className='btn-remove-meal'>Eliminar Comida</button>
+                    <button onClick={() => addFoodToMeal(day.day, mealIndex, { name: null , portion: null})} className='btn-add-meal'><i className="bi bi-plus-circle recipe-icon"></i> Alimento</button>
+                    <button onClick={() => removeMeal(day.day, mealIndex)} className='btn-remove-meal'><i className="bi bi-trash recipe-icon"></i> Comida</button>
                     </div>
                 </div>
 
                 {meal.foods.map((food, foodIndex) => (
-                <div key={foodIndex} className='meal-food-container'>
+                <div key={foodIndex} className={`meal-food-container ${mealIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
                 <Dropdown
                     options={foodOptions}
                     selectedOption={food.name} 
                     onChange={(selectedFood) => handleFoodSelectionChange(day.day, mealIndex, foodIndex, selectedFood)}
                     />
-                  <button onClick={() => removeFoodFromMeal(day.day, mealIndex, foodIndex)}>Eliminar Alimento</button>
+                    <div className='align-center'>
+                      Porción:
+                      <NumberInput
+                    placeholder="…"
+                    value={Number(food.portion)}
+                    min={0}
+                    max={500}
+                    onChange={(event, portion) => handleFoodSelectionChange(day.day, mealIndex, foodIndex, portion)}
+                    />
+                    </div>
+                    <i className={`bi bi-trash meal-icon`} onClick={() => removeFoodFromMeal(day.day, mealIndex, foodIndex)}></i>
                 </div>
               ))}
               </>
