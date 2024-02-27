@@ -56,16 +56,16 @@ export const NavigationBar = () => {
                     <div className="Navbar-Links">
                         <NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
                             Asignar Rutinas
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="MyRoutines" to="/MyRoutines" className='NavLinks'>
                             Rutinas
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
                         </NavLink>*/}

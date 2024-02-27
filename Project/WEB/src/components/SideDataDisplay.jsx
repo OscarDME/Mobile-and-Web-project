@@ -4,7 +4,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { UserCard } from './DATA_USER_CARD';
 import SearchBar from './SearchBar';
 
-export default function SideDataDisplay() {
+export default function SideDataDisplay(props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -18,6 +18,7 @@ export default function SideDataDisplay() {
   const handleUserClick = (user) => {
     // Actualiza el estado para el usuario seleccionado
     setSelectedUser(user);
+    props.setSelectedUser(user);
   };
 
   // Efecto para cargar la selección del usuario desde localStorage al cargar la página
