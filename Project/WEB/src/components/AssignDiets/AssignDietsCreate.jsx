@@ -3,13 +3,27 @@ import { FoodCard } from '../DATA_FOOD';
 import { RecipeCard } from '../DATA_RECIPES';
 import Dropdown from '../DropDown';
 import NumberInput from '../NumberInput';
+import { useMsal } from "@azure/msal-react";
+import { ToolTipInfo } from '../ToolTipInfo';
 
-export default function AssignDietsCreate( {client, onDietCreate } ) {
+export default function AssignDietsCreate( {client, onDietCreate} ) {
+  const { instance } = useMsal();
+  const activeAccount = instance.getActiveAccount();
 
     const food = FoodCard.map(f => f.name);
     const recipes = RecipeCard.map(r => r.name);
     const foodOptions = [...food, ...recipes];
     foodOptions.sort()
+
+    useEffect(() => {
+
+      if (activeAccount && activeAccount.idTokenClaims.oid) {
+          setDietPlan(prevState => ({
+              ...prevState,
+              nutritionistId: activeAccount.idTokenClaims.oid ? activeAccount.idTokenClaims.oid : null, 
+          }));
+      }
+  }, []);
 
     const [dietPlan, setDietPlan] = useState({
         nutritionistId: "", //ID del entrenador
@@ -99,13 +113,36 @@ export default function AssignDietsCreate( {client, onDietCreate } ) {
   };
   
 
-  const handleFoodSelectionChange = (dayOfWeek, mealIndex, foodIndex, selectedFoodName) => {
-
+  
+  
+  
+  const handleFoodChange = (dayIndex, mealIndex, foodIndex, field, newValue) => {
+    const newDietPlan = { ...dietPlan };
+    newDietPlan.days = newDietPlan.days.map((day, index) => {
+      if (index === dayIndex) {
+        return {
+          ...day,
+          meals: day.meals.map((meal, mIndex) => {
+            if (mIndex === mealIndex) {
+              return {
+                ...meal,
+                foods: meal.foods.map((food, fIndex) => {
+                  if (fIndex === foodIndex) {
+                    return { ...food, [field]: newValue };
+                  }
+                  return food;
+                }),
+              };
+            }
+            return meal;
+          }),
+        };
+      }
+      return day;
+    });
+    setDietPlan(newDietPlan);
   };
   
-  const handleFoodPortionChange= (dayOfWeek, mealIndex, foodIndex, value) => {
-
-  };
 
   const addFoodToMeal = (dayOfWeek, mealIndex, food) => {
     const updatedDietPlan = { ...dietPlan };
@@ -163,19 +200,26 @@ export default function AssignDietsCreate( {client, onDietCreate } ) {
 
                 {meal.foods.map((food, foodIndex) => (
                 <div key={foodIndex} className={`meal-food-container ${mealIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
-                <Dropdown
-                    options={foodOptions}
-                    selectedOption={food.name} 
-                    onChange={(selectedFood) => handleFoodSelectionChange(day.day, mealIndex, foodIndex, selectedFood)}
+                  <Dropdown 
+                      options={foodOptions}
+                      selectedOption={food.name}
+                      onChange={(e) => handleFoodChange(index, mealIndex, foodIndex, 'name', e.target.value)}
                     />
                     <div className='align-center'>
-                      Porción:
-                      <NumberInput
+                    <div>
+                    Porción <ToolTipInfo message={"Indique la cantidad de la porción, por ejemplo, para un vaso de leche, especifique en mililitros; para carne, indique el peso en gramos; para una pieza de fruta, mencione la unidad o cantidad específica, y así para otros alimentos."}><i class="bi bi-info-circle-fill info-icon"/></ToolTipInfo>
+                    </div>
+                    <NumberInput
                     placeholder="…"
                     value={Number(food.portion)}
                     min={0}
                     max={500}
-                    onChange={(event, portion) => handleFoodSelectionChange(day.day, mealIndex, foodIndex, portion)}
+                    step={0.25}
+                    onChange={(e,newPortion) => {
+                      const newValue = e.target.value;
+                      handleFoodChange(index, mealIndex, foodIndex, 'portion', Number(newPortion))}
+                    }
+
                     />
                     </div>
                     <i className={`bi bi-trash meal-icon`} onClick={() => removeFoodFromMeal(day.day, mealIndex, foodIndex)}></i>
