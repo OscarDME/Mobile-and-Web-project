@@ -7,7 +7,7 @@ import { useMsal } from "@azure/msal-react";
 export default function AssignDietsCalendar({client, createdDiet}) {
 
     const { instance } = useMsal();
-    const activeAccount = instance.acquireTokenSilent();
+    const activeAccount = instance.getAllAccounts()[0];
     const [dietPlan, setDietPlan] = useState(DATA_DIET)   
 
   return (
