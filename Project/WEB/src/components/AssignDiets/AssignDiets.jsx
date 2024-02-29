@@ -23,13 +23,13 @@ export default function AssignDiets({ selectedUser }) {
     <AuthenticatedTemplate>
       {selectedUser ? (
         <>
-          <div className='container'>
+          <div className='container-diet'>
             <div className='list-container'>
               <h2 className='MainTitle'>Crear dieta</h2>
               <AssignDietsCreate client={selectedUser} onDietCreate={handleDietCreation} />
             </div>
           </div>
-          <div className='container'>
+          <div className='container-diet'>
             <AssignDietsCalendar client={selectedUser} createdDiet={createdDiet}/>
           </div>
         </>

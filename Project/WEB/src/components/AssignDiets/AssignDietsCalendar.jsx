@@ -7,7 +7,7 @@ import { useMsal } from "@azure/msal-react";
 export default function AssignDietsCalendar({client, createdDiet}) {
 
     const { instance } = useMsal();
-    const activeAccount = instance.getAllAccounts()[0];
+    const activeAccount = instance.getActiveAccount();
     const [dietPlan, setDietPlan] = useState(DATA_DIET)   
 
   return (
@@ -29,7 +29,7 @@ export default function AssignDietsCalendar({client, createdDiet}) {
     <div className='calendar-container'>
         {activeAccount.idTokenClaims.oid}
         
-        {JSON.stringify(createdDiet)}
+        
     </div>
     </>
   )
