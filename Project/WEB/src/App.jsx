@@ -27,6 +27,7 @@ import { Food_management } from './pages/Food_management';
 
 
 const Pages = () => {
+
     /**
      * useMsal is hook that returns the PublicClientApplication instance,
      * an array of all accounts currently signed in and an inProgress value
@@ -34,6 +35,7 @@ const Pages = () => {
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-react/docs/hooks.md
      */
     const { instance } = useMsal();
+    const activeAccount = instance.getActiveAccount();
     useEffect(() => {
         const callbackId = instance.addEventCallback((event) => {
             if (
