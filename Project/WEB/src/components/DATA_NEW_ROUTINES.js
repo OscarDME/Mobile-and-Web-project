@@ -5,11 +5,15 @@ export const RoutineCard = [
         author: "Usuario123", /* Id del usuario Foreign key */
         isPublic: true,
         difficulty:"Fácil",
+        assignedTo: "Usuario123",
+        isTemplate: false,
         trainingLocation: "Gimnasio",
         days:[
             {
                 id:999,
                 dayName:"Lunes",
+                assignedDate: "2021-04-20",
+                assignedHour: "10:00",
                 exercises:[
                     {
                         id:123,

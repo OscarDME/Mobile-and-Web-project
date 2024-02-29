@@ -20,7 +20,7 @@ export default function AssignRoutines({ selectedUser }) {
         <>
           <div className='container-diet'>
             <div className='list-container'>
-              <AssingRoutinesList onRoutineUpdate={handleRoutineUpdate} />
+              <AssingRoutinesList onRoutineUpdate={handleRoutineUpdate} selectedUser={selectedUser}/>
             </div>
           </div>
           <div className='container-diet'>

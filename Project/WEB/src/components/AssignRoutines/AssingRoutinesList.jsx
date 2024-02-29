@@ -7,6 +7,7 @@ import { ToolTip } from '../ToolTip';
 export default function AssingRoutinesList() {
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [updatedRoutine, setUpdatedRoutine] = useState(null);
     const [selectedRoutine, setSelectedRoutine] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
     const [expandedDay, setExpandedDay] = useState(null);
@@ -52,12 +53,15 @@ export default function AssingRoutinesList() {
       };
 
       const handleBackToList = () => {
+        setUpdatedRoutine(null);
         setUpdateRoutinePage(false);
     };
 
     if (showUpdateRoutinePage) {
-        return <AssignRoutinesModify onBackToList={handleBackToList} />;
+        return <AssignRoutinesModify onBackToList={handleBackToList} selectedRoutine={selectedRoutine}/>;
     }
+
+    
 
     return (
         <div className="container2">
