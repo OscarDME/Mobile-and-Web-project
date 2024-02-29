@@ -2,6 +2,8 @@ import React , {useState}from 'react'
 import { DATA_DIET } from '../DATA_DIET'
 import { useMsal } from "@azure/msal-react";
 import NumberInput from '../NumberInput';
+import { Calendar } from 'primereact/calendar';
+import "primereact/resources/themes/lara-light-indigo/theme.css";
 
 
 
@@ -11,6 +13,8 @@ export default function AssignDietsCalendar({client, createdDiet}) {
     const activeAccount = instance.getActiveAccount();
     const [dietPlan, setDietPlan] = useState(DATA_DIET);
     const [weekToAsssign, setWeekToAsssign] = useState(0);
+    const [date, setDate] = useState(null);
+
 
     const handleSubmit = async (event) => {
 
@@ -62,6 +66,12 @@ export default function AssignDietsCalendar({client, createdDiet}) {
     return;
   }
 
+  // Verifica si tiene algún nutricionista o cliente asignado
+  if (!createdDiet.clientId || createdDiet.clientId.trim() === "" || !createdDiet.nutricionistID || createdDiet.nutricionistID.trim() === "") {
+    alert("Algo ocurrió. No se pudo obtener los datos del cliente a asignar la dieta o del nutricionista que la creó. Inténtalo de nuevo.");
+    return;
+  }
+
 
       //TODO: guardar en base de datos aqui
       //Hacer validacion de los datos
@@ -84,7 +94,7 @@ export default function AssignDietsCalendar({client, createdDiet}) {
         ))}
     </div>
     <form className='calendar-container' onSubmit={handleSubmit}>
-    <div>
+    <div className='calendar-ind-container'>
     ¿Por cuántas semanas quieres asignar la dieta?
     <NumberInput
       placeholder="…"
@@ -95,7 +105,10 @@ export default function AssignDietsCalendar({client, createdDiet}) {
       const newValue = e.target.value;
       setWeekToAsssign(newValue)}}/>
     </div>
-
+    Elegir fechas de asignación:
+    <div className="card flex justify-content-center">
+            <Calendar className='p-calendar' value={date} onChange={(e) => setDate(e.value)} dateFormat="dd/mm/yy" touchUI selectionMode="range"/>
+        </div>
       <div>
       <button className='add_button' type='submit'>Asignar Dieta</button>
       </div>
@@ -103,3 +116,8 @@ export default function AssignDietsCalendar({client, createdDiet}) {
     </>
   )
 }
+
+
+
+
+        

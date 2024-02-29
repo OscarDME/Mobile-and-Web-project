@@ -1,17 +1,39 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { AuthenticatedTemplate } from '@azure/msal-react';
+import AssingRoutinesList from "./AssingRoutinesList";
+import AssignRoutinesCalendar from "./AssignRoutinesCalendar";
 
-export default function AssignRoutines() {
+
+
+
+export default function AssignRoutines({ selectedUser }) {
+  const [updatedRoutine, setUpdatedRoutine] = useState(null);
+
+  const handleRoutineUpdate = (routine) => {
+    setUpdatedRoutine(routine);
+    console.log(updatedRoutine);
+  };
+
   return (
-    <>
-    <div className='container'>
-    <div className='list-container'>
-    <h2 className='MainTitle'>Lista de rutinas</h2>
-    </div>
-    </div>
-    <div className='container'>
-    asghnaslkjdfh
-    </div>
-    </>
-
+    <AuthenticatedTemplate>
+      {selectedUser ? (
+        <>
+          <div className='container-diet'>
+            <div className='list-container'>
+              <AssingRoutinesList onRoutineUpdate={handleRoutineUpdate} />
+            </div>
+          </div>
+          <div className='container-diet'>
+            <AssignRoutinesCalendar selectedUser={selectedUser}/>
+          </div>
+        </>
+      ) : (
+        <div className='no-user-container'>
+          <div>
+            <h3>No hay usuario seleccionado</h3>
+          </div>
+        </div>
+      )}
+    </AuthenticatedTemplate>
   )
 }

@@ -144,8 +144,119 @@
 
 
 .calendar-container{
+  height: 500px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
+}
+
+.cardcontainer-colors2{
+  width: 100%;
+  list-style: none !important;
+  background-color: transparent;
+  padding: 0;
+  overflow-x:hidden;
+  overflow-y:scroll !important;
+  margin-bottom: 0;
+}
+.cardcontainer-colors2 .row-hard{
+  color: var(--text);
+  width: auto !important;
+  list-style-type: none;
+  display: flex !important;
+  flex-direction: row !important;
+  background-color: var(--hard);
+  margin: 10px;
+  transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+  border-radius: 5px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.cardcontainer-colors2 .row-hard.selected{
+  color: var(--background);
+  background-color: var(--hard-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.cardcontainer-colors2 .row-hard:hover{
+  background-color: var(--hard-hover);
+  color: var(--background);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  transform: scale(1.005);
+}
+
+
+.cardcontainer-colors2 .row-medium{
+  color: var(--text);
+  width: auto !important;
+  list-style-type: none;
+  display: flex !important;
+  flex-direction: row !important;
+  background-color: var(--medium);
+  margin: 10px;
+  transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+  border-radius: 5px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.cardcontainer-colors2 .row-medium.selected{
+  color: var(--background);
+  background-color: var(--medium-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+
+}
+
+.cardcontainer-colors2 .row-medium:hover{
+  background-color: var(--medium-hover);
+  color: var(--background);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  transform: scale(1.005);
+}
+
+.cardcontainer-colors2 .row-easy{
+  color: var(--text);
+  width: auto !important;
+  list-style-type: none;
+  display: flex !important;
+  flex-direction: row !important;
+  background-color: var(--easy);
+  margin: 10px;
+  transition: transform 0.07s ease-in-out, box-shadow 0.3s ease-in-out;
+  border-radius: 5px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.cardcontainer-colors2 .row-easy.selected{
+  color: var(--background);
+  background-color: var(--easy-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.cardcontainer-colors2 .row-easy:hover{
+  background-color: var(--easy-hover);
+  color: var(--background);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  transform: scale(1.005);
+}
+
+.btn-select-routine{
+  border-radius: 5px;
+  border-color: transparent;
+  background-color: var(--background);
+  font-size: 26px;
+}
+
+.btn-select-routine:hover{
+  background-color: var(--secondary-background);
+}
+
+.calendar-ind-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
