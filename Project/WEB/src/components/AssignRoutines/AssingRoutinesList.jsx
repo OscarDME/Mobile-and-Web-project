@@ -4,7 +4,8 @@ import AssignRoutinesModify from './AssignRoutinesModify';
 import SearchBar from '../SearchBar';
 import { ToolTip } from '../ToolTip';
 
-export default function AssingRoutinesList() {
+export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
+  
 
     const [searchTerm, setSearchTerm] = useState('');
     const [updatedRoutine, setUpdatedRoutine] = useState(null);
@@ -12,6 +13,16 @@ export default function AssingRoutinesList() {
     const [expandedRow, setExpandedRow] = useState(null);
     const [expandedDay, setExpandedDay] = useState(null);
     const [showUpdateRoutinePage, setUpdateRoutinePage] = useState(false);
+
+
+    useEffect(() => {
+        setExpandedRow(null);
+        setExpandedDay(null);
+        setSelectedRoutine(null);
+        setUpdatedRoutine(null);
+        setUpdateRoutinePage(false);
+    }, [selectedUser]);
+
 
     const filteredExercises = RoutineCard.filter(routine => {
         return (
@@ -44,7 +55,8 @@ export default function AssingRoutinesList() {
         }
       };
 
-      const handleUpdateClick = () => {
+      const handleUpdateClick = (routine) => {
+        setSelectedRoutine(routine)
         setUpdateRoutinePage(true); 
       };
 
@@ -53,12 +65,15 @@ export default function AssingRoutinesList() {
       };
 
       const handleBackToList = () => {
+        setExpandedRow(null);
+        setExpandedDay(null);
+        setSelectedRoutine(null);
         setUpdatedRoutine(null);
         setUpdateRoutinePage(false);
     };
 
     if (showUpdateRoutinePage) {
-        return <AssignRoutinesModify onBackToList={handleBackToList} selectedRoutine={selectedRoutine}/>;
+         return <AssignRoutinesModify onBackToList={handleBackToList} selectedUser={selectedUser} selectedRoutine={selectedRoutine} onRoutineUpdate={onRoutineUpdate} />;;
     }
 
     

@@ -11,7 +11,7 @@ export default function AssignRoutines({ selectedUser }) {
 
   const handleRoutineUpdate = (routine) => {
     setUpdatedRoutine(routine);
-    console.log(updatedRoutine);
+    console.log("Rutina en AssignRoutine",routine);
   };
 
   return (
@@ -24,7 +24,7 @@ export default function AssignRoutines({ selectedUser }) {
             </div>
           </div>
           <div className='container-diet'>
-            <AssignRoutinesCalendar selectedUser={selectedUser}/>
+            <AssignRoutinesCalendar selectedUser={selectedUser} updatedRoutine={updatedRoutine}/>
           </div>
         </>
       ) : (
