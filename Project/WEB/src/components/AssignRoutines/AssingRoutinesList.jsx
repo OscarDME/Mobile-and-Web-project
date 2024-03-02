@@ -65,6 +65,7 @@ export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
       };
 
       const handleBackToList = () => {
+        onRoutineUpdate(null);
         setExpandedRow(null);
         setExpandedDay(null);
         setSelectedRoutine(null);

@@ -624,15 +624,11 @@ const handleSubmit = (event) => {
   onBackToList();
 };
 
-
-
-
-
   return (
 <div className='container2'>
       <div className='add_header2'>
         <button className="back_icon card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
-        <h1 className='mtitle'>Crear una Rutina nueva</h1>
+        <h1 className='mtitle'>Modificar una Rutina nueva</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area2'>

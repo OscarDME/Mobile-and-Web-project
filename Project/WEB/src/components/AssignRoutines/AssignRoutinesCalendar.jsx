@@ -73,8 +73,8 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
         <div key={index} className='active-diet-card'>
             <h4>{routine.name}</h4>
             <div>
-            <p>Fecha de inicio: </p>
-            <p>Fecha de finalización: </p>
+            <div>Fecha de inicio: </div>
+            <div>Fecha de finalización: </div>
             </div>
         </div>
         </>
