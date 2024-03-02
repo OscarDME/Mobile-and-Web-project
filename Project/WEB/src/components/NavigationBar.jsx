@@ -53,19 +53,19 @@ export const NavigationBar = () => {
                     />
                 </NavLink>
                 <AuthenticatedTemplate>
-                    <div className="Navbar-Links">{/*
+                    <div className="Navbar-Links">
                         <NavLink id="Progress" to="/Progress" className='NavLinks'>
                             Progreso
                         </NavLink>
                         <NavLink id="Routines" to="/Routines" className='NavLinks'>
                             Asignar Rutinas
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="MyRoutines" to="/MyRoutines" className='NavLinks'>
                             Rutinas
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
                         </NavLink>*/}
@@ -80,7 +80,7 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
                         </NavLink>
@@ -92,7 +92,7 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Exercises_management" to="/Exercises_management" className='NavLinks'>
                             Gestión de Ejercicios
-                        </NavLink>
+                        </NavLink>*/}
                     </div>
                     <div>
                         <DropdownButton className="ProfileBtn"  drop="start" title={<i className="bi bi-person-fill h2"></i>}>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { RoutinesCard } from "../DATA_ROUTINES";
+import { RoutineCard } from "../DATA_NEW_ROUTINES";
 import '../../styles/Management.css';
 import {ToolTip} from '../ToolTip';
 import SelectFilter from '../SelectFilter';
 import MyRoutinesAdd from './MyRoutinesAdd';
 import SearchBar from '../SearchBar';
+import MyRoutinesEdit from './MyRoutinesEdit';
 
 export default function MyRoutines() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,9 @@ export default function MyRoutines() {
     const [difficultyFilter, setDifficultyFilter] = useState('');
     const [daysFilter, setDaysFilter] = useState('');
     const [showAddPage, setShowAddPage] = useState(false);
+    const [showEditPage, setShowEditPage] = useState(false);
+    const [deleteRoutine, setDeleteRoutine] = useState(null);
+
 
     const difficultyOptions = [
       { value: 'Fácil', label: 'Fácil' },
@@ -31,11 +35,12 @@ export default function MyRoutines() {
       {value: '7', label: '7'},
     ];
 
-    const filteredExercises = RoutinesCard.filter(routine => {
+
+    const filteredExercises = RoutineCard.filter(routine => {
       return (
         routine.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (difficultyFilter ? routine.difficulty === difficultyFilter : true) &&
-        (daysFilter ? routine.daysPerWeek.toString() === daysFilter : true)
+        (daysFilter ? routine.days.length.toString() === daysFilter : true)
       );
     });
     
@@ -56,17 +61,37 @@ export default function MyRoutines() {
     const handleRowClick = (routine) => {
       if (expandedRow === routine.id) {
         setExpandedRow(null);
+        setDeleteRoutine(null);
         setExpandedDay(null);
         setSelectedRoutine(null); // Deselecciona la fila al hacer clic nuevamente
       } else {
         setExpandedDay(null);
+        setDeleteRoutine(null);
         setExpandedRow(routine.id);
         setSelectedRoutine(routine); // Selecciona la fila al hacer clic
       }
     };
 
     const handleDeleteClick = (routine) => {
+      if (deleteRoutine && deleteRoutine.id === routine.id) {
+        setDeleteRoutine(null); 
+      } else {
+        if (expandedRow && expandedRow !== routine.id) {
+          setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
+          setSelectedRoutine(null);
+          setExpandedDay(null);
+        setExpandedRow(null);
+        }
+        setExpandedRow(null);
+        setExpandedDay(null);
+        setSelectedRoutine(null);
+        setDeleteRoutine(routine); 
+      }
+    };
 
+    const handleEditClick = (routine) => {
+      setSelectedRoutine(routine);
+      setShowEditPage(true); 
     }
 
     const handleDayClick = (day) => {
@@ -78,25 +103,35 @@ export default function MyRoutines() {
     };
 
     const handleBackToList = () => {
-        setShowAddPage(false); // Volver a la lista de comidas
+        setShowEditPage(false);
+        setShowAddPage(false); // Volver a la lista
     };
+
+    const handleDeleteRoutineButton = (routine) =>{
+
+      //TODO: eliminar rutina :)
+    }
     
-    // Si showAddPage es verdadero, renderiza el componente de agregar ejercicio
+    // Si showAddPage es verdadero, renderiza el componente de agregar 
     if (showAddPage) {
         return <MyRoutinesAdd onBackToList={handleBackToList} />;
+    }
+    if (showEditPage) {
+      return <MyRoutinesEdit onBackToList={handleBackToList} routine={selectedRoutine}/>;
     }
 
     return (
       <div className="container2">
-                <div className="search-bar-container2">
-            <div className='search-bar'>
-              <div className='addclient'><i className="bi bi-search h4"></i></div>
-              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            </div>
-            <div>
-              <a className="iconadd" role="button" onClick={handleAddClick}><i className="bi bi-plus-circle-fill"></i></a>
-            </div>
-            </div>
+      <div className="search-bar-container2">
+  <div className='search-bar'>
+    <div className='addclient'><i className="bi bi-search h4"></i></div>
+    <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+  </div>
+  <div>
+    <a className="iconadd" role="button" onClick={handleAddClick}><i className="bi bi-plus-circle-fill"></i></a>
+  </div>
+  </div>
+      
           <div className="filters-container">
           <div className='filter-row'>
           Filtrar por dificultad: 
@@ -125,44 +160,57 @@ export default function MyRoutines() {
                 <div>
                   <div className='row_name'>{routine.name}</div>
                   <div className='row_description'>{routine.difficulty}</div>
-                  <div className='row_description'>{routine.daysPerWeek} día(s) a la semana</div>
+                  <div className='row_description'>{routine.days.length.toString()} día(s) a la semana</div>
                 </div>
-                <div className="row_edit">
+                    <div className="row_edit">
+                    <i className={`bi bi-pencil-square card-icon-routine `} onClick={(e) => { e.stopPropagation(); handleEditClick(routine); }}></i>
                       <i className={`bi bi-trash card-icon-routine `} onClick={(e) => { e.stopPropagation(); handleDeleteClick(routine); }}></i>
                     </div>
               </div>
+              
               {expandedRow === routine.id && (
                 <div className="routine-info">
-                  {Object.entries(routine.dailyRoutines).map(([day, dayInfo], index) => (
-                    <div key={day} className={`routine-day-info ${index % 2 === 0 ? 'day-even' : 'day-odd'}`}>
-                      <div className={`routine-day ${expandedDay === day ? 'selected' : ''}`} onClick={() => handleDayClick(day)}>
-                        <i className={`bi ${expandedDay === day ? 'bi-caret-down-fill' : 'bi-caret-right-fill'} day-icon`}></i>
-                        {day}
+                {routine.days.map((day, dayIndex) => (
+                    <div key={day.id} className={`routine-day-info ${dayIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
+                      <div className={`routine-day ${expandedDay && expandedDay.id === day.id ? 'selected' : ''}`} onClick={() => handleDayClick(day)}>
+                        <i className={`bi ${expandedDay && expandedDay.id === day.id ? 'bi-caret-down-fill' : 'bi-caret-right-fill'} day-icon`}></i>
+                        {day.dayName}
                       </div>
-                      {expandedDay === day && (
+                      {expandedDay && expandedDay.id === day.id && (
                         <div className='day-block'>
-                          {dayInfo.blocks.map((block, blockIndex) => (
-                            <div key={blockIndex} className='exercise-block'>
-                              <ul className={`exercise-list ${blockIndex % 2 === 0 ? 'exercise-even' : 'exercise-odd'}`}>
-                                {block.exercises.map((exercise, exerciseIndex) => (
-                                  <li key={exerciseIndex} className='exercise-row'>
-                                  <div className='exercise-name'><h5>{exercise.exerciseId.name}</h5><ToolTip muscles={exercise.exerciseId.muscles} difficulty={exercise.exerciseId.difficulty} material={exercise.exerciseId.material} type={exercise.exerciseId.type}>
-                                  <i class="bi bi-info-circle-fill info-icon"></i>
-                                  </ToolTip> 
+                          {day.exercises.map((exercise, exerciseIndex) => (
+                            <div key={exercise.id} className='exercise-block'>
+                              <ul className={`exercise-list ${exerciseIndex % 2 === 0 ? 'exercise-even' : 'exercise-odd'}`}>
+                                <li className='exercise-row'>
+                                  <div className='exercise-name'>
+                                    <h5>{exercise.exerciseToWork.name}</h5>
+                                    <ToolTip muscles={exercise.exerciseToWork.muscles} difficulty={exercise.exerciseToWork.difficulty} material={exercise.exerciseToWork.material} type={exercise.exerciseToWork.type}>
+                                      <i className="bi bi-info-circle-fill info-icon"></i>
+                                    </ToolTip>
                                   </div>
-                                    {(exercise.exerciseId.type === "Pesas" || exercise.exerciseId.type === "Peso corporal") && (
-                                      <div>
-                                      {exercise.sets} Sets, {exercise.reps} Repeticiones, {exercise.restBetweenSets} segundos de descanso
-                                      </div>
-                                  )}
 
-                                  {exercise.exerciseId.type === "Cardiovascular" && (
+                                  {(exercise.exerciseToWork.type === "Pesas" || exercise.exerciseToWork.type === "Peso corporal") && (
                                       <div>
-                                      {exercise.time} minutos
+                                      {exercise.rest} segundos de descanso entre sets
                                       </div>
                                   )}
-                                  </li>
-                                ))}
+                                  {exercise.sets.map((set, setIndex) => (
+                                    <>
+                                    {set.map((individualSet, individualSetIndex)=> (
+
+                                      <div className='set-text'>
+                                      Set {setIndex + 1} {(individualSetIndex !== 0) && (
+                                        <>
+                                        / Drop-Set {individualSetIndex + 1} 
+                                        </>
+                                        )} - {individualSet.reps.toString()} Repeticiones
+                                      </div>
+                                    ))}
+                                  </>
+                                  ))}
+                                  <div className='superset-text'> {exercise.isSuperSet ? "Sí":"No"} hace superserie con el siguiente ejercicio.
+                                  </div>
+                                </li>
                               </ul>
                             </div>
                           ))}
@@ -172,6 +220,13 @@ export default function MyRoutines() {
                   ))}
                 </div>
               )}
+
+              {deleteRoutine && deleteRoutine.id === routine.id &&(
+                <form className='center-delete-routine-btn'>
+                  <button type="submit" className='delete_button' onClick={(e) => { e.stopPropagation(); handleDeleteRoutineButton(routine); }}>Eliminar rutina {routine.name}</button>
+                  </form>
+                )}
+
             </li>
           ))}
         </ul>
