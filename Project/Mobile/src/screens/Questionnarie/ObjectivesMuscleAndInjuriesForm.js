@@ -4,7 +4,7 @@ import {Picker} from "@react-native-picker/picker";
 import ModalDropdown from 'react-native-modal-dropdown';
 import { CheckBox } from "react-native-elements";
 import * as Progress from "react-native-progress";
-import { AntDesign } from '@expo/vector-icons'; // Asegúrate de tener instalado '@expo/vector-icons'
+import { AntDesign } from '@expo/vector-icons'; 
 
 const TrainingGoalsScreen = ({ navigation, route }) => {
   const [errorMessage, setErrorMessage] = useState("");
@@ -47,12 +47,11 @@ const TrainingGoalsScreen = ({ navigation, route }) => {
     if (!trainingGoal) {
       setErrorMessage("Por favor, selecciona un objetivo de entrenamiento.");
       return;
-    } else if (injuryAreas.length === 0) {
-      setErrorMessage("Por favor, indica si tienes alguna lesión o molestia.");
-      return;
+    // } else if (injuryAreas.length === 0) {
+    //   setErrorMessage("Por favor, indica si tienes alguna lesión o molestia.");
+    //   return;
     } else {
       setErrorMessage("");} // Limpiar el mensaje de error si pasa las validaciones
-    // Puedes enviar esta información a la siguiente pantalla o a tu backend
     console.log("Datos pasados:");
     console.log("oid", route.params.oid);
     console.log("Tiempo de entrenamiento:", route.params.trainingTime);
@@ -71,8 +70,7 @@ const TrainingGoalsScreen = ({ navigation, route }) => {
       trainingGoal: trainingGoal,
       injuryAreas: injuryAreas,
       focusedBodyPart: focusedBodyPart,
-    }); // Aquí podrías enviar los datos a tu backend o realizar otras operaciones
-    // Ejemplo de cómo navegar a la siguiente pantalla
+    });
     //navigation.navigate('NextScreen');
   };
 
@@ -178,7 +176,7 @@ const TrainingGoalsScreen = ({ navigation, route }) => {
         defaultValue="Seleccionar parte del cuerpo"
         style={styles.dropdown}
         textStyle={styles.dropdownText}
-        dropdownStyle={styles.dropdownMenu}  // Agrega esta línea para personalizar el estilo del menú
+        dropdownStyle={styles.dropdownMenu}  
       />
       {errorMessage !== "" && (
   <Text style={styles.errorText}>{errorMessage}</Text>

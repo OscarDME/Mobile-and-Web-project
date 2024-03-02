@@ -95,7 +95,7 @@ export default function CurrentExercises() {
                       <div className="exercise-info-column">
                         <div className="exercise-info-row">Posición inicial: {exercise.preparacion}</div>
                         <div className="exercise-info-row">Ejecucion: {exercise.ejecucion}</div>
-                        <div className="exercise-info-row">Indicaciones: {exercise.ejecucion}</div>                      </div>
+                        </div>
                     </div>
                   </>
                 )}

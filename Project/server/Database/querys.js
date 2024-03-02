@@ -82,14 +82,28 @@ export const querys = {
     deleteObtieneByReceta: "DELETE FROM Obtiene WHERE ID_Receta = @ID_Receta",
 
     //Rutinas
-    createRutina: "INSERT INTO Rutina(publica, ID_Dificultad, ID_NivelFormaFisica, ID_Objetivo, duracion, ID_Usuario) VALUES (0, @ID_Dificultad, @ID_NivelFormaFisica, @ID_Objetivo, @duracion, @ID_Usuario)",
+    createRutina: "INSERT INTO Rutina(publica, ID_Dificultad, ID_NivelFormaFisica, ID_Objetivo, duracion, ID_Usuario)  OUTPUT INSERTED.ID_Rutina VALUES (0, @ID_Dificultad, @ID_NivelFormaFisica, 1, @duracion, @ID_Usuario)",
+    createRutinaShort: "INSERT INTO Rutina(nombre, ID_Usuario) OUTPUT INSERTED.ID_Rutina VALUES (@nombre, @ID_Usuario)",
+    getRutinasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario WHERE R.ID_Usuario = @ID_Usuario",
+    getRutinaByID: "SELECT * FROM Rutina WHERE ID_Rutina = @ID_Rutina",
+    updateRutina: "UPDATE Rutina SET nombre = @nombre, publica = @publica WHERE ID_Rutina = @ID_Rutina",
 
     //Dias_Entreno
     createDiasEntreno: "INSERT INTO Dias_Entreno(ID_Rutina, ID_Dia) VALUES (@ID_Rutina, @ID_Dia)",
+    getDiasEntrenoByRutina: "SELECT DE.ID_Dias_Entreno, DE.ID_Dia, D.dia FROM Dias_Entreno DE INNER JOIN Dia D ON DE.ID_Dia = D.ID_Dia WHERE DE.ID_Rutina = @ID_Rutina",
+    deleteDiasEntrenoByRutina: "DELETE FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina",
 
-    //Cantidad_series
-    createDiaSerie: "INSERT INTO DiaSerie(ID_Dias_Entreno, descripcion) VALUES (@ID_Dias_Entreno, @descripcion)",
+    //EjerciciosDia
+    createEjerciciosDia: "INSERT INTO EjerciciosDia (ID_Dias_Entreno, ID_Ejercicio, descanso, superset) VALUES (@ID_Dias_Entreno, @ID_Ejercicio, @descanso, @superset)",
+    getEjerciciosPorDia: "SELECT e.ID_Ejercicio, e.ejercicio, DATEDIFF(SECOND, '00:00:00', CAST(ed.descanso AS TIME)) AS descanso, ed.superset, ed.ID_EjerciciosDia FROM Ejercicio AS e JOIN EjerciciosDia AS ed ON e.ID_Ejercicio = ed.ID_Ejercicio WHERE ed.ID_Dias_Entreno = @ID_Dias_Entreno;",
+
+    //BloqueSets
+    createBloqueSets: "INSERT INTO BloqueSets (ID_EjerciciosDia) VALUES (@ID_EjerciciosDia)",
+
+    //ConjuntoSeries
+    createConjuntoSeries: "INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Series) VALUES (@ID_BloqueSets, @ID_Series)",
 
     //Serie
     createSerie: "INSERT INTO (ID_Ejercicio, tiempo_ejercicio_cardiovascular, descanso, repeticiones) VALUES (@ID_Ejercicio, @tiempo_ejercicio_cardiovascular, @descanso, @repeticiones)",
+
 };

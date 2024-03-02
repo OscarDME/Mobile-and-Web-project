@@ -65,6 +65,10 @@ import DetallesEjercicio from "../screens/Biblioteca/DetallesEjercicio";
 import AddRutina from "../screens/Rutinas/AddRutina";
 import AddEjercicio from "../screens/Rutinas/AddEjercicio";
 import AddSets from "../screens/Rutinas/AddSets";
+import DetallesRutina from "../screens/Rutinas/DetallesRutina";
+import EditarRutina from "../screens/Rutinas/EditRoutine";
+import Ejercicios from "../screens/Rutinas/Ejercicios";
+import Detalles from "../screens/Rutinas/Detalles"
 
 import Header from "../components/Header";
 {
@@ -248,7 +252,11 @@ return (
     >
       <StackRutinas.Screen name="Rutinas" component={Rutinas} />
       <StackRutinas.Screen name="AddRutina" component={AddRutina} />
+      <StackRutinas.Screen name="DetallesRutina" component={DetallesRutina} />
+      <StackRutinas.Screen name="EditarRutina" component={EditarRutina} />
       <StackRutinas.Screen name="AddEjercicio" component={AddEjercicio} />
+      <StackRutinas.Screen name="Ejercicios" component={Ejercicios} />
+      <StackRutinas.Screen name="Detalles" component={Detalles} />
       <StackRutinas.Screen name="AddSets" component={AddSets} />
     </StackRutinas.Navigator>
   );

@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet} from "react-native";
 import { CheckBox } from "react-native-elements";
 import * as Progress from "react-native-progress";
-import { AntDesign } from '@expo/vector-icons'; // Asegúrate de tener instalado '@expo/vector-icons'
-import TimePicker from "../../components/TimePicker"; // Importa el componente TimePicker
+import { AntDesign } from '@expo/vector-icons'; 
+import TimePicker from "../../components/TimePicker"; 
 
 const TrainingSchedule = ({ navigation, route }) => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -89,7 +89,6 @@ const TrainingSchedule = ({ navigation, route }) => {
         <Progress.Bar progress={0.2} width={null} height={30} color="#0790cf" />
       </View>
       <Text style={styles.pageText}>1 de 5</Text>
-      {/* Reemplaza el TextInput con el componente TimePicker */}
       <TimePicker onChange={handleTrainingTimeChange} />
       
       <Text style={styles.instructionText}>Selecciona los días preferidos para entrenar:</Text>
@@ -115,8 +114,8 @@ const TrainingSchedule = ({ navigation, route }) => {
         onPress={() => setCheckboxChecked(!checkboxChecked)}
         containerStyle={styles.checkboxContainer}
         textStyle={styles.checkboxText}
-        checkedColor="black" // o el color que prefieras
-        uncheckedColor="black" // o el color que prefieras
+        checkedColor="black" 
+        uncheckedColor="black"
       />
     </View>
   );

@@ -14,7 +14,7 @@ const MainMenu = ({ route }) => {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Perfil de mierda</Text>
+      <Text>Perfil</Text>
       <ThemedButton
           name ="bruce"
           type="primary"

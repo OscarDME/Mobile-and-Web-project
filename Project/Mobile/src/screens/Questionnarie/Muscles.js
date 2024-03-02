@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import * as Progress from "react-native-progress";
-import { AntDesign } from '@expo/vector-icons'; // Asegúrate de tener instalado '@expo/vector-icons'
-import TimePicker from "../../components/TimePicker"; // Importa el componente TimePicker
+import { AntDesign } from '@expo/vector-icons'; 
+import TimePicker from "../../components/TimePicker"; 
 
 const dayNames = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 

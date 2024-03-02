@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Button, TouchableOpacity } from "react-native";
 import * as Progress from "react-native-progress";
-import { AntDesign } from '@expo/vector-icons'; // Asegúrate de tener instalado '@expo/vector-icons'
+import { AntDesign } from '@expo/vector-icons'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from "../../utils/conf";
 
@@ -29,7 +29,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
   const [fitnessLevel, setFitnessLevel] = useState("");
   const [trainingLocation, setTrainingLocation] = useState("");
   const [selectedMaterials, setSelectedMaterials] = useState([]);
-  const [availableMaterials, setAvailableMaterials] = useState([]); // Definir availableMaterials
+  const [availableMaterials, setAvailableMaterials] = useState([]); 
 
   const fitnessLevels = [
     { value: 1, label: "Alto" },
@@ -55,7 +55,6 @@ const PhysicAndSpace = ({ navigation, route }) => {
     }
   };
   
-  // Llama a saveData antes de navegar a otro stack
 
   useEffect(() => {
     // Hacer la solicitud para obtener los materiales disponibles si la ubicación es 'Casa'
@@ -70,13 +69,12 @@ const PhysicAndSpace = ({ navigation, route }) => {
         `${config.apiBaseUrl}/materials`,
         {
           method: "GET",
-          // Puedes incluir headers o parámetros de autenticación si es necesario
         }
       );
       if (materialsResponse.ok) {
         const materials = await materialsResponse.json();
         console.log(materials);
-        setAvailableMaterials(materials); // Actualizar el estado con los materiales obtenidos
+        setAvailableMaterials(materials); 
       } else {
         console.log("Error al obtener los materiales");
       }
@@ -91,9 +89,6 @@ const PhysicAndSpace = ({ navigation, route }) => {
       if (userDataString) {
         const userData = JSON.parse(userDataString);
         
-        // Aquí asumo que ya tienes estados definidos para cada uno de estos valores
-        // Por ejemplo: const [oid, setOid] = useState();
-        // Entonces, actualizas esos estados con los datos recuperados
         setOid(userData.oid);
         setTrainingTime(userData.trainingTime);
         setPreferredDays(userData.preferredDays);
@@ -178,7 +173,6 @@ const PhysicAndSpace = ({ navigation, route }) => {
             fitnessLevel: fitnessLevel,
             trainingLocation: trainingLocation,
             selectedMaterials: selectedMaterials,
-            // Agrega todos los datos que deseas enviar
           }),
         });
   
@@ -271,7 +265,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
       <TouchableOpacity
         style={{
           marginVertical: 10,
-          padding: 20, // Aumenta el padding para hacer los contenedores más grandes
+          padding: 20, 
           borderRadius: 10,
           backgroundColor: trainingLocation === "Gimnasio" ? "#0790cf" : "#eaeaea",
         }}
@@ -282,7 +276,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
       <TouchableOpacity
         style={{
           marginVertical: 10,
-          padding: 20, // Aumenta el padding para hacer los contenedores más grandes
+          padding: 20, 
           borderRadius: 10,
           backgroundColor: trainingLocation === "Casa" ? "#0790cf" : "#eaeaea",
         }}
@@ -293,7 +287,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
       <TouchableOpacity
         style={{
           marginVertical: 10,
-          padding: 20, // Aumenta el padding para hacer los contenedores más grandes
+          padding: 20, 
           borderRadius: 10,
           backgroundColor: trainingLocation === "Calistenia" ? "#0790cf" : "#eaeaea",
         }}

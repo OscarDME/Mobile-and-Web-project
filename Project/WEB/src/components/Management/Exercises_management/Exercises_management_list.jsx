@@ -124,7 +124,7 @@ export default function Exercises_management_list() {
                     </div>
                   </>
                 )}
-                {editingExercise && editingExercise.id === exercise.id && (
+                {editingExercise && editingExercise.ID_Ejercicio === exercise.ID_Ejercicio && (
                   <>
                     <Exercises_management_edit exercise={editingExercise} />
                   </>

@@ -15,6 +15,7 @@ import { ThemedButton } from "react-native-really-awesome-button";
 import { AwesomeButton } from "react-awesome-button";
 import Logo from "../../../assets/logo.png"
 import config from "../../utils/conf";
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 
 const Login = () => {
   const navigation = useNavigation();
@@ -84,39 +85,31 @@ const Login = () => {
         );
 
         console.log("Code exchange successful. Response:", res);
-        setToken(res.idToken); // Change here to access the idToken
+        // Aquí ya no necesitas setToken(res.idToken) si solo vas a guardar el oid
 
         const decodedToken = decodeToken(res.idToken); // Decodificar el token aqui
-        console.log(decodedToken.name);
-        // navigation.navigate("Validation", {screen: 'WelcomeScreen', params: {token: res.idToken}});
-
         if (decodedToken) {
-          const oid = decodedToken.oid;
-          console.log(oid);
-          console.log("Llegue aqui 4");
-          // Asegúrate de obtener el campo correcto del token
-          // Verificar si el usuario existe en la base de datos antes de redirigir
-          const userExistsResponse = await fetch(
-            `${config.apiBaseUrl}/users/${oid}`,
-            {
-              method: "GET",
-            }
-          );
-          const userExists = await userExistsResponse.text();
+          const oid = decodedToken.oid; // Asegúrate de que este es el campo correcto
+          console.log("OID:", oid);
+
+          // Guardar el oid en AsyncStorage
+          await AsyncStorage.setItem('userOID', oid);
+          console.log('OID guardado con éxito en AsyncStorage');
+
+          // Aquí procedes a verificar si el usuario existe y luego navegar
+          const userExistsResponse = await fetch(`${config.apiBaseUrl}/users/${oid}`, { method: "GET" });
           if (userExistsResponse.status === 200) {
             navigation.replace("Main", {
               screen: "MainMenu",
               params: { token: res.idToken },
             });
           } else {
-            // El usuario no existe, realizar alguna acción (por ejemplo, mostrar mensaje de error)
             navigation.navigate("Validation", {
               screen: "WelcomeScreen",
               params: { token: res.idToken },
             });
           }
         } else {
-          // Manda error
           console.log("Error decoding token :::((((");
         }
       } catch (error) {

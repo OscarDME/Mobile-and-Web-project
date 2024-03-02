@@ -154,7 +154,7 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const regex = /^[a-zA-Z0-9 _-]+$/;
+    const regex = /^[\p{L}\p{N} _.,-]+$/u;
 
     
     if (exerciseName.length > 50 || !regex.test(exerciseName)) {

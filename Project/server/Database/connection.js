@@ -39,6 +39,7 @@ const config = {
 //     }
 // }
 
+
 export const getConnection = async () => {
     try {
       const pool = await sql.connect(config);

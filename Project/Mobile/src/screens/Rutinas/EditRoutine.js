@@ -11,25 +11,42 @@ import { Ionicons } from "@expo/vector-icons";
 import ModalDropdown from "react-native-modal-dropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../../utils/conf";
+import { Switch } from 'react-native'; // Importa el componente Switch
 
-const AddRoutineScreen = ({ navigation }) => {
+
+const EditRoutineScreen = ({ navigation, route }) => {
   const [oid, setOid] = useState("");
   const [error, setError] = useState("");
   const [isMaxDaysReached, setIsMaxDaysReached] = useState(false);
+  const { routineDetails } = route.params; // Recibe los detalles de la rutina desde los parámetros de navegación
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isPublic, setIsPublic] = useState(routineDetails.publica || false);
+
+
 
   useEffect(() => {
-    // Obtener el oid desde AsyncStorage
-    AsyncStorage.getItem("userOID")
-      .then((value) => {
-        if (value !== null) {
-          setOid(value);
-          console.log("OID obtenido:", value);
+    AsyncStorage.getItem("userOID").then((value) => {
+      if (value) {
+        setOid(value);
+      }
+    });
+    if (routineDetails) {
+      setRoutineName(routineDetails.nombre);
+      // Transforma los datos de entrenamiento para incluir el índice correcto para el dropdown
+      const transformedWorkouts = routineDetails.diasEntreno.map(
+        (entrenamiento) => {
+          // Encuentra el índice del día en daysOptions para este entrenamiento
+          // Resta 1 si tu ID_Dia comienza en 1 y los índices de array en JavaScript comienzan en 0
+          const dayIndex = entrenamiento.ID_Dia - 1;
+          return {
+            ...entrenamiento,
+            dayIndex: dayIndex, // Guarda este índice para usarlo en el dropdown
+          };
         }
-      })
-      .catch((error) => {
-        console.error("Error al obtener el OID:", error);
-      });
-  }, []);
+      );
+      setWorkouts(transformedWorkouts);
+    }
+  }, [routineDetails, refreshKey]);
 
   console.log("OID:", oid);
 
@@ -67,15 +84,10 @@ const AddRoutineScreen = ({ navigation }) => {
     ]);
   };
 
-  const deleteDay = (index) => {
-    const newWorkouts = workouts.filter((_, i) => i !== index);
-    setWorkouts(newWorkouts);
-
-    // Revisar si el número de días después de eliminar uno es menor que 7 y actualizar isMaxDaysReached
-    if (newWorkouts.length < 7) {
-      setIsMaxDaysReached(false);
-      setError(""); // Opcionalmente, limpiar cualquier mensaje de error relacionado con el límite de días
-    }
+  const deleteDay = (dayId) => {
+    setWorkouts((currentWorkouts) =>
+      currentWorkouts.filter((workout) => workout.ID_Dias_Entreno !== dayId)
+    );
   };
 
   const onSelectDay = (index, optionIndex) => {
@@ -89,8 +101,25 @@ const AddRoutineScreen = ({ navigation }) => {
     setWorkouts(updatedWorkouts);
   };
 
+  const handlePressAddExercise = (index) => {
+    // Verifica si el índice es válido y si el día y ID_Dias_Entreno están definidos.
+    if (index < workouts.length && workouts[index].dayIndex !== undefined && workouts[index].ID_Dias_Entreno) {
+      const selectedWorkout = workouts[index];
+      const day = daysOptions[selectedWorkout.dayIndex];
+      const dayID = selectedWorkout.ID_Dias_Entreno;
+  
+      // Realiza la navegación si todo es correcto.
+      navigation.navigate('AddEjercicio', {
+        day: day,
+        dayID: dayID,
+      });
+    } else {
+      // Muestra un mensaje de error o realiza alguna acción si el día no está definido.
+      setError('Debes seleccionar un día antes de añadir ejercicios.');
+    }
+  };
+
   const saveRoutine = async () => {
-    // Primero, verificar que todos los días de entrenamiento tengan un ID_Dia asignado
     const todosTienenDia = workouts.every((workout) => workout.ID_Dia !== null);
     const idsUnicos = new Set(workouts.map((workout) => workout.ID_Dia));
 
@@ -104,44 +133,64 @@ const AddRoutineScreen = ({ navigation }) => {
       return;
     }
 
-    setError(""); // Limpiar errores si todo está correcto hasta ahora
+    setError(""); // Limpiar errores si todo está correcto
 
     try {
-      // Asumiendo que ya has obtenido el oid de AsyncStorage y los demás estados están definidos
       const oid = await AsyncStorage.getItem("userOID");
-      const workoutsIds = workouts.map((workout) => workout.ID_Dia); // Ya tienes esto listo
+      const workoutsIds = workouts.map((workout) => workout.ID_Dia);
 
-      // Preparar el cuerpo de la solicitud
+      // Aquí cambia para usar el ID de rutina existente y actualizarla
       const requestBody = {
+        ID_Rutina: routineDetails.ID_Rutina, // Usa el ID de la rutina que estás editando
         oid: oid,
         routineName: routineName,
-        workoutsIds: workoutsIds,
+        workoutsIds: workoutsIds, // IDs de los días de entrenamiento que permanecen
+        publica: isPublic, // Incluye el estado de isPublic en la solicitud
       };
 
       console.log(requestBody);
 
-      setTimeout(async () => {
-        const response = await fetch(`${config.apiBaseUrl}/rutinas`, {
-          method: "POST",
+      // Ajusta la URL y el método HTTP según tu backend
+      const response = await fetch(
+        `${config.apiBaseUrl}/rutina/${routineDetails.ID_Rutina}`,
+        {
+          method: "PUT", // Usa PUT para actualizar
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestBody),
-        });
-
-        if (response.ok) {
-          console.log("Rutina enviada exitosamente a la base de datos");
-          navigation.navigate("Rutinas", { rutinaCreada: true });
-          // Navegar a otra pantalla o mostrar algún mensaje de éxito aquí
-        } else {
-          console.log("Error al enviar la rutina a la base de datos");
-          // Manejar el error adecuadamente aquí
         }
-      }, 2000); // Puedes ajustar este retraso según lo necesites
+      );
+
+      if (response.ok) {
+        console.log("Rutina actualizada exitosamente");
+        if (route.params?.onReturn) {
+            route.params.onReturn();
+          }        
+          navigation.goBack();
+        } else {
+        console.log("Error al actualizar la rutina");
+        // Manejar errores aquí
+      }
     } catch (error) {
-      console.error("Error al realizar la solicitud POST:", error);
-      // Manejar el error adecuadamente aquí
+      console.error("Error al realizar la solicitud:", error);
+      setError("Error al actualizar la rutina.");
     }
+  };
+
+  const renderDropdown = (index) => {
+    // Usa el índice almacenado en el estado de cada entrenamiento para seleccionar la opción correcta
+    const dayIndex = workouts[index].dayIndex;
+    return (
+      <ModalDropdown
+        options={daysOptions}
+        defaultValue={daysOptions[dayIndex]} // Usa el índice para establecer la opción por defecto
+        onSelect={(optionIndex) => onSelectDay(index, optionIndex)}
+        textStyle={styles.dropdownText}
+        dropdownTextStyle={styles.dropdownTextStyle}
+        dropdownStyle={styles.dropdownStyle}
+      />
+    );
   };
 
   return (
@@ -163,24 +212,29 @@ const AddRoutineScreen = ({ navigation }) => {
       />
       <ScrollView style={styles.workoutsList}>
         {workouts.map((workout, index) => (
-          <View key={index} style={styles.workoutItem}>
-            <TouchableOpacity onPress={() => deleteDay(index)}>
+          <TouchableOpacity key={index} style={styles.workoutItem}  onPress={() => handlePressAddExercise(index)}
+          >
+            <TouchableOpacity
+              onPress={() => deleteDay(workout.ID_Dias_Entreno)}
+            >
               <Ionicons name="trash-outline" size={24} color="red" />
             </TouchableOpacity>
             <View style={styles.workoutInfo}>
-              <Text style={styles.workoutDay}> {workout.id}</Text>
-              <ModalDropdown
-                options={daysOptions}
-                onSelect={(optionIndex) => onSelectDay(index, optionIndex)}
-                defaultValue="Selecciona un día"
-                textStyle={styles.dropdownText}
-                dropdownTextStyle={styles.dropdownTextStyle}
-                dropdownStyle={styles.dropdownStyle}
-              />
-              {/* Por ahora los campos de músculos y tiempo quedan vacíos */}
+              <Text style={styles.workoutDay}>Día {index + 1}</Text>
+              {renderDropdown(index)}
+              {/* Aquí puedes agregar campos para músculos y duración si es necesario */}
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
+        <View style={styles.switchContainer}>
+  <Text>¿Rutina Pública?</Text>
+  <Switch
+    trackColor={{ false: "#767577", true: "#81b0ff" }}
+    thumbColor={isPublic ? "#f5dd4b" : "#f4f3f4"}
+    onValueChange={() => setIsPublic(previousState => !previousState)}
+    value={isPublic}
+  />
+</View>
       </ScrollView>
       <Text style={{ color: "red", margin: 10 }}>{error}</Text>
       <TouchableOpacity
@@ -210,6 +264,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontWeight: "bold",
     fontSize: 20,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
   },
   input: {
     borderWidth: 1,
@@ -260,4 +320,4 @@ const styles = StyleSheet.create({
   },
   // Estilos adicionales para el ícono de borrar, texto y dropdown pueden ir aquí
 });
-export default AddRoutineScreen;
+export default EditRoutineScreen;

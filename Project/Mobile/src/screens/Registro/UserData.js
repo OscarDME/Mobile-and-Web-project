@@ -25,7 +25,6 @@ const UserData = ({ navigation }) => {
       givenName: tokenData ? tokenData.given_name : "",
       surname: tokenData ? tokenData.family_name : "",
       emails: tokenData ? tokenData.emails : "",
-      // Otros parámetros que desees pasar
     });  };
 
     return (
