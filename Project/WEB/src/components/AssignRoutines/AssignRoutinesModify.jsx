@@ -28,58 +28,101 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
   
   function renderExercises(day, dayIndex) {
     return day.exercises.map((exercise, exerciseIndex) => (
-      <div key={exerciseIndex}>
-        <div>{exercise.name}</div>
+      <div key={exerciseIndex} className='exercise-not-superserie'>
+          {
+            exerciseIndex > 0 && updatedRoutine.days[dayIndex].exercises[exerciseIndex - 1].isSuperSet ? (
+              <>
+                <div className="red-element bar-top"></div>
+                <div className="red-element dot-top"></div>
+              </>
+            ) : null
+          }
+        <h4>{exercise.exerciseToWork.name}</h4>
         {exercise.sets.map((setGroup, groupIndex) =>
           setGroup.map((set, setIndex) => (
-            <div key={setIndex}>
-              {exercise.type !== "Cardiovascular" ? (
+            <div key={setIndex} className='set-container-modify'>
+              {exercise.exerciseToWork.type !== "Cardiovascular" ? (
                 <>
+                <div className='set-info'>
+                  {setIndex === 0 ? ( "Set " + (setIndex + 1) ): ("Dropset " + (setIndex + 1))}
+                </div>
+                <div className='container-center'>
                 Repeticiones:
                   <NumberInput
                     label="Repeticiones"
-                    value={set.reps}
-                    onChange={(value) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'reps', value)}
+                    placeholder="..."
+                    value={Number(set.reps)}
+                    min={1}
+                    max={600}
+                    onChange={(event,reps) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'reps', reps)}
                   />
-                  Peso:
+                  </div>
+                  <div className='container-center'>
+                  Peso (kg):
                   <NumberInput
                     label="Peso"
-                    value={set.weight}
-                    onChange={(value) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'weight', value)}
+                    placeholder="..."
+                    min={1}
+                    max={600}
+                    value={Number(set.weight)}
+                    onChange={(event,weight) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'weight', weight)}
                   />
+                  </div>
                 </>
               ) : (
-                <div>
-                Tiempo
+                <>
+                <div className='container-center'>
+                Tiempo (minutos):
                 <NumberInput
+                  placeholder="..."
                   label="Tiempo"
-                  value={set.time}
-                  onChange={(value) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'time', value)}
+                  min={1}
+                  max={600}
+                  value={Number(set.time)}
+                  onChange={(event,time) => handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'time', time)}
                 />
                 </div>
+                </>
               )}
             </div>
           ))
         )}
+        {exercise.isSuperSet ? (
+          <>
+          <div class="red-element bar-bottom"></div>
+         <div class="red-element dot-bottom"></div>
+          </>
+
+          ) :<></> }
+
       </div>
     ));
   }
 
 
 
-
   const handleSetChange = (dayIndex, exerciseIndex, groupIndex, setIndex, field, value) => {
-    let newUpdatedRoutine = JSON.parse(JSON.stringify(updatedRoutine));
+    // Clonar profundamente updatedRoutine para mantener la inmutabilidad
+    let newUpdatedRoutine = { ...updatedRoutine, days: updatedRoutine.days.map(day => ({ ...day })) };
   
+    // Acceder directamente al set específico a actualizar
     let targetSet = newUpdatedRoutine.days[dayIndex].exercises[exerciseIndex].sets[groupIndex][setIndex];
   
+    // Actualizar el campo específico del set
     if (field === 'time') {
       targetSet.time = Number(value);
     } else {
+      // Actualizar otros campos como 'reps' o 'weight'
       targetSet[field] = Number(value);
     }
+  
+    // Establecer el estado actualizado
     setUpdatedRoutine(newUpdatedRoutine);
   };
+  
+  
+  
+  
   
 
   return (
@@ -87,14 +130,19 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
     <div className='container3'>
       <div className='modify-header'>
         <button className="back_icon2 card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i></button>
-        <h5 className='MainTitle'>Asignar valores a {updatedRoutine.name}</h5>
+        <div className='title-set-modify'>
+        <h5 className='MainTitle'>Asignar valores a {updatedRoutine.name}</h5>   
+        <ToolTipInfo message={"Las barras rojas conectan ejercicios que tienen superseries."}><i class="bi bi-info-circle-fill info-icon"/></ToolTipInfo>
+        </div>
       </div>
       <div className='days-main-container2'>
       <div>
       <div className='routine-selection'>
         {updatedRoutine?.days.map((day, index) => (
           <div key={index} className="day-container2">
-            <h3 className="day-title">Día {index + 1} {day.dayName}:</h3>
+          <div>
+            <h3 className="day-title">Día {index + 1} - {day.dayName}</h3> 
+            </div>
             {renderExercises(day, index)}
             
           </div>

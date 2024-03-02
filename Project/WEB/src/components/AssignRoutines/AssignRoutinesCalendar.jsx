@@ -1,4 +1,4 @@
-import React , {useState}from 'react'
+import React , {useState, useEffect}from 'react'
 import { useMsal } from "@azure/msal-react";
 import { Calendar } from 'primereact/calendar';
 import { addLocale } from 'primereact/api';
@@ -54,6 +54,10 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
     }
     return dateObj.day;
   };
+
+  useEffect(()=>{
+    console.log("Rutinas cargadas" + updatedRoutine);
+  }, [])
 
 
   const handleSubmit = async (event) => {

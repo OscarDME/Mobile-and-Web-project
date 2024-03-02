@@ -14,7 +14,7 @@ export const RoutineCard = [
                 id:999,
                 dayName:"Lunes",
                 assignedDate: null,
-                assignedHour: null,
+                assignedHour: null ,
                 exercises:[
                     {
                         id:123,
@@ -90,13 +90,6 @@ export const RoutineCard = [
                                 weight: 0,
                                 time: 40,
                              }
-                        ],                            [
-                             {
-                                id: 127,
-                                reps:0,
-                                weight: 0,
-                                time: 40,
-                             }
                         ]
 
                         ]
@@ -121,7 +114,7 @@ export const RoutineCard = [
                             injury: "",
                         },
                         rest: 90,
-                        isSuperSet: true, 
+                        isSuperSet: false, 
                         /*Si el estado es false, se ejecutan todos los sets de este ejercicio de corrido,
                         si el estado es true se ejecuta el primer set de este ejercicio y el primer set del siguiente ejercicio,
                          y despues el segundo set de este ejercicio y el segundo set del otro ejercicio hasta terminar
