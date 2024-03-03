@@ -44,7 +44,7 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
               {exercise.exerciseToWork.type !== "Cardiovascular" ? (
                 <>
                 <div className='set-info'>
-                  {setIndex === 0 ? ( "Set " + (setIndex + 1) ): ("Dropset " + (setIndex + 1))}
+                  {setIndex === 0 ? ( "Set " + (groupIndex + 1) ): ("Dropset " + (setIndex + 1))}
                 </div>
                 <div className='container-center'>
                 Repeticiones:

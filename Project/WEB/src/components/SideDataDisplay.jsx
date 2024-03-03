@@ -4,6 +4,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { UserCard } from './DATA_USER_CARD';
 import SearchBar from './SearchBar';
 
+
 export default function SideDataDisplay(props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
