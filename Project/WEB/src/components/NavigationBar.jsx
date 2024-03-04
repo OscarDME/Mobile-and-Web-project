@@ -77,10 +77,10 @@ export const NavigationBar = () => {
                         </NavLink>{/*
                         <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
                             Citas
-                        </NavLink>
+                        </NavLink>*/}
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
-                        </NavLink>
+                        </NavLink>{/*
                         <NavLink id="Users" to="/Users" className='NavLinks'>
                             Usuarios
                         </NavLink>
