@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react'
 import { Chart } from 'primereact/chart';
 import Progress_Body_MeasuresAdd from './Progress_Body_MeasuresAdd';
-import Dropdown from '../DropDown';
+import Dropdown from '../DropdownCollections';
 import Progress_Body_MeasuresEdit from './Progress_Body_MeasuresEdit';
 import { milestones } from '../DATA_MILESTONES';
+
 
 export default function Progress_Body_Measures({selectedUser}) {
 
@@ -12,6 +13,7 @@ export default function Progress_Body_Measures({selectedUser}) {
   const [showEditPage, setShowEditPage] = useState(false);
   const [eliminatingMilestone, setEliminatingMilestone] = useState(null);
   const [selectedMilestone, setSelectedMilestone] = useState(null);
+  const [selectedMeasureToShow, setSelectedMeasureToShow] = useState(null);
 
   
   const handleRowClick = (milestone) => {
@@ -78,11 +80,30 @@ export default function Progress_Body_Measures({selectedUser}) {
   if (showEditPage) {
     return <Progress_Body_MeasuresEdit onBackToList={handleBackToList} selectedUser={selectedUser} selectedMilestone={selectedMilestone}/>;
   }
+  
+  const measureOptions = [
+    { label: "Cuello", value: 1 },
+    { label: "Bicep", value: 2 },
+    { label: "Cintura", value: 3 },
+    { label: "Cadera", value: 4 },
+    { label: "Pecho", value: 5 },
+    { label: "Muslo", value: 6 },
+  ];
+
+  const handleMeasureToShowChange = (selectedOption) => {
+    setSelectedMeasureToShow(selectedOption ?? null);
+    console.log(selectedOption);
+  };
 
   return (
     <>
       <div className='MainContainer'>
       <div className='body-measure-container'>
+      <Dropdown 
+            options={measureOptions} 
+            selectedOption={selectedMeasureToShow} 
+            onChange={handleMeasureToShowChange}
+          />
       grafica {selectedUser.name}
       </div>
       <div className='body-measure-container'>

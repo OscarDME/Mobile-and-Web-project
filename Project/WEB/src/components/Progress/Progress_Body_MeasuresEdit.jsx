@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { InputNumber } from 'primereact/inputnumber';
+import Dropdown from '../DropDown';
         
 export default function Progress_Body_MeasuresEdit({onBackToList, selectedUser, selectedMilestone}) {
   const [weight, setWeight] = useState(selectedMilestone.weight);
