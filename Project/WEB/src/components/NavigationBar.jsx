@@ -74,10 +74,10 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Food" to="/Food" className='NavLinks'>
                             Alimentos y Recetas
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Appointment" to="/Appointment" className='NavLinks'>
                             Citas
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Requests" to="/Requests" className='NavLinks'>
                             Solicitudes
                         </NavLink>{/*

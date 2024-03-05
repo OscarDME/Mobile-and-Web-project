@@ -3,22 +3,20 @@ import { APPOINTMENTS } from "../DATA_APPOINTMENTS";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
 import config from "../../utils/conf";
-import NewAppointments from './NewAppointment';
+import EditAppointment from './EditAppointment';
 
 
-
-export default function CurrentAppointments() {
+export default function CanceledAppointments() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAppointment, setselectedAppointment] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
-  const [showAddPage, setShowAddPage] = useState(false);
-  const [cancelAppointment, setCancelAppointment] = useState(false);
+  const [showEditPage, setShowEditPage] = useState(false);
 
 
 
   const filteredAppointments = APPOINTMENTS.filter(appointment =>
     appointment.assignedTo.toString().toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (appointment.status === 'Pendiente' || appointment.status === 'Aceptada')
+    (appointment.status === 'Rechazada' || appointment.status === 'Cancelada')
 ); 
 
 
@@ -26,49 +24,25 @@ export default function CurrentAppointments() {
       if (expandedRow === appointment.id) {
         setExpandedRow(null);
         setselectedAppointment(null);
-        setCancelAppointment(null);
-
       } else {
-        if (cancelAppointment && cancelAppointment.id === appointment.id) {
-          setCancelAppointment(null); 
-        }
-        setCancelAppointment(null);
         setExpandedRow(appointment.id);
         setselectedAppointment(appointment);
       }
     };
 
-    const handleCancelClick = (appointment) => {
-      if (cancelAppointment && cancelAppointment.id === appointment.id) {
-        setExpandedRow(null);
-        setselectedAppointment(null);
-        setCancelAppointment(null);
-      } else {
-        if (expandedRow && expandedRow !== appointment.id) {
-          setExpandedRow(null); 
-          setselectedAppointment(null);
-        }
-        setExpandedRow(null);
-        setselectedAppointment(null);
-        setCancelAppointment(appointment); 
-      }
-    };
     
-    const handleAddClick = () => {
-      setShowAddPage(true); 
+    const handleEditClick = (appointment) => {
+      setselectedAppointment(appointment);      
+      setShowEditPage(true); 
     };
 
     const handleBackToList = () => {
-        setShowAddPage(false); 
+        setShowEditPage(false); 
     };
-
-    const handleCancelAppointment = () => {
-
-    }
     
 
-    if (showAddPage) {
-      return <NewAppointments onBackToList={handleBackToList} />;
+    if (showEditPage) {
+      return <EditAppointment onBackToList={handleBackToList} appointment={selectedAppointment} />;
   }
 
     return (
@@ -78,20 +52,17 @@ export default function CurrentAppointments() {
               <div className='addclient'><i className="bi bi-search h4"></i></div>
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
-            <div>
-              <a className="iconadd" role="button" onClick={handleAddClick}><i className="bi bi-plus-circle-fill"></i></a>
-            </div>
           </div>
           <ul className='cardcontainer'>
             {filteredAppointments.map((appointment) => (
-              <li key={appointment.id} className={`row ${((selectedAppointment && selectedAppointment.id === appointment.id) || (cancelAppointment && cancelAppointment.id === appointment.id) ) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(appointment)} className={`row_header ${((selectedAppointment && selectedAppointment.id === appointment.id) || (cancelAppointment && cancelAppointment.id === appointment.id)) ? 'selected' : ''}`}>
+              <li key={appointment.id} className={`row ${((selectedAppointment && selectedAppointment.id === appointment.id)) ? 'selected' : ''}`}>
+                <div onClick={() => handleRowClick(appointment)} className={`row_header ${((selectedAppointment && selectedAppointment.id === appointment.id)) ? 'selected' : ''}`}>
                   <div>
                     <div className='row_name'>Cliente: {appointment.assignedTo}</div>
                     <div className='row_description'>{appointment.status} para el {appointment.date}</div>
                   </div>
                   <div className="row_edit">
-                      <i className={`bi bi-trash card-icon ${cancelAppointment && cancelAppointment.id === appointment.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleCancelClick(appointment); }}></i>
+                      <i className={`bi bi-pencil-square  card-icon`} onClick={(e) => { e.stopPropagation(); handleEditClick(appointment); }}></i>
                     </div>
                 </div>
                 {expandedRow === appointment.id && (
@@ -118,13 +89,6 @@ export default function CurrentAppointments() {
                       </div>
                     </div>
                   </>
-                )}
-                {cancelAppointment && cancelAppointment.id === appointment.id && (
-                  <div className="exercise-info">
-                  <button onClick={handleCancelAppointment} className="delete_button">
-                    Cancelar cita
-                  </button>
-                  </div>
                 )}
               </li>
             ))}

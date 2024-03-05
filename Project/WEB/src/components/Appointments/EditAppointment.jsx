@@ -6,14 +6,14 @@ import Dropdown from '../DropdownCollections';
 import { UserCard } from '../DATA_USER_CARD';
 
 
-export default function NewAppointments({ onBackToList }) {
+export default function EditAppointment({ onBackToList, appointment }) {
 
-    const [client, setClient] = useState('');
-    const [endsAt, setEndsAt] = useState('');
-    const [startsAt, setStartsAt] = useState('');
-    const [place, setPlace] = useState(null); 
-    const [detail, setDetail] = useState('');
-    const [date, setDate] = useState(null);
+    const [client, setClient] = useState(appointment.assignedTo);
+    const [endsAt, setEndsAt] = useState(appointment.endsAt);
+    const [startsAt, setStartsAt] = useState(appointment.startsAt);;
+    const [place, setPlace] = useState(appointment.place); 
+    const [detail, setDetail] = useState(appointment.details);
+    const [date, setDate] = useState(appointment.date);
     const [clientOptions, setClientOptions] = useState([]);
 
     useEffect(() => {
@@ -98,7 +98,7 @@ export default function NewAppointments({ onBackToList }) {
 <div className='container2 MainContainer'>
       <div className='add_header2'>
       <button className="back_icon card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
-        <h1 className='mtitle'>Agendar una nueva cita</h1>
+        <h1 className='mtitle'>Modificar cita</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area'>
@@ -135,7 +135,7 @@ export default function NewAppointments({ onBackToList }) {
             </div>
           </div>
         </div>
-        <button className='add_button'>Agregar cita</button>
+        <button className='add_button'>Modificar</button>
       </form>
     </div>
   )
