@@ -65,10 +65,10 @@ export const NavigationBar = () => {
                         </NavLink>
                         <NavLink id="Diets" to="/Diets" className='NavLinks'>
                             Asignar Dietas
-                        </NavLink>{/*
+                        </NavLink>
                         <NavLink id="Clients" to="/Clients" className='NavLinks'>
                             Clientes
-                        </NavLink>*/}
+                        </NavLink>
                         <NavLink id="Exercises" to="/Exercises" className='NavLinks'>
                             Ejercicios
                         </NavLink>

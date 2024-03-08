@@ -25,3 +25,4 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+Project/server/Database/connection.js

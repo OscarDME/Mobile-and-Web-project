@@ -2,6 +2,7 @@ import React, {useState } from 'react';
 import { UserCard } from "../DATA_USER_CARD";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
+import Chat from '../Chat';
 
 export default function MyClients() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -84,9 +85,7 @@ export default function MyClients() {
                 {expandedRow === user.id && (
                 <>
                     <>
-                    <div className="exercise-info">
-                      chat
-                    </div>
+                      <Chat/>
                     </>
                 </>
                 )}
