@@ -21,7 +21,7 @@ import { Users } from './pages/Users';
 import { Recipes_management } from './pages/Recipes_management';
 import { Exercises_management } from './pages/Exercises_management';
 import { Food_management } from './pages/Food_management';
-
+import './firebaseConfig';
 
 
 

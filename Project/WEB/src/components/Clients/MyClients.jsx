@@ -24,6 +24,7 @@ export default function MyClients() {
           setEliminatingClient(null);
           setEliminatingClient(null);
         }
+        setSelectedUser(user);
         setEliminatingClient(null);
         setExpandedRow(user.id);
         setSelectedUser(user); // Selecciona la fila al hacer clic
@@ -85,7 +86,7 @@ export default function MyClients() {
                 {expandedRow === user.id && (
                 <>
                     <>
-                      <Chat/>
+                      <Chat reciever={user.id}/>
                     </>
                 </>
                 )}

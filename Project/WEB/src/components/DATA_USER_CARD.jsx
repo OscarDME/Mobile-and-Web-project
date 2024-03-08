@@ -1,7 +1,7 @@
 export const UserCard = [
     // Original example user
     {
-      id: 'b243e468-d8d4-4055-ba08-45106be2fb14',
+      id: 'idprueba',
       username: 'Brunosan',
       name: 'Bruno Sanchez Padilla',
       email: 'brunosanchezpadilla@gmail.com',
