@@ -14,7 +14,7 @@
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
-    height: 80%;
+    height: 83%;
     margin-right: 10px;
     width: 100%;
 }
@@ -42,9 +42,9 @@
 }
 
 .message{
-    background-color: var(--secondary);
+
     width: fit-content;
-    margin: 15px;
+    margin: 8px 15px;
     display: flex;
     padding: 10px 20px;
     align-items: flex-end;
@@ -59,10 +59,19 @@
 }
 
 .message-sender {
-    justify-content: end;
+    justify-content: flex-end;
+    display: flex;
   }
   
   .message-receiver {
-    justify-content: start;
+    justify-content: flex-start;
+    display: flex;
+  }
+
+  .message-sender-color {
+    background-color: var(--secondary);
   }
   
+  .message-receiver-color {
+    background-color: var(--third-background);
+  }
