@@ -94,13 +94,15 @@ export default function PendingClients() {
         try {
           // Elimina la conversación entre el sender y el cliente seleccionado
           await deleteConversation(sender, eliminatingClient.id);
+
+          window.location.reload();
         } catch (error) {
           console.error("Error al eliminar la conversación:", error);
         }
       } else {
         console.error("No se seleccionó un cliente válido para eliminar la conversación.");
       }
-    
+
     };
 
     return (
@@ -142,7 +144,7 @@ export default function PendingClients() {
                   <>
                   <div className="exercise-info">
                   <form className='form_add_exercise' onSubmit={handleSubmit}>
-                    <button type="submit" className='delete_button'>Eliminar cliente pendiente</button>
+                    <button type="submit" className='delete_button'>Eliminar solicitud de cliente pendiente</button>
                   </form>
                   </div>
                   </>
