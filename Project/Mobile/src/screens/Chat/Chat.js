@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { View, Text, Button, FlatList } from 'react-native';
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -51,24 +50,6 @@ const MainMenu = ({ navigation }) => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Chat</Text>
-      <FlatList
-        data={conversaciones}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Text onPress={() => navigation.navigate('Chat', { conversationId: item.id })}>
-            Conversación con ID: {item.id} - Modificado en: {item.modificadoEn.toDate().toDateString()}
-          </Text>
-        )}
-      />
-=======
-import React from 'react';
-import { View, Text, Button } from 'react-native';
-
-const MainMenu = ({ navigation }) => {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Chat que rico</Text>
->>>>>>> parent of 1c6609d2 (Started Chat on mobile)
     </View>
   );
 };
