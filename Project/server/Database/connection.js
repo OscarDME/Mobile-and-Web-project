@@ -8,7 +8,7 @@ var sql = require('mssql/msnodesqlv8');
 //CONFIG FOR LOCAL DATABASE
 
 const config = {
-  connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubBD;Trusted_Connection=yes;TrustServerCertificate=yes"
+  connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=DESKTOP-BT83CK8\\SQLEXPRESS01;Database=FithubBD;Trusted_Connection=yes;TrustServerCertificate=yes"
 }
 
 // const config = {
@@ -41,6 +41,7 @@ const config = {
 
 
 export const getConnection = async () => {
+  console.log("Conectando a la base de datos");
     try {
       const pool = await sql.connect(config);
       console.log("Conexion realizada exitosamente");

@@ -26,3 +26,5 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 Project/server/Database/connection.js
+Project/server/.env
+Project/Mobile/src/utils/conf.js
