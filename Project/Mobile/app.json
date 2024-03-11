@@ -25,17 +25,31 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.FitHub"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier": "com.ceti.FitHub"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.FitHub"
+      "package": "com.ceti.FitHub"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins":[
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios":{
+            "useFrameworks": "static"
+          }
+        }
+      ]
+
+    ]
   }
 }
