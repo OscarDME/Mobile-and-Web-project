@@ -6,7 +6,6 @@ import MenuButtons from '../components/MenuButtons';
 import MyClients from "../components/Clients/MyClients";
 import AddClient from "../components/Clients/AddClient";
 import PendingClients from "../components/Clients/PendingClients";
-import PendingToAcceptClients from "../components/Clients/PendingToAcceptClients";
 
 export const Clients = () => {
 
@@ -20,10 +19,8 @@ export const Clients = () => {
       switch (activeComponent) {
         case 'Mis Clientes':
             return <MyClients/>;
-        case 'Pendientes por que me acepten':
+        case 'Pendientes':
             return <PendingClients/>;
-        case 'Pendientes por aceptar':
-          return <PendingToAcceptClients/>;
         case 'Agregar':
                 return <AddClient/>;
         default:
@@ -31,7 +28,7 @@ export const Clients = () => {
       }
     };
 
-    const customMenuItems = [ 'Mis Clientes','Pendientes por que me acepten',"Pendientes por aceptar",'Agregar'];
+    const customMenuItems = [ 'Mis Clientes','Pendientes','Agregar'];
 
     return (
         <>

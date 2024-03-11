@@ -89,7 +89,6 @@ export default function AddClient() {
       if (addClient && addClient.id) {
         // Crear una nueva conversación entre el sender y el destinatario
         await createConversation(sender, addClient.id);
-        window.location.reload();
       } else {
         console.error("No se seleccionó un destinatario válido.");
       }

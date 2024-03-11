@@ -19,9 +19,4 @@ app.use(express.json());
 // Routes
 app.use("/api", UserRoutes);
 
-
-app.get('/', (req, res) => {
-  res.send('Bienvenido al servidor de FitHub');
-});
-
 export default app;
