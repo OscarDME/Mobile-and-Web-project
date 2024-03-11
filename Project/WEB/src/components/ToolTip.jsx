@@ -14,10 +14,10 @@ export const ToolTip = ({muscles,difficulty,material,type,children}) => {
         Dificultad: {difficulty}
         </div>
         <div>
-        Músculos que trabaja: {muscles.join(" - ")}
+        Músculos que trabaja: {muscles}
         </div>
         <div>
-        Material: {material.join(" - ")}
+        Material: {material}
         </div>
         <div>
         Tipo de ejercicio: {type}

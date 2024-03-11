@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RoutineCard } from "../DATA_NEW_ROUTINES";
 import '../../styles/Management.css';
 import {ToolTip} from '../ToolTip';
@@ -6,6 +6,7 @@ import SelectFilter from '../SelectFilter';
 import MyRoutinesAdd from './MyRoutinesAdd';
 import SearchBar from '../SearchBar';
 import MyRoutinesEdit from './MyRoutinesEdit';
+import config from "../../utils/conf";
 
 export default function MyRoutines() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -17,12 +18,32 @@ export default function MyRoutines() {
     const [showAddPage, setShowAddPage] = useState(false);
     const [showEditPage, setShowEditPage] = useState(false);
     const [deleteRoutine, setDeleteRoutine] = useState(null);
+    const [routines, setRoutines] = useState([]);
 
+    const loadRoutines = async () => {
+      try {
+          const response = await fetch(`${config.apiBaseUrl}/rutinacompleta`); // Asume que este es tu endpoint para obtener las rutinas
+          if (response.ok) {
+              const data = await response.json();
+              setRoutines(data); // Actualiza el estado con las rutinas obtenidas
+              console.log(data);
+          } else {
+              // Manejar posibles errores de respuesta
+              console.error('Respuesta fallida al cargar las rutinas:', response.status);
+          }
+      } catch (error) {
+          console.error('Error al cargar las rutinas:', error);
+      }
+  };
+  
+  useEffect(() => {
+    loadRoutines();
+    }, []); // El array vacío asegura que la carga solo se ejecute una vez al montar
 
     const difficultyOptions = [
-      { value: 'Fácil', label: 'Fácil' },
-      { value: 'Medio', label: 'Medio' },
-      { value: 'Difícil', label: 'Difícil' }
+      { value: 'Baja', label: 'Fácil' },
+      { value: 'Media', label: 'Medio' },
+      { value: 'Alta', label: 'Difícil' }
     ];
 
     const daysPerWeekOptions = [
@@ -36,22 +57,23 @@ export default function MyRoutines() {
     ];
 
 
-    const filteredExercises = RoutineCard.filter(routine => {
+    const filteredExercises = routines.filter(routine => {
       return (
-        routine.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (difficultyFilter ? routine.difficulty === difficultyFilter : true) &&
-        (daysFilter ? routine.days.length.toString() === daysFilter : true)
+          (routine.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) &&
+          (difficultyFilter ? routine.dificultad === difficultyFilter : true) &&
+          (daysFilter ? routine.diasEntreno.length.toString() === daysFilter : true)
       );
     });
     
+  
 
     const getDifficultyClass = (difficulty) => {
       switch(difficulty) {
-        case 'Fácil':
+        case 'Baja':
           return 'row-easy';
-        case 'Medio':
+        case 'Media':
           return 'row-medium';
-        case 'Difícil':
+        case 'Alta':
           return 'row-hard';
         default:
           return '';
@@ -59,7 +81,7 @@ export default function MyRoutines() {
     };
     
     const handleRowClick = (routine) => {
-      if (expandedRow === routine.id) {
+      if (expandedRow === routine.ID_Rutina) {
         setExpandedRow(null);
         setDeleteRoutine(null);
         setExpandedDay(null);
@@ -67,16 +89,16 @@ export default function MyRoutines() {
       } else {
         setExpandedDay(null);
         setDeleteRoutine(null);
-        setExpandedRow(routine.id);
+        setExpandedRow(routine.ID_Rutina);
         setSelectedRoutine(routine); // Selecciona la fila al hacer clic
       }
     };
 
     const handleDeleteClick = (routine) => {
-      if (deleteRoutine && deleteRoutine.id === routine.id) {
+      if (deleteRoutine && deleteRoutine.ID_Rutina === routine.ID_Rutina) {
         setDeleteRoutine(null); 
       } else {
-        if (expandedRow && expandedRow !== routine.id) {
+        if (expandedRow && expandedRow !== routine.ID_Rutina) {
           setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
           setSelectedRoutine(null);
           setExpandedDay(null);
@@ -107,10 +129,25 @@ export default function MyRoutines() {
         setShowAddPage(false); // Volver a la lista
     };
 
-    const handleDeleteRoutineButton = (routine) =>{
-
-      //TODO: eliminar rutina :)
-    }
+    const handleDeleteRoutineButton = async (routine) => {
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/rutina/${routine.ID_Rutina}`, {
+          method: 'DELETE',
+        });
+    
+        if (response.ok) {
+          console.log('Rutina eliminada correctamente');
+          // Actualiza el estado de las rutinas después de eliminar correctamente
+          const updatedRoutines = routines.filter(r => r.ID_Rutina !== routine.ID_Rutina);
+          setRoutines(updatedRoutines);
+          setDeleteRoutine(null); // Restablece el estado deleteRoutine
+        } else {
+          console.error('Error al eliminar la rutina:', response.status);
+        }
+      } catch (error) {
+        console.error('Error al eliminar la rutina:', error);
+      }
+    };
     
     // Si showAddPage es verdadero, renderiza el componente de agregar 
     if (showAddPage) {
@@ -155,12 +192,12 @@ export default function MyRoutines() {
     </div>
         <ul className='cardcontainer-colors'>
           {filteredExercises.map((routine) => (
-            <li key={routine.id} className={`row ${getDifficultyClass(routine.difficulty)} ${((selectedRoutine && selectedRoutine.id === routine.id)) ? 'selected' : ''}`}>
-                    <div onClick={() => handleRowClick(routine)} className={`row_header ${((selectedRoutine && selectedRoutine.id === routine.id)) ? 'selected' : ''}`}>
+            <li key={routine.ID_Rutina} className={`row ${getDifficultyClass(routine.dificultad)} ${((selectedRoutine && selectedRoutine.ID_Rutina === routine.ID_Rutina)) ? 'selected' : ''}`}>
+                    <div onClick={() => handleRowClick(routine)} className={`row_header ${((selectedRoutine && selectedRoutine.ID_Rutina === routine.ID_Rutina)) ? 'selected' : ''}`}>
                 <div>
-                  <div className='row_name'>{routine.name}</div>
-                  <div className='row_description'>{routine.difficulty}</div>
-                  <div className='row_description'>{routine.days.length.toString()} día(s) a la semana</div>
+                  <div className='row_name'>{routine.nombre}</div>
+                  <div className='row_description'>{routine.dificultad}</div>
+                  <div className='row_description'>{routine.diasEntreno.length} día(s) a la semana</div>
                 </div>
                     <div className="row_edit">
                     <i className={`bi bi-pencil-square card-icon-routine `} onClick={(e) => { e.stopPropagation(); handleEditClick(routine); }}></i>
@@ -168,58 +205,63 @@ export default function MyRoutines() {
                     </div>
               </div>
               
-              {expandedRow === routine.id && (
-                <div className="routine-info">
-                {routine.days.map((day, dayIndex) => (
-                    <div key={day.id} className={`routine-day-info ${dayIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
-                      <div className={`routine-day ${expandedDay && expandedDay.id === day.id ? 'selected' : ''}`} onClick={() => handleDayClick(day)}>
-                        <i className={`bi ${expandedDay && expandedDay.id === day.id ? 'bi-caret-down-fill' : 'bi-caret-right-fill'} day-icon`}></i>
-                        {day.dayName}
-                      </div>
-                      {expandedDay && expandedDay.id === day.id && (
-                        <div className='day-block'>
-                          {day.exercises.map((exercise, exerciseIndex) => (
-                            <div key={exercise.id} className='exercise-block'>
-                              <ul className={`exercise-list ${exerciseIndex % 2 === 0 ? 'exercise-even' : 'exercise-odd'}`}>
-                                <li className='exercise-row'>
-                                  <div className='exercise-name'>
-                                    <h5>{exercise.exerciseToWork.name}</h5>
-                                    <ToolTip muscles={exercise.exerciseToWork.muscles} difficulty={exercise.exerciseToWork.difficulty} material={exercise.exerciseToWork.material} type={exercise.exerciseToWork.type}>
-                                      <i className="bi bi-info-circle-fill info-icon"></i>
-                                    </ToolTip>
-                                  </div>
+              {expandedRow === routine.ID_Rutina && (
+  <div className="routine-info">
+{routine.diasEntreno.map((day) => (
+      <div key={day.ID_Dias_Entreno} className={`routine-day-info ${day.ID_Dias_Entreno % 2 === 0 ? 'day-even' : 'day-odd'}`}>
+        <div className={`routine-day ${expandedDay === day.ID_Dias_Entreno ? 'selected' : ''}`} onClick={() => handleDayClick(day.ID_Dias_Entreno)}>
+          <i className={`bi ${expandedDay === day.ID_Dias_Entreno ? 'bi-caret-down-fill' : 'bi-caret-right-fill'} day-icon`}></i>
+          {day.NombreDia}
+        </div>
+        {expandedDay === day.ID_Dias_Entreno && (
+          <div className='day-block'>
+          {day.ejercicios.map((exercise, exerciseIndex) => (
+  <div key={exercise.ID_Ejercicio} className='exercise-block'>
+    <ul className={`exercise-list ${exerciseIndex % 2 === 0 ? 'exercise-even' : 'exercise-odd'}`}>
+      <li className='exercise-row'>
+        <div className='exercise-name'>
+          <h5>{exercise.ejercicio}</h5>
+          {/* Asumiendo que ToolTip y la información de ejercicio a mostrar se ajustan a tus necesidades */}
+          <ToolTip muscles={exercise.Musculo} difficulty={exercise.Dificultad} material={exercise.Equipo} type={exercise.Tipo_Ejercicio}>
+            <i className="bi bi-info-circle-fill info-icon"></i>
+          </ToolTip>
+        </div>
 
-                                  {(exercise.exerciseToWork.type === "Pesas" || exercise.exerciseToWork.type === "Peso corporal") && (
-                                      <div>
-                                      {exercise.rest} segundos de descanso entre sets
-                                      </div>
-                                  )}
-                                  {exercise.sets.map((set, setIndex) => (
-                                    <>
-                                    {set.map((individualSet, individualSetIndex)=> (
+        {/* Mostrando información de descanso, ajustado para usar la propiedad directamente desde 'exercise' */}
+        <div>
+          {exercise.DescansoEnSegundos} segundos de descanso entre sets
+        </div>
 
-                                      <div className='set-text'>
-                                      Set {setIndex + 1} {(individualSetIndex !== 0) && (
-                                        <>
-                                        / Drop-Set {individualSetIndex + 1} 
-                                        </>
-                                        )} - {individualSet.reps.toString()} Repeticiones
-                                      </div>
-                                    ))}
-                                  </>
-                                  ))}
-                                  <div className='superset-text'> {exercise.isSuperSet ? "Sí":"No"} hace superserie con el siguiente ejercicio.
-                                  </div>
-                                </li>
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+        {/* Iterar sobre los sets y los drop sets */}
+        {exercise.bloqueSets.flatMap((bloque, bloqueIndex) =>
+  bloque.conjuntoSeries.flatMap((conjunto, conjuntoIndex) => (
+    conjunto.series.map((serie, serieIndex) => {
+      // Determinar si es un drop set basado en si tiene ID_SeriePrincipal
+      const isDropSet = !!serie.ID_SeriePrincipal;
+      // Calcular el número de set, teniendo en cuenta si es un drop set
+      const setNumber = isDropSet ? `1` : `${conjuntoIndex + 1}`;
+      // Mostrar 'Drop-Set' para drop sets, 'Set' para sets normales
+      const setText = isDropSet ? `Drop-Set ${setNumber}` : `Set ${setNumber}`;
+
+      return (
+        <div key={`${bloqueIndex}-${conjuntoIndex}-${serieIndex}`} className='set-text'>
+          {setText}: {serie.repeticiones} repeticiones {serie.peso ? `con ${serie.peso} kg` : ''}
+        </div>
+      );
+    })
+  ))
+)}
+        <div className='superset-text'> {exercise.superset ? "Sí" : "No"} hace superserie con el siguiente ejercicio.</div>
+      </li>
+    </ul>
+  </div>
+))}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
 
               {deleteRoutine && deleteRoutine.id === routine.id &&(
                 <form className='center-delete-routine-btn'>

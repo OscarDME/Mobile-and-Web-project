@@ -1,48 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/Management.css';
 import NumberInput from '../NumberInput';
-import Dropdown from '../DropDown';
-import { ExerciseCard } from '../DATA_EXERCISES';
+import Dropdown from '../DropdownCollections';
 import Switch from '@mui/material/Switch';
 import { ToolTipInfo } from '../ToolTipInfo';
+import config from "../../utils/conf";
+import { useMsal } from "@azure/msal-react";
 
-export default function MyRoutinesEdit({ onBackToList, routine }) {
-  const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+export default function MyRoutinesEdit({ onBackToList, routine }) { 
+  const { instance } = useMsal();
+  const activeAccount = instance.getActiveAccount();
+
+  const days = [
+    { label: "Lunes", value: 1 },
+    { label: "Martes", value: 2 },
+    { label: "Miercoles", value: 3 },
+    { label: "Jueves", value: 4 },
+    { label: "Viernes", value: 5 },
+    { label: "Sabado", value: 6 },
+    { label: "Domingo", value: 7 },
+  ]; 
   const [routineName, setRoutineName] = useState('');
-  const [daysPerWeek, setDaysPerWeek] = useState(1);
+  const [daysPerWeek, setDaysPerWeek] = useState(routine.diasEntreno.length);
   const initialState = Array.from({ length: daysPerWeek }, () => ([]));
-  const [exercises, setExercises] = useState(initialState);    
   const [selectedDays, setSelectedDays] = useState(Array(daysPerWeek).fill(''));
+
+  const [exercises, setExercises] = useState([initialState]); // Nuevo estado para almacenar la lista de ejercicios
+  const [exerciseList, setExerciseList] = useState([]);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
-    setRoutineName(routine.name);
-    setDaysPerWeek(routine.days.length);
-
-    const transformedExercises = routine.days.map(day => 
-      day.exercises.map(exercise => ({
-        name: exercise.exerciseToWork.name,
-        type: exercise.exerciseToWork.type,
-        sets: exercise.sets,
-        rest: exercise.rest,
-        isSuperset: exercise.isSuperset,
-      }))
-    );
-    setExercises(transformedExercises);
+    setRoutineName(routine.nombre);
+    setDaysPerWeek(routine.diasEntreno.length);
   
-    const selectedDaysMapping = routine.days.map(day => day.dayName);
+    const transformedExercises = routine.diasEntreno.map(dia => ({
+      ID_Dia: dia.ID_Dia,
+      ejercicios: dia.ejercicios.map(ejercicio => ({
+        ID_EjerciciosDia: ejercicio.ID_EjerciciosDia,
+        exerciseId: ejercicio.ID_Ejercicio[0], // Asumiendo que quieres el primer ID si hay más de uno
+        name: ejercicio.ejercicio,
+        rest: ejercicio.DescansoEnSegundos,
+        isSuperset: ejercicio.superset,
+        sets: ejercicio.bloqueSets.flatMap(bloque =>
+          bloque.conjuntoSeries.flatMap(conjunto =>
+            conjunto.series.map(serie => ({
+              ID_Serie: serie.ID_Serie,
+              reps: serie.repeticiones,
+              weight: serie.peso,
+              time: serie.tiempo,
+              isDropSet: serie.ID_SeriePrincipal !== null,
+            }))
+          )
+        ),
+      })),
+    }));
+    console.log(transformedExercises);
+  
+    setExercises(transformedExercises.map(dia => dia.ejercicios)); // Asegúrate de asignar los ejercicios transformados correctamente
+    const selectedDaysMapping = routine.diasEntreno.map(dia => dia.ID_Dia);
     setSelectedDays(selectedDaysMapping);
-    setInitialLoadComplete(true);
-
-  },[]);
+  }, [routine]);
   
+
 
   useEffect(() => {
+    // Función para cargar ejercicios desde la API
+    const loadExercises = async () => {
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/ejercicio`); // Ajusta la URL según tu API
+        if (!response.ok) throw new Error('Respuesta no satisfactoria de la API');
+        const data = await response.json();
+        console.log(data);
+        setExerciseList(data.map(exercise => ({
+          value: exercise.ID_Ejercicio,
+          label: exercise.ejercicio,
+        })));
+      } catch (error) {
+        console.error('Error al cargar ejercicios:', error);
+        // Manejar el error (mostrar un mensaje al usuario, por ejemplo)
+      }
+    };
 
-    if (!initialLoadComplete) {
-      return; // No hacer nada hasta que la carga inicial esté completa
-    }
+    loadExercises();
+  }, []); 
 
+  useEffect(() => {
     setSelectedDays(prev => {
       const newSize = Array(daysPerWeek).fill('');
       return prev.length < daysPerWeek ? [...prev, ...newSize.slice(prev.length)] : prev.slice(0, daysPerWeek);
@@ -52,8 +94,7 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
       const newSize = Array.from({ length: daysPerWeek }, () => []);
       return prev.length < daysPerWeek ? [...prev, ...newSize.slice(prev.length)] : prev.slice(0, daysPerWeek);
     });
-
-  }, [daysPerWeek, initialLoadComplete]);
+  }, [daysPerWeek]);
 
   const handleRoutineNameChange = (event) => setRoutineName(event.target.value);
 
@@ -73,19 +114,55 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
     );
   };
 
-  const addDropSetToSet = (dayIndex, exerciseIndex, groupIndex, newSet) => {
+  const saveRoutine = async () => {
+    try {
+      const response = await fetch('/api/rutinas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          routineName,
+          days: exercises.map(day => ({
+            selectedDay: day.selectedDay,
+            exercises: day.exercises.map(exercise => ({
+              name: exercise.name,
+              sets: exercise.sets,
+              // incluir más detalles según sea necesario
+            }))
+          }))
+        }),
+      });
+  
+      if (response.ok) {
+        // Manejo de éxito
+        alert('Rutina guardada con éxito');
+        onBackToList(); // Redirige o actualiza la vista según sea necesario
+      } else {
+        // Manejo de errores del servidor
+        const error = await response.json();
+        alert(error.message);
+      }
+    } catch (error) {
+      // Manejo de errores de red/conexión
+      alert('Error al guardar la rutina');
+    }
+  };  
+
+  const addDropSetToSet = (dayIndex, exerciseIndex, setIndex, newSet) => {
     setExercises(currentExercises => {
       return currentExercises.map((day, dIndex) => {
         if (dIndex === dayIndex) {
           return day.map((exercise, eIndex) => {
             if (eIndex === exerciseIndex) {
               let updatedSets = [...exercise.sets];
-              if (updatedSets[groupIndex] !== undefined) {
-                updatedSets[groupIndex] = [...updatedSets[groupIndex], newSet];
-              } else {
-                updatedSets[groupIndex] = [newSet];
-              }
-              return { ...exercise, sets: updatedSets };
+              const updatedSetGroup = updatedSets.map((setGroup, groupIndex) => {
+                if (groupIndex === setIndex) {
+                  return [...setGroup, { ...newSet, isDropSet: true }]; // Marca el nuevo set como dropset
+                }
+                return setGroup;
+              });
+              return { ...exercise, sets: updatedSetGroup };
             }
             return exercise;
           });
@@ -94,6 +171,7 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
       });
     });
   };
+  
 
   const addSetToExercise = (dayIndex, exerciseIndex, newSet) => {
     setExercises(currentExercises => {
@@ -119,16 +197,18 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
       containers.push(
         <div key={i} className="day-container">
           <div className="day-title">Día {i + 1}: 
-            <Dropdown 
-              options={availableOptions}
-              selectedOption={selectedDays[i]}
-              onChange={(e) => handleDayChange(e.target.value, i)}
-            />
+          <Dropdown 
+            options={days}
+            selectedOption={days.find(day => day.value === selectedDays[i])} 
+            onChange={(selected) => handleDayChange(selected, i)}
+          />
+
           </div>
           <div className='routine-area-add'>
-            <button className='btn-add-exercise' type='button' onClick={(e) => { e.stopPropagation(); addExercise(i); }}> 
-              <i className="bi bi-plus-circle add-routine-icon"></i> Añadir un ejercicio para el día {i + 1} ({selectedDays[i]})
-            </button>
+          <button className='btn-add-exercise' type='button' onClick={(e) => { e.stopPropagation(); addExercise(i); }}> 
+            <i className="bi bi-plus-circle add-routine-icon"></i> Añadir un ejercicio para el día {i + 1} ({days.find(day => day.value === selectedDays[i])?.label})
+          </button>
+
             {renderExercises(i)}
             {console.log(selectedDays)}
             {console.log(exercises)}
@@ -139,15 +219,16 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
     return containers;
   }
 
-  const handleDayChange = (value, dayIndex) => {
+  const handleDayChange = (selected, dayIndex) => {
     const newSelectedDays = [...selectedDays];
-    newSelectedDays[dayIndex] = value;
+    newSelectedDays[dayIndex] = selected.value; // Asegúrate de usar el valor del objeto seleccionado
     setSelectedDays(newSelectedDays);
   };
+  
 
   
   function renderExercises(dayIndex) {
-    if (!exercises[dayIndex]) {
+    if (!exercises[dayIndex] || !Array.isArray(exercises[dayIndex])) {
       return <></>;
     }
   
@@ -160,10 +241,12 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
             <div key={exerciseIndex} className={`routine-exercise-row ${exerciseIndex % 2 === 0 ? 'day-even' : 'day-odd'}`}>
                 <div className='routine-exercise-header'>
                 <Dropdown
-                  options={ExerciseCard.map(ex => ex.name)}
-                  selectedOption={exercise.name}
-                  onChange={(e) => handleExerciseTypeChange(e.target.value, dayIndex, exerciseIndex)}
-                />
+  options={exerciseList}
+  selectedOption={exerciseList.find(ex => ex.value === exercise.exerciseId)}
+  onChange={(selectedExercise) => handleExerciseTypeChange(selectedExercise, dayIndex, exerciseIndex)}
+/>
+
+
                 <i className="bi bi-trash exercise-btn-delete" onClick={() => removeExercise(dayIndex, exerciseIndex)}></i>
                 </div>
                 {exerciseSelected && (
@@ -211,7 +294,13 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
                                     <i className="bi bi-plus-circle add-routine-icon"></i> Añadir un Set para {exercise.name}
                                 </button>
                             )}
-                            {exercise.sets.map((setGroup, groupIndex) => (
+                            {exercise.sets.map((setGroup, groupIndex) => {
+                            if (!Array.isArray(setGroup)) {
+                              console.error('setGroup no es un array', setGroup);
+                              return null; // O maneja el caso de manera apropiada
+                            }
+                            return (
+
                                 <div key={groupIndex} className="set-group-container">
                                     {setGroup.map((set, setIndex) => (
                                         <div key={setIndex} className="set-container">
@@ -292,7 +381,7 @@ export default function MyRoutinesEdit({ onBackToList, routine }) {
                                         </div>
                                     ))}
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     </>
                 )}
@@ -405,12 +494,12 @@ const removeExercise = (dayIndex, exerciseIndex) => {
 
 
 
-const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
-  if (selectedName === "none") {
-    return;
+const handleExerciseTypeChange = (selectedExercise, dayIndex, exerciseIndex) => {
+  if (!selectedExercise || selectedExercise.value === "") {
+    return; // Sale si la selección es "none" o no se seleccionó un ejercicio
   }
 
-  const selectedExercise = ExerciseCard.find(exercise => exercise.name === selectedName);
+  // No hay necesidad de buscar el ejercicio ya que selectedExercise ya contiene la información necesaria
 
   if (exerciseIndex > 0) {
     const previousExerciseIndex = exerciseIndex - 1;
@@ -427,19 +516,20 @@ const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
       );
     }
   }
+
   setExercises(currentExercises => 
     currentExercises.map((dayExercises, dIndex) => {
       if (dIndex === dayIndex) {
         return dayExercises.map((exercise, eIndex) => {
           if (eIndex === exerciseIndex) {
-            // Configura los valores predeterminados para el ejercicio actualizado
+            // Configura los valores predeterminados para el ejercicio actualizado con datos de la API
             let updatedExercise = {
               ...exercise,
-              type: selectedExercise.type,
+              // Asume que el tipo de ejercicio (como 'Cardiovascular') viene de otra parte o lo defines de otra manera
               isSuperset: false,
-              exerciseId: selectedExercise.id,
-              name: selectedExercise.name,
-              rest: selectedExercise.type === 'Cardiovascular' ? null : exercise.rest,
+              exerciseId: selectedExercise.value, // ID del ejercicio seleccionado
+              name: selectedExercise.label, // Nombre del ejercicio seleccionado
+              rest: exercise.rest, // Mantén el descanso previamente establecido o ajusta según necesidad
               sets: [[{ reps: null, weight: null, time: null }]], // Reinicia los sets
             };
 
@@ -448,7 +538,7 @@ const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
             if (exerciseIndex > 0 && currentExercises[dIndex][exerciseIndex - 1].isSuperset) {
               const previousExerciseSets = currentExercises[dIndex][exerciseIndex - 1].sets;
               updatedExercise.sets = previousExerciseSets.map(setGroup => 
-                setGroup.map(() => ({ time: null, reps: null, weight: null }))
+                setGroup.map(() => ({ reps: null, weight: null, time: null }))
               );
             }
 
@@ -461,6 +551,7 @@ const handleExerciseTypeChange = (selectedName, dayIndex, exerciseIndex) => {
     })
   );
 };
+
 
 
 
@@ -499,6 +590,7 @@ const removeSetFromExercise = (dayIndex, exerciseIndex, groupIndex) => {
 
 
   const handleExerciseChange = (dayIndex, exerciseIndex, field, value) => {
+    console.log(dayIndex, exerciseIndex, field, value);
     setExercises(currentExercises =>
       currentExercises.map((dayExercises, idx) =>
         idx === dayIndex
@@ -554,9 +646,10 @@ const handleIsSupersetChange = (dayIndex, exerciseIndex, field, value) => {
   
 
 
-const handleSubmit = (event) => {
+const handleSubmit = async (event) => {
   event.preventDefault();
-
+  console.log("handleSubmit se está ejecutando");
+  alert("handleSubmit se está ejecutando");
   // Verifica si el nombre de la rutina está vacío
   if (!routineName.trim()) {
     alert('Por favor, ingresa el nombre de la rutina.');
@@ -620,15 +713,77 @@ const handleSubmit = (event) => {
     return;
   }
 
-  //TODO: GUARDAR EN BACK END DATOS AQUÍ
-  onBackToList();
+  console.log("llegue aqui");
+  console.log (activeAccount.idTokenClaims.oid);
+
+  
+
+  try {
+    if (!exercises || exercises.length === 0 || !selectedDays || selectedDays.length === 0) {
+      alert("Asegúrate de haber agregado ejercicios y seleccionado días.");
+      return;
+    }
+    // Asegúrate de tener un 'oid' definido, aquí lo pongo estático para el ejemplo
+    const oid = activeAccount.idTokenClaims.oid; 
+
+    // Preparar la estructura de 'days' según lo esperado por el backend
+    const daysPayload = selectedDays.map((dayValue, index) => {
+      const dayExercises = exercises[index] || [];
+  return {
+    selectedDay: dayValue,
+    ejercicios: dayExercises.map(exercise => ({
+      exerciseId: exercise.exerciseId, // Asegúrate de que este campo exista y sea correcto.
+      name: exercise.name, // Verifica que `name` esté correctamente definido en tus objetos de ejercicio.
+      rest: exercise.rest, // Verifica que `rest` también esté correctamente definido.
+      sets: exercise.sets.flat().map(set => ({
+        reps: set.reps,
+        weight: set.weight,
+        time: set.time,
+        isDropSet: set.isDropSet || false, // Envía el estado de dropset, default a false si no está presente
+        // Asegúrate de que `reps`, `weight`, y `time` existan en los objetos de `set`.
+      })),
+    })),
+  };
+});
+
+
+    const payload = {
+      oid: activeAccount.idTokenClaims.oid,
+      routineName,
+      days: daysPayload,
+    };
+
+    console.log(payload);
+
+    const response = await fetch(`${config.apiBaseUrl}/rutinacompleta`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      alert('Rutina guardada con éxito');
+      onBackToList();
+    } else {
+      const error = await response.json();
+      alert(error.message);
+    }
+  } catch (error) {
+    alert('Error al guardar la rutina: ' + error.message);
+  }  
 };
+
+
+
+
 
   return (
 <div className='container2'>
       <div className='add_header2'>
         <button className="back_icon card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
-        <h1 className='mtitle'>Modificar una Rutina nueva</h1>
+        <h1 className='mtitle'>Crear una Rutina nueva</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area2'>
@@ -652,7 +807,7 @@ const handleSubmit = (event) => {
             {generateDayContainers(daysPerWeek)}
             </div>
         </div>
-        <button className='add_button'>Guardar Rutina</button>
+      <button className='add_button' type="submit">Guardar Rutina</button>
       </form>
     </div>
   )
