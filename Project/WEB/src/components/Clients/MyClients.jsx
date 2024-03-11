@@ -1,13 +1,20 @@
 import React, {useState } from 'react';
 import { UserCard } from "../DATA_USER_CARD";
+import { deleteDoc, collection, getFirestore, query, where, getDocs } from "firebase/firestore";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
+import Chat from '../Chat';
+import { useMsal } from "@azure/msal-react";
 
 export default function MyClients() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
     const [eliminatingClient, setEliminatingClient] = useState(null);
+    const { instance } = useMsal();
+    const activeAccount = instance.getActiveAccount();
+
+    const sender = activeAccount.idTokenClaims.oid; // OID del usuario actual
     
     const filteredUsers = UserCard.filter(user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -23,6 +30,7 @@ export default function MyClients() {
           setEliminatingClient(null);
           setEliminatingClient(null);
         }
+        setSelectedUser(user);
         setEliminatingClient(null);
         setExpandedRow(user.id);
         setSelectedUser(user); // Selecciona la fila al hacer clic
@@ -45,12 +53,54 @@ export default function MyClients() {
       }
     };
 
-    const handleSubmit = (event) => {
+    const deleteConversation = async (sender, eliminatingClientId) => {
+      const db = getFirestore();
+      const conversationsRef = collection(db, "conversaciones");
+    
+      try {
+        // Consulta para buscar las conversaciones que contienen al sender
+        const querySender = query(conversationsRef, where("participantes", "array-contains", sender));
+        const senderSnapshot = await getDocs(querySender);
+    
+        // Consulta para buscar las conversaciones que contienen al eliminatingClient
+        const queryEliminatingClient = query(conversationsRef, where("participantes", "array-contains", eliminatingClientId));
+        const eliminatingClientSnapshot = await getDocs(queryEliminatingClient);
+    
+        // Obtiene las conversaciones que cumplen ambas condiciones
+        const conversationsToDelete = [];
+        senderSnapshot.forEach((doc) => {
+          if (eliminatingClientSnapshot.docs.some(eliminatingClientDoc => eliminatingClientDoc.id === doc.id)) {
+            conversationsToDelete.push(doc.ref);
+          }
+        });
+    
+        // Elimina las conversaciones encontradas
+        conversationsToDelete.forEach(async (conversationRef) => {
+          await deleteDoc(conversationRef);
+          console.log("Conversación eliminada:", conversationRef.id);
+        });
+    
+      } catch (error) {
+        console.error("Error al eliminar la conversación:", error);
+      }
+    };
+    
+    
+    const handleSubmit = async (event) => {
       event.preventDefault();
-  
-      
-      //TODO: Eliminar cliente
-      //Mandar a la lista de ejercicios después de guardar uno, TODO: refrescar la lista de ejercicios automaticamente
+    
+      if (eliminatingClient && eliminatingClient.id) {
+        try {
+          // Elimina la conversación entre el sender y el cliente seleccionado
+          await deleteConversation(sender, eliminatingClient.id);
+          window.location.reload();
+        } catch (error) {
+          console.error("Error al eliminar la conversación:", error);
+        }
+      } else {
+        console.error("No se seleccionó un cliente válido para eliminar la conversación.");
+      }
+    
     };
 
     return (
@@ -84,9 +134,7 @@ export default function MyClients() {
                 {expandedRow === user.id && (
                 <>
                     <>
-                    <div className="exercise-info">
-                      chat
-                    </div>
+                      <Chat reciever={user.id}/>
                     </>
                 </>
                 )}

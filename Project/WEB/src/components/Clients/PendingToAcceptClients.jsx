@@ -7,11 +7,12 @@ import { deleteDoc, collection, getFirestore, query, where, getDocs } from "fire
 import { useMsal } from "@azure/msal-react";
 
 
-export default function PendingClients() {
+export default function PendingToAcceptClients() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
     const [eliminatingClient, setEliminatingClient] = useState(null);
+    const [acceptingClient, setAcceptingClient] = useState(null);
 
     const { instance } = useMsal();
     const activeAccount = instance.getActiveAccount();
@@ -27,12 +28,14 @@ export default function PendingClients() {
         setExpandedRow(null);
         setEliminatingClient(null);
         setSelectedUser(null); // Deselecciona la fila al hacer clic nuevamente
+        setAcceptingClient(null);
       } else {
         if (eliminatingClient && eliminatingClient.id === user.id) {
           setEliminatingClient(null);
-          setEliminatingClient(null);
+          setAcceptingClient(null);
         }
         setEliminatingClient(null);
+        setAcceptingClient(null);
         setExpandedRow(user.id);
         setSelectedUser(user); // Selecciona la fila al hacer clic
       }
@@ -47,10 +50,29 @@ export default function PendingClients() {
           setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
           setSelectedUser(null);
           setEliminatingClient(null);
+          setAcceptingClient(null);
         }
         setExpandedRow(null);
         setSelectedUser(null);
+        setAcceptingClient(null);
         setEliminatingClient(user); 
+      }
+    };
+
+    const handleAcceptClick = (user) => {
+      if (acceptingClient && acceptingClient.id === user.id) {
+        setAcceptingClient(null); // Si el mismo ejercicio está seleccionado, oculta el formulario de edición
+      } else {
+        if (expandedRow && expandedRow !== user.id) {
+          setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
+          setSelectedUser(null);
+          setEliminatingClient(null);
+          setAcceptingClient(null);
+        }
+        setExpandedRow(null);
+        setSelectedUser(null);
+        setEliminatingClient(null);
+        setAcceptingClient(user); 
       }
     };
 
@@ -86,6 +108,10 @@ export default function PendingClients() {
       }
     };
     
+
+    const handleAccept = async () => {
+      window.location.reload();
+    }
     
     const handleSubmit = async (event) => {
       event.preventDefault();
@@ -94,7 +120,6 @@ export default function PendingClients() {
         try {
           // Elimina la conversación entre el sender y el cliente seleccionado
           await deleteConversation(sender, eliminatingClient.id);
-
           window.location.reload();
         } catch (error) {
           console.error("Error al eliminar la conversación:", error);
@@ -102,7 +127,7 @@ export default function PendingClients() {
       } else {
         console.error("No se seleccionó un cliente válido para eliminar la conversación.");
       }
-
+    
     };
 
     return (
@@ -115,8 +140,8 @@ export default function PendingClients() {
           </div>
           <ul className='cardcontainer'>
             {filteredUsers.map((user) => (
-              <li key={user.id} className={`row ${((selectedUser && selectedUser.id === user.id) || (eliminatingClient && eliminatingClient.id === user.id)) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(user)} className={`row_header ${((selectedUser && selectedUser.id === user.id) || (eliminatingClient && eliminatingClient.id === user.id)) ? 'selected' : ''}`}>
+              <li key={user.id} className={`row ${((selectedUser && selectedUser.id === user.id) || (eliminatingClient && eliminatingClient.id === user.id)|| (acceptingClient && acceptingClient.id === user.id)) ? 'selected' : ''}`}>
+                <div onClick={() => handleRowClick(user)} className={`row_header ${((selectedUser && selectedUser.id === user.id) || (eliminatingClient && eliminatingClient.id === user.id) || (acceptingClient && acceptingClient.id === user.id)) ? 'selected' : ''}`}>
                   <div className='UserCard'>
                   { user.gender === "Mujer" && (
                     <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
@@ -129,8 +154,13 @@ export default function PendingClients() {
                     <div className='row_description'>{user.role.join(" - ")}</div>
                   </div>
                   </div>
+                  <div className="row_buttons">
                   <div className="row_edit">
                       <i className={`bi bi-trash card-icon ${eliminatingClient && eliminatingClient.id === user.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}></i>
+                    </div>
+                    <div className="row_edit">
+                      <i className={`bi bi-database-add card-icon ${acceptingClient && acceptingClient.id === user.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleAcceptClick(user); }}></i>
+                    </div>
                     </div>
                 </div>
                 {expandedRow === user.id && (
@@ -149,10 +179,17 @@ export default function PendingClients() {
                   </div>
                   </>
                 )}
+
+                {acceptingClient && acceptingClient.id === user.id && (
+                  <>
+                  <div className="exercise-info">
+                    <button className='add_button' onClick={handleAccept}>Aceptar solicitud y agregar a mis clientes</button>
+                  </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>
       </div>
     );
 }
-

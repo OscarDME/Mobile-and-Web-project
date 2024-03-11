@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-//import '.../styles/WhiteBoard.css';
-//import '.../styles/UsersProgress.css';
-//import '.../styles/MenuButtons.css';
+import React, { useState, useEffect } from 'react';
 import Progress_Excercises from './Progress_Excercises';
 import Progress_Body_Measures from './Progress_Body_Measures';
-import Progress_General from './Progress_General';
 import MenuButtons from '../MenuButtons';
+import { AuthenticatedTemplate } from '@azure/msal-react';
 
-export default function UsersProgress() {
-  const [activeComponent, setActiveComponent] = useState('General');
+export default function UsersProgress({ selectedUser }) {
+  const [activeComponent, setActiveComponent] = useState('Medidas Corporales');
+  const [userForComponent, setUserForComponent] = useState(selectedUser);
+
+  useEffect(() => {
+    setUserForComponent(selectedUser);
+  }, [selectedUser]);
 
   const handleShowComponent = (component) => {
     setActiveComponent(component);
@@ -17,25 +19,33 @@ export default function UsersProgress() {
   const renderComponent = () => {
     switch (activeComponent) {
       case 'Ejercicios':
-        return <Progress_Excercises />;
+        return <Progress_Excercises selectedUser={userForComponent} />;
       case 'Medidas Corporales':
-        return <Progress_Body_Measures />;
-      case 'General':
       default:
-        return <Progress_General />;
+        return <Progress_Body_Measures selectedUser={userForComponent} />;
     }
   };
 
-  const customMenuItems = ['General', 'Medidas Corporales', 'Ejercicios'];
+  const customMenuItems = ['Medidas Corporales', 'Ejercicios'];
 
   return (
-    <>
+    <AuthenticatedTemplate>
       <div className='Container'>
         <div className='buttoncontainer'>
           <MenuButtons menuItems={customMenuItems} handleShowComponent={handleShowComponent} />
         </div>
-        {renderComponent()}
+        {userForComponent ? (
+            <>
+            {renderComponent()}
+            </>
+          ) : (
+            <div className='no-user-container MainContainer'>
+              <div>
+                <h3>No hay usuario seleccionado</h3>
+              </div>
+            </div>
+          )}
       </div>
-    </>
+    </AuthenticatedTemplate>
   );
 }

@@ -5,6 +5,7 @@ import { UserCard } from './DATA_USER_CARD';
 import SearchBar from './SearchBar';
 import config from '../utils/conf'
 
+
 export default function SideDataDisplay(props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);

@@ -1,13 +1,21 @@
 import React, {useState } from 'react';
+import { addDoc, collection, getFirestore, serverTimestamp, updateDoc, doc, query, where, getDocs } from "firebase/firestore";
 import { UserCard } from "../DATA_USER_CARD";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
+import { useMsal } from "@azure/msal-react";
 
 export default function AddClient() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
     const [addClient, setAddClient] = useState(null);
+    const { instance } = useMsal();
+    const activeAccount = instance.getActiveAccount();
+
+    const sender = activeAccount.idTokenClaims.oid; // OID del usuario actual
+
+    
     
     const filteredUsers = UserCard.filter(user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -43,10 +51,48 @@ export default function AddClient() {
         setAddClient(user); 
       }
     };
+    const createConversation = async (sender, receiver) => {
+      const db = getFirestore();
+      const conversationsRef = collection(db, "conversaciones");
+    
+      // Consulta para buscar conversaciones en las que participa el sender
+      const q = query(conversationsRef, where("participantes", "array-contains", sender));
+    
+      // Ejecuta la consulta
+      const querySnapshot = await getDocs(q);
+    
+      // Verifica si alguna conversación contiene al receiver como participante
+      const existingConversation = querySnapshot.docs.find(doc => doc.data().participantes.includes(receiver));
+    
+      // Si ya existe una conversación, imprime un mensaje y retorna
+      if (existingConversation) {
+        console.log("Ya existe una conversación entre los participantes.");
+        return;
+      }
+    
+      // Si no existe una conversación, crea una nueva
+      const conversationDocRef = await addDoc(conversationsRef, {
+        creadoEn: serverTimestamp(), // Timestamp del momento de creación
+        modificadoEn: serverTimestamp(), // Timestamp del momento de modificación
+        participantes: [sender, receiver], // Array con los ID de los participantes
+      });
+    
+      console.log("Nueva conversación creada:", conversationDocRef.id);
+    };
+    
 
-    const handleSubmit = (event) => {
+    const handleSubmit  = async (event) => {
       event.preventDefault();
-  
+      console.log(sender);
+      console.log(addClient.id);
+
+      if (addClient && addClient.id) {
+        // Crear una nueva conversación entre el sender y el destinatario
+        await createConversation(sender, addClient.id);
+        window.location.reload();
+      } else {
+        console.error("No se seleccionó un destinatario válido.");
+      }
       
       //TODO: Eliminar cliente
       //Mandar a la lista de ejercicios después de guardar uno, TODO: refrescar la lista de ejercicios automaticamente
@@ -84,7 +130,7 @@ export default function AddClient() {
                 <>
                     <>
                     <div className="exercise-info">
-                      chat
+                      No puede acceder al chat si no manda una solicitud a {user.name} primero
                     </div>
                     </>
                 </>
