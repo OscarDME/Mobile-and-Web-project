@@ -1,64 +1,55 @@
-import { View, Text, Button, FlatList } from 'react-native';
-import React, { useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import config from "../../utils/conf";
+import { FIRESTORE_DB } from '../../../FirebaseConfig';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
-
-const MainMenu = ({ navigation }) => {
-  const [oid, setOid] = useState("");
+const ConversationsScreen = () => {
+  const [oid, setOid] = useState('');
   const [conversaciones, setConversaciones] = useState([]);
 
-
-  
   useEffect(() => {
-    AsyncStorage.getItem("userOID")
-      .then((value) => {
-        if (value !== null) {
-          setOid(value);
-          console.log("OID obtenido:", value);
-          fetchConversaciones(value); // Llama a fetchConversaciones aquí
-        }
-      })
-      .catch((error) => {
-        console.error("Error al obtener el OID:", error);
-      });
+    const fetchOIDAndConversations = async () => {
+      const storedOID = await AsyncStorage.getItem('userOID'); // Asegúrate de haber almacenado el OID previamente
+      if (storedOID) {
+        setOid(storedOID);
+        fetchConversaciones(storedOID);
+      }
+    };
+
+    fetchOIDAndConversations();
   }, []);
-  
 
+  const fetchConversaciones = (userOID) => {
+    const conversacionesRef = collection(FIRESTORE_DB, 'conversaciones');
+    const q = query(conversacionesRef, where('participantes', 'array-contains', userOID));
 
-  const fetchConversaciones = (oid) => {
-    firestore()
-      .collection('conversaciones')
-      .where('participantes', 'array-contains', oid)
-      .orderBy('modificadoEn', 'desc') // Asegúrate de tener un índice para esta consulta en Firestore
-      .onSnapshot((querySnapshot) => {
-        const conversaciones = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setConversaciones(conversaciones);
-      }, (error) => {
-        console.log(error);
-      });
+    onSnapshot(q, (querySnapshot) => {
+      const fetchedConversaciones = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setConversaciones(fetchedConversaciones);
+    }, (error) => {
+      console.error('Error al obtener conversaciones:', error);
+    });
   };
 
-  
-  console.log("OID:", oid);
-
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Chat</Text>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <FlatList
         data={conversaciones}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <Text onPress={() => navigation.navigate('Chat', { conversationId: item.id })}>
-            Conversación con ID: {item.id} - Modificado en: {item.modificadoEn.toDate().toDateString()}
-          </Text>
+          <View style={{ padding: 10 }}>
+            <Text>Conversación ID: {item.id}</Text>
+            {/* Aquí puedes añadir más detalles sobre la conversación */}
+          </View>
         )}
       />
     </View>
   );
 };
 
-export default MainMenu;
+export default ConversationsScreen;
+
