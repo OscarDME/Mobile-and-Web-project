@@ -89,12 +89,12 @@ export const querys = {
     updateRutina: "UPDATE Rutina SET nombre = @nombre, publica = @publica WHERE ID_Rutina = @ID_Rutina",
 
     //Dias_Entreno
-    createDiasEntreno: "INSERT INTO Dias_Entreno(ID_Rutina, ID_Dia) VALUES (@ID_Rutina, @ID_Dia)",
+    createDiasEntreno: "INSERT INTO Dias_Entreno(ID_Rutina, ID_Dia)  OUTPUT INSERTED.ID_Dias_Entreno VALUES (@ID_Rutina, @ID_Dia)",
     getDiasEntrenoByRutina: "SELECT DE.ID_Dias_Entreno, DE.ID_Dia, D.dia FROM Dias_Entreno DE INNER JOIN Dia D ON DE.ID_Dia = D.ID_Dia WHERE DE.ID_Rutina = @ID_Rutina",
     deleteDiasEntrenoByRutina: "DELETE FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina",
 
     //EjerciciosDia
-    createEjerciciosDia: "INSERT INTO EjerciciosDia (ID_Dias_Entreno, ID_Ejercicio, descanso, superset) VALUES (@ID_Dias_Entreno, @ID_Ejercicio, @descanso, @superset)",
+    createEjerciciosDia: "INSERT INTO EjerciciosDia (ID_Dias_Entreno, ID_Ejercicio, descanso, superset)  OUTPUT INSERTED.ID_EjerciciosDia VALUES (@ID_Dias_Entreno, @ID_Ejercicio, @descanso, @superset)",
     getEjerciciosPorDia: "SELECT e.ID_Ejercicio, e.ejercicio, DATEDIFF(SECOND, '00:00:00', CAST(ed.descanso AS TIME)) AS descanso, ed.superset, ed.ID_EjerciciosDia FROM Ejercicio AS e JOIN EjerciciosDia AS ed ON e.ID_Ejercicio = ed.ID_Ejercicio WHERE ed.ID_Dias_Entreno = @ID_Dias_Entreno;",
 
     //BloqueSets
@@ -106,4 +106,6 @@ export const querys = {
     //Serie
     createSerie: "INSERT INTO (ID_Ejercicio, tiempo_ejercicio_cardiovascular, descanso, repeticiones) VALUES (@ID_Ejercicio, @tiempo_ejercicio_cardiovascular, @descanso, @repeticiones)",
 
+    //Dietas
+    getTiemposComida: "SELECT * FROM TiempoComida",
 };

@@ -1,9 +1,11 @@
-import React , {useState}from 'react'
+import React , {useState, useEffect}from 'react'
 import { DATA_DIET } from '../DATA_DIET'
 import { useMsal } from "@azure/msal-react";
 import { Calendar } from 'primereact/calendar';
 import { addLocale } from 'primereact/api';
 import "primereact/resources/themes/lara-light-indigo/theme.css";
+import config from "../../utils/conf";
+
 
 const USED_DAYS = [new Date(2024, 1, 5), new Date(2024, 1, 15)];// Año, mes (0-indexado), día
 
@@ -11,8 +13,25 @@ export default function AssignDietsCalendar({client, createdDiet}) {
 
     const { instance } = useMsal();
     const activeAccount = instance.getActiveAccount();
-    const [dietPlan, setDietPlan] = useState(DATA_DIET);
-    let today = new Date();
+    const [dietPlan, setDietPlan] = useState([]);
+
+    useEffect(() => {
+        const fetchDietasActivas = async () => {
+            try {
+                // Asume que tienes el ID del usuario disponible en `client.id`
+                const response = await fetch(`${config.apiBaseUrl}/dieta/${client.ID_Usuario}`);
+                if (!response.ok) {
+                    throw new Error('Error al obtener las dietas activas');
+                }
+                const dietasActivas = await response.json();
+                setDietPlan(dietasActivas);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
+        fetchDietasActivas();
+    }, [client.id]);    let today = new Date();
     let month = today.getMonth();
     let year = today.getFullYear();
     let prevMonth = month === 0 ? 11 : month - 1;
@@ -21,6 +40,8 @@ export default function AssignDietsCalendar({client, createdDiet}) {
     minDate.setMonth(prevMonth);
     minDate.setFullYear(prevYear);
     const [date, setDate] = useState(null);
+
+    console.log(createdDiet);
 
     addLocale('es', {
       firstDayOfWeek: 1,
@@ -56,78 +77,128 @@ export default function AssignDietsCalendar({client, createdDiet}) {
   };
 
 
-    const handleSubmit = async (event) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-      event.preventDefault(); 
+    const selectedStartDate = new Date(date[0]);
+    const selectedEndDate = new Date(date[1]);
 
-  // Verifica si createdDiet existe
-  if (!createdDiet) {
-    alert("No se ha creado ninguna dieta.");
-    return;
-  }
+    // Validación de solapamiento de fechas
+    const isOverlap = dietPlan.some(diet => {
+        const dietStartDate = new Date(diet.fecha_inicio);
+        const dietEndDate = new Date(diet.fecha_fin);
+        return (selectedStartDate <= dietEndDate && selectedEndDate >= dietStartDate);
+    });
 
-  // Verifica si el nombre de la dieta está presente
-  if (!createdDiet.name || createdDiet.name.trim() === "") {
-    alert("Por favor, especifica un nombre para la dieta.");
-    return;
-  }
-
-  // Verifica si hay al menos una comida por día
-  const hasMealEachDay = createdDiet.days.every(day => day.meals.length > 0);
-  if (!hasMealEachDay) {
-    alert("Asegúrate de que cada día tenga al menos una comida.");
-    return;
-  }
-
-  // Verifica si cada comida tiene nombre
-  const everyMealHasName = createdDiet.days.every(day => day.meals.every(meal => meal.mealName && meal.mealName.trim() !== ""));
-  if (!everyMealHasName) {
-    alert("Asegúrate de que cada comida tenga un nombre.");
-    return;
-  }
-
-  // Verifica si cada comida tiene al menos un alimento
-  const everyMealHasFood = createdDiet.days.every(day => day.meals.every(meal => meal.foods.length > 0));
-  if (!everyMealHasFood) {
-    alert("Asegúrate de que cada comida tenga al menos un alimento.");
-    return;
-  }
-
-  // Verifica si cada alimento tiene nombre y porción válidos
-  const everyFoodHasValidNameAndPortion = createdDiet.days.every(day => 
-    day.meals.every(meal => 
-      meal.foods.every(food => 
-        food.name && food.name.trim() !== "" && food.portion && food.portion > 0
-      )
-    )
-  );
-  if (!everyFoodHasValidNameAndPortion) {
-    alert("Asegúrate de que cada alimento tenga un nombre y una porción válidos.");
-    return;
-  }
-
-  // Verifica si tiene algún nutricionista o cliente asignado
-  if (!createdDiet.clientId || createdDiet.clientId.trim() === "" || !createdDiet.nutricionistID || createdDiet.nutricionistID.trim() === "") {
-    alert("Algo ocurrió. No se pudo obtener los datos del cliente a asignar la dieta o del nutricionista que la creó. Inténtalo de nuevo.");
-    return;
-  }
-
-
-      //TODO: guardar en base de datos aqui
-      //Hacer validacion de los datos
+    if (isOverlap) {
+        alert("El usuario ya tiene una dieta asignada en el rango de fechas seleccionado.");
+        return;
     }
 
+  
+    // Verifica si createdDiet existe
+    if (!createdDiet) {
+      alert("No se ha creado ninguna dieta.");
+      return;
+    }
+  
+    // Verifica si el nombre de la dieta está presente
+    if (!createdDiet.name || createdDiet.name.trim() === "") {
+      alert("Por favor, especifica un nombre para la dieta.");
+      return;
+    }
+  
+    // Verifica las fechas de asignación
+    if (!date || date.length !== 2) {
+      alert("Por favor, selecciona un rango de fechas para la asignación de la dieta.");
+      return;
+    }
+  
+    // Verifica si hay al menos una comida por día
+    const hasMealEachDay = createdDiet.days.every(day => day.meals && day.meals.length > 0);
+    if (!hasMealEachDay) {
+      alert("Asegúrate de que cada día tenga al menos una comida.");
+      return;
+    }
+
+    if (!date || date.length !== 2 || !date[0] || !date[1]) {
+      alert("Por favor, selecciona un rango de fechas para la asignación de la dieta.");
+      return;
+    }  
+  
+    // Verifica si cada comida tiene un ID válido (mealTimeId) y al menos un alimento
+    for (const day of createdDiet.days) {
+      for (const meal of day.meals) {
+        if (!meal.mealTimeId) {
+          alert("Cada comida debe tener un ID válido.");
+          return;
+        }
+        if (!meal.foods || meal.foods.length === 0) {
+          alert("Asegúrate de que cada comida tenga al menos un alimento.");
+          return;
+        }
+        for (const food of meal.foods) {
+          if (!food.name || food.name.trim() === "" || !food.portion || food.portion <= 0) {
+            alert("Asegúrate de que cada alimento tenga un nombre y una porción válidos.");
+            return;
+          }
+        }
+      }
+    }
+
+    // Conversión de las fechas seleccionadas a objetos Date
+    
+
+    console.log(date);
+    const formattedStartDate = date[0].toISOString().slice(0, 10); // Formato YYYY-MM-DD
+    const formattedEndDate = date[1].toISOString().slice(0, 10); // Formato YYYY-MM-DD
+
+    console.log(formattedStartDate);
+    console.log(formattedEndDate);
+  
+    // Preparar datos de la dieta para enviar
+    const dietDataToSend = {
+      ...createdDiet,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+    };
+
+    console.log(dietDataToSend);
+  
+    // Envía los datos a tu API
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/dieta`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dietDataToSend),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const responseData = await response.json();
+      console.log('Dieta guardada con éxito:', responseData);
+      alert('Dieta asignada con éxito.');
+      // Realizar acciones posteriores, como limpiar el formulario o actualizar el estado
+    } catch (error) {
+      console.error('Error al guardar la dieta:', error);
+      alert('Error al asignar la dieta. Por favor, inténtalo de nuevo.');
+    }
+  };
   return (
     <>
-    <h2 className='MainTitle'>Dietas activas de {client.username}</h2>
+    <h2 className='MainTitle'>Dietas activas de {client.nombre_usuario}</h2>
     <div className='active-diet-container'>
     {dietPlan.map((diet, index)  => (  
         <>
         <div key={index} className='active-diet-card'>
-            <h4>{diet.name}</h4>
+            <h4>{diet.nombre}</h4>
             <div>
-            <p>Fecha de inicio: {diet.startDate}</p>
-            <p>Fecha de finalización: {diet.endDate}</p>
+            <p>Fecha de inicio: {diet.fecha_inicio.slice(0, 10)}</p>
+            <p>Fecha de finalización: {diet.fecha_fin.slice(0, 10)}</p>
             </div>
         </div>
         </>

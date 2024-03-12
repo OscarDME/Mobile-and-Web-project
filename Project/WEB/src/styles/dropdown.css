@@ -1,4 +1,5 @@
 .dropdown{
+    max-width: 200px; /* Ajusta según tus necesidades */
     padding: 10px 20px;
     color: var(--text);
     border-color: var(--secondary-background);

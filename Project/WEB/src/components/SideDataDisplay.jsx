@@ -3,17 +3,45 @@ import '../styles/SideDataDisplay.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { UserCard } from './DATA_USER_CARD';
 import SearchBar from './SearchBar';
+import config from '../utils/conf'
 
 
 export default function SideDataDisplay(props) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
 
+  // Efecto para solicitar los datos de los usuarios al cargar el componente
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        // Asume que tienes un endpoint '/api/users' para obtener los usuarios
+        const response = await fetch (`${config.apiBaseUrl}/users`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log(data);
+        setUsers(data); // Actualiza el estado con los usuarios obtenidos
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+
+    // Recuperar el usuario seleccionado previamente desde localStorage
+    const storedUser = localStorage.getItem('selectedUser');
+    if (storedUser) {
+      setSelectedUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   // Filtra la lista de usuarios basándote en el término de búsqueda
-  const filteredUsers = UserCard.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(user =>
+    user.nombre_usuario.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.correo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleUserClick = (user) => {
@@ -21,14 +49,6 @@ export default function SideDataDisplay(props) {
     setSelectedUser(user);
     props.setSelectedUser(user);
   };
-
-  // Efecto para cargar la selección del usuario desde localStorage al cargar la página
-  useEffect(() => {
-    const storedUser = localStorage.getItem('selectedUser');
-    if (storedUser) {
-      setSelectedUser(JSON.parse(storedUser));
-    }
-  }, []); // Agrega un arreglo vacío para que este efecto se ejecute solo una vez al montar el componente
 
   // Efecto para guardar la selección del usuario en localStorage cuando cambia
   useEffect(() => {
@@ -53,9 +73,9 @@ export default function SideDataDisplay(props) {
               <div  className='icon'><i class="bi bi-person-standing"></i></div>
             )}
               <div>
-                <div className='username'>{selectedUser.username}</div>
-                <div className='name'>{selectedUser.name}</div>
-                <div className='email'>{selectedUser.email}</div>
+                <div className='username'>{selectedUser.nombre_usuario}</div>
+                <div className='name'>{selectedUser.nombre}</div>
+                <div className='email'>{selectedUser.correo}</div>
               </div>
               </div>
             </div>
@@ -74,7 +94,7 @@ export default function SideDataDisplay(props) {
           {filteredUsers.map((user, key) => (
             <li
               key={key}
-              className={`card ${selectedUser && selectedUser.oid === user.id ? 'selected' : ''}`}
+              className={`card ${selectedUser && selectedUser.ID_Usuario === user.ID_Usuario ? 'selected' : ''}`}
               onClick={() => handleUserClick(user)}
             >
             { user.gender === "Mujer" && (
@@ -84,9 +104,9 @@ export default function SideDataDisplay(props) {
               <div  className='icon'><i class="bi bi-person-standing"></i></div>
             )}
               <div>
-                <div className='username'>{user.username}</div>
-                <div className='name'>{user.name}</div>
-                <div className='email'>{user.email}</div>
+                <div className='username'>{user.nombre_usuario}</div>
+                <div className='name'>{user.nombre}</div>
+                <div className='email'>{user.correo}</div>
               </div>
             </li>
           ))}
