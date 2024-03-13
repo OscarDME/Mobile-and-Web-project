@@ -1,55 +1,95 @@
-import { FIRESTORE_DB } from '../../../FirebaseConfig';
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
-
-const ConversationsScreen = () => {
-  const [oid, setOid] = useState('');
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { FIRESTORE_DB } from "../../../FirebaseConfig"; 
+const Chat = ({ navigation }) => {
   const [conversaciones, setConversaciones] = useState([]);
 
   useEffect(() => {
-    const fetchOIDAndConversations = async () => {
-      const storedOID = await AsyncStorage.getItem('userOID'); // Asegúrate de haber almacenado el OID previamente
-      if (storedOID) {
-        setOid(storedOID);
-        fetchConversaciones(storedOID);
+    const fetchConversaciones = async () => {
+      const oid = await AsyncStorage.getItem("userOID");
+      if (oid) {
+        const conversacionesRef = collection(FIRESTORE_DB, 'conversaciones');
+        const q = query(conversacionesRef, where('participantes', 'array-contains', oid));
+
+        onSnapshot(q, (querySnapshot) => {
+          const fetchedConversaciones = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setConversaciones(fetchedConversaciones);
+        }, (error) => {
+          console.error('Error al obtener conversaciones:', error);
+        });
       }
     };
 
-    fetchOIDAndConversations();
+    fetchConversaciones();
   }, []);
 
-  const fetchConversaciones = (userOID) => {
-    const conversacionesRef = collection(FIRESTORE_DB, 'conversaciones');
-    const q = query(conversacionesRef, where('participantes', 'array-contains', userOID));
-
-    onSnapshot(q, (querySnapshot) => {
-      const fetchedConversaciones = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setConversaciones(fetchedConversaciones);
-    }, (error) => {
-      console.error('Error al obtener conversaciones:', error);
-    });
-  };
-
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <FlatList
-        data={conversaciones}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={{ padding: 10 }}>
-            <Text>Conversación ID: {item.id}</Text>
-            {/* Aquí puedes añadir más detalles sobre la conversación */}
-          </View>
-        )}
-      />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Mis Conversaciones</Text>
+      </View>
+      <ScrollView
+        style={styles.conversacionesContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {conversaciones.map((conversacion) => (
+          <TouchableOpacity
+            key={conversacion.id}
+            style={styles.conversacionCard}
+            onPress={() =>
+              navigation.navigate("UserChat", {
+                conversacion: conversacion,
+              })
+            }
+          >
+            <Text style={styles.conversacionNombre}>Conversación ID: {conversacion.id}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
-export default ConversationsScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    padding: 20,
+  },
+  header: {
+    alignSelf: "stretch",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+  },
+  conversacionesContainer: {
+    alignSelf: "stretch",
+  },
+  conversacionCard: {
+    backgroundColor: "#07c", // Ajusta el color según tu preferencia
+    borderRadius: 10,
+    marginBottom: 16,
+    padding: 20,
+  },
+  conversacionNombre: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  // Agrega más estilos aquí según sea necesario
+});
 
+export default Chat;

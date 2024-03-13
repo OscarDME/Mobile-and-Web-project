@@ -69,6 +69,7 @@ import DetallesRutina from "../screens/Rutinas/DetallesRutina";
 import EditarRutina from "../screens/Rutinas/EditRoutine";
 import Ejercicios from "../screens/Rutinas/Ejercicios";
 import Detalles from "../screens/Rutinas/Detalles"
+import UserChat from "../screens/Chat/UserChat";
 
 import Header from "../components/Header";
 {
@@ -209,7 +210,7 @@ const FooterTabs = () => {
       <Tab.Screen name="Calendario" component={Calendario} />
       <Tab.Screen name="Progreso" component={Progreso} />
       <Tab.Screen name="Mas" component={Mas} />
-      <Tab.Screen name="Chat" component={Chat} />
+      <Tab.Screen name="Chat" component={ChatStack} />
       <Tab.Screen name="Notificaciones" component={Notificaciones} />
       <Tab.Screen name="Perfil" component={Perfil} />
       <Tab.Screen name="Descubre" component={Descubre} />
@@ -238,6 +239,21 @@ const MainStack = () => {
     >
       <StackMain.Screen name="Login" component={Login} />
     </StackMain.Navigator>
+  );
+};
+
+const StackChat = createNativeStackNavigator();
+const ChatStack = () => {
+  return (
+    <StackChat.Navigator
+      initialRouteName="Chat"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <StackChat.Screen name="Chat" component={Chat} />
+      <StackChat.Screen name="UserChat" component={UserChat} />
+    </StackChat.Navigator>
   );
 };
 
@@ -369,6 +385,9 @@ const TestsStack = () => {
     </StackQuestionnaire.Navigator>
   );
 };
+
+
+
 
 //Provitional Menu
 //Determine which kind of navigation are we going to use for the main menu
