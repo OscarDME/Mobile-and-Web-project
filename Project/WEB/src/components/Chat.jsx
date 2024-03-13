@@ -111,7 +111,7 @@ export default function Chat({ reciever }) {
     // Obtener el documento de la conversación y actualizar modificadoEn
     const conversationRef = doc(db, "conversaciones", conversationId);
     await updateDoc(conversationRef, {
-      modificadoEn: new Date(), // Actualizar el campo modificadoEn
+      modificadoEn: new Date(),
     });
   
     // Agregar el nuevo mensaje a Firestore
