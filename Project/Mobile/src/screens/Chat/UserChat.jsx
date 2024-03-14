@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, TextInput, Button, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, TextInput, Button, Alert, Modal } from 'react-native';
 import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FIRESTORE_DB, STORAGE_BUCKET } from '../../../FirebaseConfig';
@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 
 const UserChat = ({ route }) => {
@@ -14,6 +15,12 @@ const UserChat = ({ route }) => {
   const [mensajeTexto, setMensajeTexto] = useState('');
   const { conversacion } = route.params;
   const [oid, setOid] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const flatListRef = useRef();
+
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
 
   useEffect(() => {
     AsyncStorage.getItem('userOID').then((value) => {
@@ -35,8 +42,12 @@ const UserChat = ({ route }) => {
       console.error('Error al obtener mensajes:', error);
     });
 
-    return () => unsubscribe();
-  }, [conversacion.id]);
+    return () => {
+      unsubscribe();
+      
+      flatListRef.current?.scrollToEnd({ animated: true });
+    };
+  }, [conversacion.id, mensajes]);
 
   const enviarMensaje = async (texto, fileUrl, fileType) => {
     const nuevoMensaje = {
@@ -162,38 +173,64 @@ const UserChat = ({ route }) => {
   };
   
   
-  
+  const renderItem = ({ item }) => {
+    const isCurrentUserMessage = item.enviadoPor === oid;
+    return (
+      <View
+        style={[
+          styles.mensaje,
+          isCurrentUserMessage ? styles.currentUserMessage : styles.otherUserMessage,
+        ]}>
+        <Text style={styles.mensajeTexto}>{item.texto}</Text>
+        {/* Incluir renderizado de imágenes y PDFs si es necesario */}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={mensajes}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.mensaje}>
-            {item.texto && <Text style={styles.mensajeTexto}>{item.texto}</Text>}
-            {item.fileType === 'image/jpeg' && <Image source={{ uri: item.fileUrl }} style={styles.imagen} />}
-            {item.fileType === 'application/pdf' && (
-              <TouchableOpacity onPress={() => Linking.openURL(item.fileUrl)}>
-                <Text style={styles.archivoTexto}>Ver PDF</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem} 
       />
-      <TextInput
-        style={styles.input}
-        value={mensajeTexto}
-        onChangeText={setMensajeTexto}
-        placeholder="Escribe un mensaje aquí..."
-        multiline
-      />
-      <Button title="Enviar Mensaje" onPress={() => enviarMensaje(mensajeTexto)} />
-      <Button title="Enviar Imagen" onPress={seleccionarYEnviarImagen} />
-      <Button title="Enviar PDF" onPress={seleccionarYEnviarPDF} />
-    </View>
+        <View style={styles.inputContainer}>
+        <TouchableOpacity onPress={toggleModal} style={styles.modalToggleButton}>
+          <Ionicons name="add-circle-outline" size={24} color="black" />
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
+          value={mensajeTexto}
+          onChangeText={setMensajeTexto}
+          placeholder="Escribe un mensaje aquí..."
+          multiline
+        />
+
+        <TouchableOpacity onPress={() => mensajeTexto.trim() && enviarMensaje(mensajeTexto)} style={styles.sendButton}>
+          <Ionicons name="send" size={24} color="black" />
+        </TouchableOpacity>
+        </View>
+
+
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={toggleModal}
+        >
+                <View style={styles.modalView}>
+                  <Button title="Enviar Imagen" onPress={() => { seleccionarYEnviarImagen(); toggleModal(); }} />
+                  <Button title="Enviar PDF" onPress={() => { seleccionarYEnviarPDF(); toggleModal(); }} />
+                  <Button title="Cancelar" onPress={toggleModal} color="#FF6347" />
+                </View>
+        </Modal>
+        </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -225,6 +262,65 @@ const styles = StyleSheet.create({
     margin: 12,
     borderWidth: 1,
     padding: 10,
+  },
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  addButton: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  modalToggleButton: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 10,
+  },
+  sendButton: {
+    marginLeft: 10,
+  },  currentUserMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#D8F2FE',
+  },
+
+  // Estilos para mensajes de otros usuarios
+  otherUserMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#CCCCCC',
+  },
+
+  // Contenedor para input y botones
+  inputAndButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Asegurar espacio alrededor del input
+    paddingHorizontal: 10, // Opcional: para no pegar el contenido a los bordes
   },
 });
 
