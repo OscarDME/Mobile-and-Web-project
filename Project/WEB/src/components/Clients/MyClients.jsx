@@ -1,156 +1,210 @@
-import React, {useState } from 'react';
-import { UserCard } from "../DATA_USER_CARD";
+import React, { useState, useEffect } from 'react';
 import { deleteDoc, collection, getFirestore, query, where, getDocs } from "firebase/firestore";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
 import Chat from '../Chat';
 import { useMsal } from "@azure/msal-react";
+import config from "../../utils/conf";
 
 export default function MyClients() {
+    const [clients, setClients] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedClient, setSelectedClient] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
     const [eliminatingClient, setEliminatingClient] = useState(null);
     const { instance } = useMsal();
     const activeAccount = instance.getActiveAccount();
 
-    const sender = activeAccount.idTokenClaims.oid; // OID del usuario actual
-    
-    const filteredUsers = UserCard.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const senderId = activeAccount.idTokenClaims?.oid; // Acceder a idTokenClaims de manera segura
+
+    useEffect(() => {
+      const fetchClients = async () => {
+          if (!activeAccount) return; // Verificar si activeAccount está definido
+          const senderOID = activeAccount.idTokenClaims?.oid; // Acceder a idTokenClaims de manera segura
+          console.log("Sender OID:", senderOID); // Agregar un console.log para verificar el OID del remitente
+          try {
+              const response = await fetch(`${config.apiBaseUrl}/allClients/${senderOID}`, {
+                  method: 'GET',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+              });
+  
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+  
+              const data = await response.json();
+              console.log(data);
+              setClients(data);
+          } catch (error) {
+              console.error('There was an error fetching the clients:', error);
+          }
+      };
+  
+      fetchClients();
+  }, []); // <- Array vacío indica que el efecto se ejecutará solo una vez
+  
+
+    const filteredClients = clients.filter(client =>
+        client.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
   
-    const handleRowClick = (user) => {
-      if (expandedRow === user.id) {
-        setExpandedRow(null);
-        setEliminatingClient(null);
-        setSelectedUser(null); // Deselecciona la fila al hacer clic nuevamente
-      } else {
-        if (eliminatingClient && eliminatingClient.id === user.id) {
-          setEliminatingClient(null);
-          setEliminatingClient(null);
+    const handleRowClick = (client) => {
+        if (expandedRow === client.ID_Usuario) {
+            setExpandedRow(null);
+            setEliminatingClient(null);
+            setSelectedClient(null);
+        } else {
+            if (eliminatingClient && eliminatingClient.ID_Usuario === client.ID_Usuario) {
+                setEliminatingClient(null);
+                setEliminatingClient(null);
+            }
+            setSelectedClient(client);
+            setEliminatingClient(null);
+            setExpandedRow(client.ID_Usuario);
+            setSelectedClient(client);
         }
-        setSelectedUser(user);
-        setEliminatingClient(null);
-        setExpandedRow(user.id);
-        setSelectedUser(user); // Selecciona la fila al hacer clic
-      }
     };
 
-
-    const handleDeleteClick = (user) => {
-      if (eliminatingClient && eliminatingClient.id === user.id) {
-        setEliminatingClient(null); // Si el mismo ejercicio está seleccionado, oculta el formulario de edición
-      } else {
-        if (expandedRow && expandedRow !== user.id) {
-          setExpandedRow(null); // Si hay una fila expandida diferente a la seleccionada, ciérrala
-          setSelectedUser(null);
-          setEliminatingClient(null);
+    const handleDeleteClick = (client) => {
+        if (eliminatingClient && eliminatingClient.ID_Usuario === client.ID_Usuario) {
+            setEliminatingClient(null);
+        } else {
+            if (expandedRow && expandedRow !== client.ID_Usuario) {
+                setExpandedRow(null);
+                setSelectedClient(null);
+                setEliminatingClient(null);
+            }
+            setExpandedRow(null);
+            setSelectedClient(null);
+            setEliminatingClient(client); 
         }
-        setExpandedRow(null);
-        setSelectedUser(null);
-        setEliminatingClient(user); 
-      }
     };
 
-    const deleteConversation = async (sender, eliminatingClientId) => {
-      const db = getFirestore();
-      const conversationsRef = collection(db, "conversaciones");
-    
+    const handleDeleteClientFromTrainer = async (clientId) => {
+      // Asegúrate de reemplazar `apiBaseUrl` y la ruta específica según tu configuración
+      const senderOID = activeAccount.idTokenClaims?.oid; // OID del entrenador/nutricionista
+  
       try {
-        // Consulta para buscar las conversaciones que contienen al sender
-        const querySender = query(conversationsRef, where("participantes", "array-contains", sender));
-        const senderSnapshot = await getDocs(querySender);
-    
-        // Consulta para buscar las conversaciones que contienen al eliminatingClient
-        const queryEliminatingClient = query(conversationsRef, where("participantes", "array-contains", eliminatingClientId));
-        const eliminatingClientSnapshot = await getDocs(queryEliminatingClient);
-    
-        // Obtiene las conversaciones que cumplen ambas condiciones
-        const conversationsToDelete = [];
-        senderSnapshot.forEach((doc) => {
-          if (eliminatingClientSnapshot.docs.some(eliminatingClientDoc => eliminatingClientDoc.id === doc.id)) {
-            conversationsToDelete.push(doc.ref);
+          const response = await fetch(`${config.apiBaseUrl}/deleteClientFromTrainer`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  clientUserID: clientId, // El ID del cliente a eliminar
+                  trainerUserID: senderOID, // El ID del entrenador/nutricionista
+              }),
+          });
+  
+          if (!response.ok) {
+              throw new Error('Failed to delete the client from the trainer');
           }
-        });
-    
-        // Elimina las conversaciones encontradas
-        conversationsToDelete.forEach(async (conversationRef) => {
-          await deleteDoc(conversationRef);
-          console.log("Conversación eliminada:", conversationRef.id);
-        });
-    
+  
+          const result = await response.json();
+          console.log(result.message);
+  
+          // Actualiza la lista de clientes después de la eliminación
+          setClients(clients.filter(client => client.ID_Usuario !== clientId));
       } catch (error) {
-        console.error("Error al eliminar la conversación:", error);
+          console.error('Error deleting the client from the trainer:', error);
       }
+  };
+  
+  
+  
+
+    const deleteConversation = async (senderId, eliminatingClientId) => {
+        const db = getFirestore();
+        const conversationsRef = collection(db, "conversations");
+    
+        try {
+            const querySender = query(conversationsRef, where("participants", "array-contains", senderId));
+            const senderSnapshot = await getDocs(querySender);
+    
+            const queryEliminatingClient = query(conversationsRef, where("participants", "array-contains", eliminatingClientId));
+            const eliminatingClientSnapshot = await getDocs(queryEliminatingClient);
+    
+            const conversationsToDelete = [];
+            senderSnapshot.forEach((doc) => {
+                if (eliminatingClientSnapshot.docs.some(eliminatingClientDoc => eliminatingClientDoc.id === doc.id)) {
+                    conversationsToDelete.push(doc.ref);
+                }
+            });
+    
+            conversationsToDelete.forEach(async (conversationRef) => {
+                await deleteDoc(conversationRef);
+                console.log("Conversation deleted:", conversationRef.id);
+            });
+    
+        } catch (error) {
+            console.error("Error deleting conversation:", error);
+        }
     };
     
     
     const handleSubmit = async (event) => {
-      event.preventDefault();
+        event.preventDefault();
     
-      if (eliminatingClient && eliminatingClient.id) {
-        try {
-          // Elimina la conversación entre el sender y el cliente seleccionado
-          await deleteConversation(sender, eliminatingClient.id);
-          window.location.reload();
-        } catch (error) {
-          console.error("Error al eliminar la conversación:", error);
+        if (eliminatingClient && eliminatingClient.ID_Usuario) {
+            try {
+                await deleteConversation(senderId, eliminatingClient.ID_Usuario);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error deleting conversation:", error);
+            }
+        } else {
+            console.error("No valid client selected to delete the conversation.");
         }
-      } else {
-        console.error("No se seleccionó un cliente válido para eliminar la conversación.");
-      }
     
     };
 
     return (
-      <div className="container2">
-          <div className="search-bar-container2">
-            <div className='search-bar'>
-            <div className='addclient'><i className="bi bi-search h4"></i></div>
-              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            </div>
-          </div>
-          <ul className='cardcontainer'>
-            {filteredUsers.map((user) => (
-              <li key={user.id} className={`row ${((selectedUser && selectedUser.id === user.id) || (eliminatingClient && eliminatingClient.id === user.id)) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(user)} className={`row_header ${((selectedUser && selectedUser.id === user.id) || (eliminatingClient && eliminatingClient.id === user.id)) ? 'selected' : ''}`}>
-                  <div className='UserCard'>
-                  { user.gender === "Mujer" && (
-                    <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
-                  )}
-                  {user.gender === "Hombre" &&(
-                    <div  className='icon'><i class="bi bi-person-standing"></i></div>
-                  )}
-                  <div>
-                    <div className='row_name'>{user.name}</div>
-                    <div className='row_description'>{user.role.join(" - ")}</div>
-                  </div>
-                  </div>
-                    <div className="row_edit">
-                      <i className={`bi bi-trash card-icon ${eliminatingClient && eliminatingClient.id === user.id ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}></i>
-                    </div>
+        <div className="container2">
+            <div className="search-bar-container2">
+                <div className='search-bar'>
+                    <div className='addclient'><i className="bi bi-search h4"></i></div>
+                    <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
                 </div>
-                {expandedRow === user.id && (
-                <>
-                    <>
-                      <Chat reciever={user.id}/>
-                    </>
-                </>
-                )}
-                {eliminatingClient && eliminatingClient.id === user.id && (
-                  <>
-                  <div className="exercise-info">
-                  <form className='form_add_exercise' onSubmit={handleSubmit}>
-                    <button type="submit" className='delete_button'>Eliminar cliente</button>
-                  </form>
-                  </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-      </div>
+            </div>
+            <ul className='cardcontainer'>
+                {filteredClients.map((client) => (
+                    <li key={client.ID_Usuario} className={`row ${((selectedClient && selectedClient.ID_Usuario === client.ID_Usuario) || (eliminatingClient && eliminatingClient.ID_Usuario === client.ID_Usuario)) ? 'selected' : ''}`}>
+                        <div onClick={() => handleRowClick(client)} className={`row_header ${((selectedClient && selectedClient.ID_Usuario === client.ID_Usuario) || (eliminatingClient && eliminatingClient.ID_Usuario === client.ID_Usuario)) ? 'selected' : ''}`}>
+                            <div className='UserCard'>
+                                { client.sexo === "H" && (
+                                    <div  className='icon'><i class="bi bi-person-standing"></i></div>
+                                )}
+                                {client.sexo === "M" &&(
+                                    <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
+                                )}
+                                <div>
+                                    <div className='row_name'>{client.nombre} {client.apellido}</div>
+                                    <div className='row_description'>{client.tipo_usuario_movil}</div>
+                                </div>
+                            </div>
+                            <div className="row_edit">
+                                <i className={`bi bi-trash card-icon ${eliminatingClient && eliminatingClient.ID_Usuario === client.ID_Usuario ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleDeleteClick(client); }}></i>
+                            </div>
+                        </div>
+                        {expandedRow === client.ID_Usuario && (
+                            <>
+                                <Chat reciever={client.ID_Usuario}/>
+                            </>
+                        )}
+                        {eliminatingClient && eliminatingClient.ID_Usuario === client.ID_Usuario && (
+                            <>
+                                <div className="exercise-info">
+  <form onSubmit={(e) => e.preventDefault()}>
+      <button type="button" onClick={() => handleDeleteClientFromTrainer(eliminatingClient.ID_Usuario)} className='delete_button'>Eliminar Cliente</button>
+  </form>
+                                </div>
+                            </>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
-

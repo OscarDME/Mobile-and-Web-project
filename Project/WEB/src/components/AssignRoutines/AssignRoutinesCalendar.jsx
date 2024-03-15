@@ -4,6 +4,8 @@ import { Calendar } from 'primereact/calendar';
 import { addLocale } from 'primereact/api';
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { RoutineCard } from '../DATA_NEW_ROUTINES';
+import config from "../../utils/conf";
+
 
 const USED_DAYS = [new Date(2024, 1, 5), new Date(2024, 1, 15)];// Año, mes (0-indexado), día
 
@@ -61,12 +63,77 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
 
 
   const handleSubmit = async (event) => {
-
-      event.preventDefault(); 
-      //TODO: guardar en base de datos aqui
-      //Hacer validacion de los datos
-
+    event.preventDefault();
+  
+    try {
+      // Validación de solapamiento de fechas
+      // const isOverlap = routines.some(routine => {
+      //   const routineStartDate = new Date(routine.fecha_inicio);
+      //   const routineEndDate = new Date(routine.fecha_fin);
+      //   return (
+      //     date[0] <= routineEndDate && date[date.length - 1] >= routineStartDate
+      //   );
+      // });
+  
+      // if (isOverlap) {
+      //   alert("El usuario ya tiene una rutina asignada en el rango de fechas seleccionado.");
+      //   return;
+      // }
+  
+      // Verifica si updatedRoutine existe
+      if (!updatedRoutine) {
+        alert("No se ha creado ninguna rutina.");
+        return;
+      }
+  
+      // // Verifica si el nombre de la rutina está presente
+      // if (!updatedRoutine.name || updatedRoutine.name.trim() === "") {
+      //   alert("Por favor, especifica un nombre para la rutina.");
+      //   return;
+      // }
+  
+      // Verifica las fechas de asignación
+      if (!date || date.length < 2 || !date[0] || !date[date.length - 1]) {
+        alert("Por favor, selecciona un rango de fechas para la asignación de la rutina.");
+        return;
+      }
+  
+      // Preparar datos de la rutina para enviar
+      const body = JSON.stringify({
+        ID_Usuario: selectedUser.ID_Usuario,
+        nombreRutina: updatedRoutine.name,
+        diasEntreno: updatedRoutine.days, // Ajusta según la estructura de tu rutina
+        fechaInicio: date[0].toISOString(), // Formato ISO de la fecha de inicio
+        fechaFin: date[date.length - 1].toISOString(), // Formato ISO de la fecha de fin
+      });
+  
+      console.log(body);
+  
+      // Realiza la llamada a tu API para crear y asignar la rutina
+      const response = await fetch(`${config.apiBaseUrl}/rutinaasignar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: body,
+      });
+  
+      if (response.ok) {
+        console.log("Rutina asignada correctamente al cliente.");
+        alert("Rutina asignada correctamente al cliente.");
+        // Realiza cualquier acción adicional que desees después de asignar la rutina, como limpiar el formulario o actualizar el estado.
+      } else {
+        console.error("Error al asignar la rutina al cliente:", response.statusText);
+        alert("Error al asignar la rutina al cliente. Por favor, inténtalo de nuevo.");
+        // Maneja el error de acuerdo a tus necesidades.
+      }
+    } catch (error) {
+      console.error("Error en la asignación de la rutina al cliente:", error);
+      alert("Error en la asignación de la rutina al cliente. Por favor, inténtalo de nuevo.");
+      // Maneja el error de acuerdo a tus necesidades.
     }
+  };
+  
 
   return (
     <>
