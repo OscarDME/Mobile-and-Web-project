@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-between",
+    paddingTop: 15, 
     alignItems: "center",  // Align items in the center vertically
     padding: 10,  // Increase padding to increase header height
     backgroundColor: "#e6f0fa"

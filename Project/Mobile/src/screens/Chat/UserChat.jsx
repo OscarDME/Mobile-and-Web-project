@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, TextInput, Button, Alert, Modal } from 'react-native';
+import { KeyboardAvoidingView, Platform,View, Text, FlatList, StyleSheet, Image, TouchableOpacity, TextInput, Button, Alert, Modal } from 'react-native';
 import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FIRESTORE_DB, STORAGE_BUCKET } from '../../../FirebaseConfig';
@@ -17,6 +17,7 @@ const UserChat = ({ route }) => {
   const [oid, setOid] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const flatListRef = useRef();
+  const [isPickingDocument, setIsPickingDocument] = useState(false);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -44,7 +45,6 @@ const UserChat = ({ route }) => {
 
     return () => {
       unsubscribe();
-      
       flatListRef.current?.scrollToEnd({ animated: true });
     };
   }, [conversacion.id, mensajes]);
@@ -141,6 +141,8 @@ const UserChat = ({ route }) => {
   
   
 
+
+
   const seleccionarYEnviarPDF = async () => {
     try {
       const resultado = await DocumentPicker.getDocumentAsync({
@@ -173,21 +175,47 @@ const UserChat = ({ route }) => {
   };
   
   
+  
+  
   const renderItem = ({ item }) => {
     const isCurrentUserMessage = item.enviadoPor === oid;
+    const mensajeFecha = item.enviadoEn?.toDate(); // Convierte el timestamp a Date
+    const horaMensaje = mensajeFecha ? `${mensajeFecha.getHours()}:${mensajeFecha.getMinutes().toString().padStart(2, '0')}` : '';
+  
     return (
       <View
         style={[
           styles.mensaje,
           isCurrentUserMessage ? styles.currentUserMessage : styles.otherUserMessage,
         ]}>
-        <Text style={styles.mensajeTexto}>{item.texto}</Text>
-        {/* Incluir renderizado de imágenes y PDFs si es necesario */}
+        {/* Muestra el texto del mensaje si existe */}
+        {item.texto && <Text style={styles.mensajeTexto}>{item.texto}</Text>}
+  
+        {/* Renderiza la imagen si el tipo de archivo es una imagen */}
+        {item.fileType === 'image/jpeg' && (
+          <Image source={{ uri: item.fileUrl }} style={styles.imagen} />
+        )}
+  
+        {/* Renderiza un enlace para abrir el PDF si el tipo de archivo es un PDF */}
+        {item.fileType === 'application/pdf' && (
+          <TouchableOpacity onPress={() => Linking.openURL(item.fileUrl)}>
+            <Text style={styles.archivoTexto}>Ver PDF</Text>
+          </TouchableOpacity>
+        )}
+  
+        {/* Muestra la hora del mensaje */}
+        <Text style={styles.horaMensaje}>{new Date(item.enviadoEn.seconds * 1000).toLocaleDateString()}</Text>
       </View>
     );
   };
+  
 
   return (
+    <KeyboardAvoidingView 
+    style={{ flex: 1 }} 
+    behavior={Platform.OS === "ios" ? "padding" : "height"} 
+    keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+  >
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
@@ -227,6 +255,7 @@ const UserChat = ({ route }) => {
                 </View>
         </Modal>
         </View>
+        </KeyboardAvoidingView>
   );
 };
 
@@ -277,7 +306,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     padding: 35,
+    marginTop: 50,
     alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -291,13 +322,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
+    marginBottom: 10,
   },
   modalToggleButton: {
     marginRight: 10,
   },
   input: {
     flex: 1,
-    height: 40,
+    height: 35,
     borderWidth: 1,
     padding: 10,
     borderRadius: 10,
@@ -312,7 +344,7 @@ const styles = StyleSheet.create({
   // Estilos para mensajes de otros usuarios
   otherUserMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#CCCCCC',
+    backgroundColor: '#e0e0e0',
   },
 
   // Contenedor para input y botones
@@ -321,6 +353,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between', // Asegurar espacio alrededor del input
     paddingHorizontal: 10, // Opcional: para no pegar el contenido a los bordes
+  },
+  horaMensaje: {
+    fontSize: 10,
+    color: '#CCCCCC',
+    alignSelf: 'flex-end', // Alinea a la derecha
+    marginTop: 5, // Espaciado con el texto del mensaje
   },
 });
 
