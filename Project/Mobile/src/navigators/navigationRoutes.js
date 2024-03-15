@@ -70,6 +70,9 @@ import EditarRutina from "../screens/Rutinas/EditRoutine";
 import Ejercicios from "../screens/Rutinas/Ejercicios";
 import Detalles from "../screens/Rutinas/Detalles"
 import UserChat from "../screens/Chat/UserChat";
+import Formulario1 from "../screens/Perfil/Formulario1"
+import Formulario2 from "../screens/Perfil/Formulario2"
+import DetallesEntrenador from "../screens/Descubre/Detalles"
 
 import Header from "../components/Header";
 {
@@ -212,8 +215,8 @@ const FooterTabs = () => {
       <Tab.Screen name="Mas" component={Mas} />
       <Tab.Screen name="Chat" component={ChatStack} />
       <Tab.Screen name="Notificaciones" component={Notificaciones} />
-      <Tab.Screen name="Perfil" component={Perfil} />
-      <Tab.Screen name="Descubre" component={Descubre} />
+      <Tab.Screen name="Perfil" component={ProfileStack} />
+      <Tab.Screen name="Descubre" component={DescubreStack} />
       <Tab.Screen name="Comidas" component={Comidas} />
       <Tab.Screen name="Biblioteca" component={BibliotecaStack} />
       <Tab.Screen name="Advertencias" component={Advertencias} />
@@ -239,6 +242,22 @@ const MainStack = () => {
     >
       <StackMain.Screen name="Login" component={Login} />
     </StackMain.Navigator>
+  );
+};
+
+const StackProfile = createNativeStackNavigator();
+const ProfileStack = () => {
+  return (
+    <StackProfile.Navigator
+      initialRouteName="Perfil"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <StackProfile.Screen name="Perfil" component={Perfil} />
+      <StackProfile.Screen name="Formulario1" component={Formulario1} />
+      <StackProfile.Screen name="Formulario2" component={Formulario2} />
+    </StackProfile.Navigator>
   );
 };
 
@@ -275,6 +294,22 @@ return (
       <StackRutinas.Screen name="Detalles" component={Detalles} />
       <StackRutinas.Screen name="AddSets" component={AddSets} />
     </StackRutinas.Navigator>
+  );
+};
+
+const StackDescubre = createNativeStackNavigator();
+
+const DescubreStack = () => {
+  return (
+    <StackDescubre.Navigator
+      initialRouteName="Descubre"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <StackDescubre.Screen name="Descubre" component={Descubre} />
+      <StackDescubre.Screen name="DetallesEntre" component={DetallesEntrenador} />
+    </StackDescubre.Navigator>
   );
 };
 

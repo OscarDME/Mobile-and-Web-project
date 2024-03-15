@@ -4,7 +4,10 @@ import {
     checkIfUserExists,
     createUser,
     getBirthDate,
-    getUserAndType
+    getUserAndType,
+    getUserById, updateComparacionRendimiento,
+    updateViajeGimnasio,
+getAllMobileUsersInfo
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
@@ -14,6 +17,9 @@ import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento } fr
 import { createReceta, getReceta, updateReceta, getIngredientes } from "../Controllers/Recetas.Controllers.js";
 import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas } from "../Controllers/Rutinas.Controllers.js";
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
+import { createCompleteRutinaForClient } from "../Controllers/AsignarRutinas.Controllers.js";
+import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
+
 
 //El que come callado repite
 
@@ -24,6 +30,35 @@ router.get("/users/:oid", checkIfUserExists);
 router.get("/birthdate/:oid", getBirthDate);
 router.post("/users", createUser);
 router.get("/usertype", getUserAndType);
+router.get("/user/:oid", getUserById);
+router.put('/Rendimiento/:id', updateComparacionRendimiento);
+router.put('/ViajeGimnasio/:id', updateViajeGimnasio);
+router.get("/mobileuser", getAllMobileUsersInfo);
+
+//Solicitudes
+router.post("/solicitud", createTrainerClientRequest);
+router.post("/pendingclients", getPendingTrainerClientRequests);
+router.post("/deleteolicitud", deleteTrainerClientRequest);
+router.get("/pendingclient/:oid", getPendingClient);
+router.delete("/deletesolicitud/:id", deleteTrainerClient);
+router.post("/acceptclient", acceptClientRequest);
+router.get("/trainerinfo/:oid", getTrainerInfo);
+router.put("/updatecalificacion", updateClientRating);
+router.get("/allclients/:oid", getAllClientsOfTrainer);
+router.post("/deleteClientFromTrainer", deleteClientFromTrainer);
+router.get("/alltrainers", getAllTrainersInfo);
+router.post("/crearSolicitud", createClientTrainerRequest);
+router.get("/pendingrequests/:trainerId", getPendingRequestsForTrainer);
+router.post("/acceptclienttrainer", acceptClientTrainerRequest);
+router.post("/deletesolicitudtrainer", deleteClientTrainerRequest);
+router.post("/checkpendingrequest", checkPendingRequest);
+router.post("/checkrequest", checkRequest);
+
+router.post("/insertTrainer", insertTrainerNutritionistRequest);
+router.get("/applicationdetails", getApplicationDetails)
+router.post("/acceptandcreatetrainer", acceptAndCreateTrainerNutritionist);
+router.delete("/deletesolicitud1/:id", deleteSolicitudById);
+
 
 //Materiales
 router.get("/materials", getMaterials); 
@@ -64,6 +99,9 @@ router.delete("/rutina/:id", deleteRutina);
 router.post("/rutinacompleta", createCompleteRutina);
 router.get("/rutinacompleta", getCompleteRutinas);
 
+//Asignar rutinas
+router.post("/rutinaasignar", createCompleteRutinaForClient);
+
 //Dietas
 router.get("/tiemposComida", getTiemposComida);
 router.get("/comidasRecetas", getAllAlimentosAndRecetas);
@@ -75,3 +113,4 @@ router.get("/completados/:id/:fecha", obtenerCompletadosPorFecha);
 router.delete("/eliminarCompletado", eliminarCompletado);
 
 export default router;
+
