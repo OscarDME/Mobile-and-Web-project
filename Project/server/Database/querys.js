@@ -1,15 +1,17 @@
 export const querys = {
   //Usuarios
     getUsers: "SELECT * FROM Usuario",
-    getUserById: "SELECT * FROM Usuario WHERE ID_Usuario = @ID_Usuario",
+    getUserById: "SELECT Usuario.*, UsuarioMovil.ComparacionRendimiento, UsuarioMovil.ViajeGimnasio FROM Usuario LEFT JOIN UsuarioMovil ON Usuario.ID_Usuario = UsuarioMovil.ID_Usuario WHERE Usuario.ID_Usuario = @ID_Usuario",
     checkUserExists: "SELECT ID_Usuario FROM Usuario WHERE ID_Usuario = @oid",
     createUser:  "INSERT INTO Usuario (ID_Usuario, nombre_usuario, nombre, apellido, correo, sexo, fecha_nacimiento) VALUES (@oid, @username, @givenName, @surname, @email, @gender, @dateOfBirth)",
     getBirthDate: "SELECT fecha_nacimiento, sexo FROM Usuario WHERE ID_Usuario = @ID_Usuario",
     getUserAndType: "SELECT Usuario.*, CASE WHEN Usuario_WEB.ID_Usuario IS NOT NULL THEN 'Web' WHEN UsuarioMovil.ID_Usuario IS NOT NULL THEN 'Móvil' ELSE 'Ninguno' END AS TipoDeUsuario, COALESCE(tipo_web.tipo, tipo.Descripcion) AS DescripcionTipo FROM Usuario LEFT JOIN Usuario_WEB ON Usuario.ID_Usuario = Usuario_WEB.ID_Usuario LEFT JOIN tipo_web ON Usuario_WEB.ID_Tipo_WEB = tipo_web.ID_Tipo_Web LEFT JOIN UsuarioMovil ON Usuario.ID_Usuario = UsuarioMovil.ID_Usuario LEFT JOIN tipo ON UsuarioMovil.ID_Tipo = tipo.ID_Tipo",
 
     //Usuario Movil
-    createMovileUser: "INSERT INTO UsuarioMovil (ID_Tipo, ID_Usuario) VALUES (1, @ID_Usuario)",
+    createMovileUser: "INSERT INTO UsuarioMovil (ID_Tipo, ID_Usuario, ComparacionRendimiento, ViajeGimnasio) VALUES (1, @ID_Usuario, 1, 1)",    
     getMobileUser: "SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario",
+    updateViajeGimnasio: "UPDATE UsuarioMovil SET ViajeGimnasio = @viaje WHERE ID_UsuarioMovil = @ID_UsuarioMovil", 
+    updateCompracionRendimiento: "UPDATE UsuarioMovil SET ComparacionRendimiento = @comparacion WHERE ID_UsuarioMovil = @ID_UsuarioMovil",
 
     //UsuarioWeb
     getWebUser: "SELECT ID_Usuario_WEB FROM Usuario_WEB WHERE ID_Usuario = @ID_Usuario",
@@ -108,4 +110,8 @@ export const querys = {
 
     //Dietas
     getTiemposComida: "SELECT * FROM TiempoComida",
+
+    //AsignarRutinas
+    createAsignarRutinas: "INSERT INTO AsignarRutinas (fecha_asignacion, fecha_eliminacion, fecha_inicio, fecha_fin, Hora_Inicio, ID_Rutina, ID_UsuarioMovil) VALUES (@fecha_asignacion, @fecha_eliminacion, @fecha_inicio, @fecha_fin , NULL, @ID_Rutina, @ID_UsuarioMovil)",
+    
 };

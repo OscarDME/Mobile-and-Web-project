@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
@@ -7,10 +7,42 @@ import Comidas from "../../assets/comidas.png";
 import Biblioteca from "../../assets/biblioteca.png";
 import Advertencias from "../../assets/advertencias.png";
 import Viaje from "../../assets/viaje.png";
- 
+import config from "../utils/conf"; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Mas = ({ onDismiss }) => {
+  const [preferences, setPreferences] = useState({ ComparacionRendimiento: false, ViajeGimnasio: false });
   const navigation = useNavigation();
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    const userOID = await AsyncStorage.getItem('userOID');
+    if (!userOID) {
+      console.log("No user OID found");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/user/${userOID}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      const data = await response.json();
+      setPreferences({
+        ComparacionRendimiento: data.ComparacionRendimiento,
+        ViajeGimnasio: data.ViajeGimnasio,
+      });
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
 
   const handleModalClose = () => {
     onDismiss();
@@ -44,12 +76,12 @@ const Mas = ({ onDismiss }) => {
             <Image source={Biblioteca} style={styles.icon} />              
               <Text>Biblioteca</Text>
             </TouchableOpacity>
-
+            {preferences.ViajeGimnasio && (
             <TouchableOpacity onPress={() => handleIconPress("Viaje")} style={styles.touchableOpacity}>
             <Image source={Viaje} style={styles.icon} />              
               <Text>Viaje</Text>
             </TouchableOpacity>
-
+            )}
             <TouchableOpacity onPress={() => handleIconPress("Advertencias")} style={styles.touchableOpacity}>
             <Image source={Advertencias} style={styles.icon} />              
               <Text>Advertencia</Text>
