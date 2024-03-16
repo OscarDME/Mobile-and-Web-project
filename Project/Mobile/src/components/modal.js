@@ -7,11 +7,10 @@ import Comidas from "../../assets/comidas.png";
 import Biblioteca from "../../assets/biblioteca.png";
 import Advertencias from "../../assets/advertencias.png";
 import Viaje from "../../assets/viaje.png";
-import config from "../utils/conf"; 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+const height_proportion = '-180%';
 
 const Mas = ({ onDismiss }) => {
-  const [preferences, setPreferences] = useState({ ComparacionRendimiento: false, ViajeGimnasio: false });
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 60,
-        zIndex: 10, // Asegura que el contenedor esté encima de otros elementos
+        zIndex: 10,
       },
       contentContainer: {
         flexDirection: "row",
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         borderColor: "#ddd",
-        bottom: -770,
+        bottom: height_proportion,
       },
       icon: {
         alignItems: "center",

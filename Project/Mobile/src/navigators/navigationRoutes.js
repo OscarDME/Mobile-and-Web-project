@@ -167,7 +167,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
   return (
     <View>
       {/* Renderizar tab bar items */}
-      <View style={{ flexDirection: "row", paddingVertical: 10 }}>
+      <View style={{ flexDirection: "row", paddingBottom: 25, paddingTop:10 }}>
         <TabBarItem
           label="Rutinas"
           iconName={IRutinas}

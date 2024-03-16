@@ -19,8 +19,8 @@ const Chat = ({ navigation }) => {
       if (oid) {
         const conversacionesRef = collection(FIRESTORE_DB, 'conversaciones');
         const q = query(conversacionesRef, where('participantes', 'array-contains', oid));
-
-        onSnapshot(q, (querySnapshot) => {
+  
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
           const fetchedConversaciones = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
@@ -29,11 +29,14 @@ const Chat = ({ navigation }) => {
         }, (error) => {
           console.error('Error al obtener conversaciones:', error);
         });
+  
+        // Retorna la función de limpieza que cancela la suscripción
+        return () => unsubscribe();
       }
     };
-
+  
     fetchConversaciones();
-  }, []);
+  }, []); 
 
   return (
     <View style={styles.container}>
