@@ -96,6 +96,7 @@ const Login = () => {
           await AsyncStorage.setItem('userOID', oid);
           console.log('OID guardado con éxito en AsyncStorage');
 
+          
           // Aquí procedes a verificar si el usuario existe y luego navegar
           const userExistsResponse = await fetch(`${config.apiBaseUrl}/users/${oid}`, { method: "GET" });
           if (userExistsResponse.status === 200) {

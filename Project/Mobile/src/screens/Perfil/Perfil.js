@@ -62,7 +62,7 @@ const ProfileScreen = ({ route }) => {
   const updatePreference = async (preferenceName, value) => {
     const userOID = await AsyncStorage.getItem('userOID');
     if (!userOID) {
-      console.log("No user OID found");
+      console.log("No user OID f");
       return;
     }
 
