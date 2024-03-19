@@ -38,11 +38,35 @@ export default function RecipesAdd({ onBackToList }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+   
+  const regex = /^[\p{L}\p{N} _.,'"-]+$/u;
+
+  const urlRegex = /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/;
+
+  // Validación del nombre de la receta
+  if (name.length > 50 || !regex.test(name)) {
+    alert('El nombre de la receta contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones, guiones bajos, puntos y comas.');
+    return;
+  }
+
+  // Validación de la preparación
+  if (preparation.length > 500 || !regex.test(preparation)) {
+    alert('La preparación de la receta contiene caracteres no permitidos o es demasiado larga. Debe tener 500 caracteres o menos y solo puede contener letras, números, espacios, guiones, guiones bajos, puntos y comas.');
+    return;
+  }
+
+  // Validación del link
+  if (link && !urlRegex.test(link)) {
+    alert('El link proporcionado no es un URL válido. Por favor, verifica el formato.');
+    return;
+  }
+
+  const everyIngredientHasPortion = ingredients.every(ingredient => ingredient.porcion > 0);
   
-    if (!name || ingredients.length === 0 || !preparation || !link) {
-      alert('Por favor completa todos los campos.');
-      return;
-    }
+  if (!name || !preparation || !everyIngredientHasPortion || (link && !urlRegex.test(link))) {
+    alert('Por favor completa todos los campos requeridos y asegúrate de que cada ingrediente tenga una porción especificada.');
+    return;
+  }
   
     const recetaData = {
       receta: name,
@@ -57,7 +81,7 @@ export default function RecipesAdd({ onBackToList }) {
     console.log(recetaData);
   
     try {
-      const response = await fetch(`${config.apiBaseUrl}/recetas`, {
+      const response = await fetch(`${config.apiBaseUrl}/recetarequest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(recetaData),
@@ -81,7 +105,7 @@ export default function RecipesAdd({ onBackToList }) {
 <div className='container'>
       <div className='add_header'>
         <button className="back_icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
-        <h1 className='mtitle'>Añadir una receta nueva</h1>
+        <h1 className='mtitle'>Solicitar una nueva receta</h1>
       </div>
       <form className='form_add_exercise' onSubmit={handleSubmit}>
         <div className='add_exercise_area'>

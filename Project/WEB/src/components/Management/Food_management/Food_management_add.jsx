@@ -145,7 +145,7 @@ export default function Food_management_add({ onBackToList }) {
                 />
             </div>
               <div className='add_exercise_rows'>
-              ¿Cúantas calorías tiene el alimento de grasas? 
+              ¿Cúantas gramos tiene el alimento de grasas? 
               <NumberInput
                 placeholder="…"
                 value={Number(fats)}

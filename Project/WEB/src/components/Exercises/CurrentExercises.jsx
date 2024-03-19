@@ -59,6 +59,9 @@ export default function CurrentExercises() {
         return <NewExercises onBackToList={handleBackToList} />;
     }
 
+    const ES_CARDIOVASCULAR = "Cardiovascular";
+
+
     return (
       <div className="container">
           <div className="search-bar-container">
@@ -70,38 +73,49 @@ export default function CurrentExercises() {
               <a className="iconadd" role="button" onClick={handleAddClick}><i className="bi bi-plus-circle-fill"></i></a>
             </div>
           </div>
-          <ul className='cardcontainer'>
-            {filteredExercises.map((exercise) => (
-              <li key={exercise.id} className={`row ${((selectedExercise && selectedExercise.id === exercise.id)) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(exercise)} className={`row_header ${((selectedExercise && selectedExercise.id === exercise.id)) ? 'selected' : ''}`}>
-                  <div>
-                    <div className='row_name'>{exercise.ejercicio}</div>
-                    <div className='row_description'>{exercise.Musculo}</div>
+                  <ul className='cardcontainer'>
+          {filteredExercises.map((exercise) => (
+            <li key={exercise.id} className={`row ${((selectedExercise && selectedExercise.id === exercise.id)) ? 'selected' : ''}`}>
+              <div onClick={() => handleRowClick(exercise)} className={`row_header ${((selectedExercise && selectedExercise.id === exercise.id)) ? 'selected' : ''}`}>
+                <div>
+                  <div className='row_name'>{exercise.ejercicio}</div>
+                  {/* Muestra tipo de ejercicio o músculo, dependiendo de si es cardiovascular */}
+                  <div className='row_description'>
+                    {exercise.Modalidad === ES_CARDIOVASCULAR ? exercise.Modalidad : exercise.Musculo}
                   </div>
                 </div>
-                {expandedRow === exercise.ID_Ejercicio && (
-                  <>
-                    <div className="exercise-info">
-                      <div className="exercise-info-column">
+              </div>
+              {expandedRow === exercise.ID_Ejercicio && (
+                <>
+                  <div className="exercise-info">
+                    <div className="exercise-info-column">
                       <div className="exercise-info-row">Dificultad: {exercise.Dificultad}</div>
-                        <div className="exercise-info-row">Equipo Necesario: {exercise.Equipo}</div>
-                        <div className="exercise-info-row">Tipo de ejercicio: {exercise.Tipo_Ejercicio}</div>
-                        <div className="exercise-info-row">Modalidad: {exercise.Modalidad}</div>
+                      {/* Verifica si hay equipo necesario, si no, muestra "Ninguno" */}
+                      <div className="exercise-info-row">Equipo Necesario: {exercise.Equipo || "Ninguno"}</div>
+                      <div className="exercise-info-row">Tipo de ejercicio: {exercise.Tipo_Ejercicio}</div>
+                      <div className="exercise-info-row">Modalidad: {exercise.Modalidad}</div>
+                      {/* Verifica si hay lesión que afecta, si no, muestra "Ninguna" */}
+                      <div className="exercise-info-row">Lesión que afecta: {exercise.Lesion || "Ninguna"}</div>
+                      {/* Condicionalmente muestra músculos secundarios */}
+                      {exercise.Modalidad !== ES_CARDIOVASCULAR && (
                         <div className='row_description'>
-                        Músculos Secundarios: 
-                        {exercise.musculosSecundarios.map(ms => ms.descripcion).join(", ")}
+                          Músculos Secundarios: 
+                          {exercise.musculosSecundarios && exercise.musculosSecundarios.length > 0 
+                            ? exercise.musculosSecundarios.map(ms => ms.descripcion).join(", ") 
+                            : "Ninguno"}
                         </div>    
-                      </div>
-                      <div className="exercise-info-column">
-                        <div className="exercise-info-row">Posición inicial: {exercise.preparacion}</div>
-                        <div className="exercise-info-row">Ejecucion: {exercise.ejecucion}</div>
-                        </div>
+                      )}
                     </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+                    <div className="exercise-info-column">
+                      <div className="exercise-info-row">Posición inicial: {exercise.preparacion}</div>
+                      <div className="exercise-info-row">Ejecución: {exercise.ejecucion}</div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
     );
 }

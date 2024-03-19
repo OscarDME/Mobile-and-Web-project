@@ -74,7 +74,7 @@ const handleSubmit = async (event) => {
   event.preventDefault();
 
  // Expresión regular para validar el nombre y la preparación
- const regex = /^[a-zA-Z0-9 _\-,\.]+$/;
+ const regex = /^[\p{L}\p{N} _.,'"-]+$/u;
 
  // Expresión regular para validar el link
  const urlRegex = /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/;
@@ -97,10 +97,12 @@ const handleSubmit = async (event) => {
    return;
  }
 
-  if (!name || ingredients.length === 0 || !preparation) {
-    alert('Por favor completa todos los campos.');
-    return;
-  }
+ const everyIngredientHasPortion = ingredients.every(ingredient => ingredient.porcion > 0);
+  
+ if (!name || !preparation || !everyIngredientHasPortion || (link && !urlRegex.test(link))) {
+   alert('Por favor completa todos los campos requeridos y asegúrate de que cada ingrediente tenga una porción especificada.');
+   return;
+ }
 
   // Preparar el cuerpo de la solicitud con los datos del formulario
   const recetaData = {
@@ -129,6 +131,7 @@ const handleSubmit = async (event) => {
     const result = await response.json();
     console.log(result);
     alert('Receta actualizada con éxito');
+    window.location.reload();
 
     // Opcional: Redirigir al usuario o actualizar el estado de la aplicación según sea necesario
   } catch (error) {

@@ -80,6 +80,8 @@ export default function Exercises_management_list() {
         return <Exercises_management_add onBackToList={handleBackToList} />;
     }
     
+    const ES_CARDIOVASCULAR = "Cardiovascular";
+
     return (
       <div className="container">
           <div className="search-bar-container">
@@ -97,33 +99,41 @@ export default function Exercises_management_list() {
                 <div onClick={() => handleRowClick(exercise)} className={`row_header ${((selectedExercise && selectedExercise.id === exercise.ID_Ejercicio) || (editingExercise && editingExercise.ID_Ejercicio === exercise.ID_Ejercicio)) ? 'selected' : ''}`}>
                   <div>
                     <div className='row_name'>{exercise.ejercicio}</div>
-                    <div className='row_description'>{exercise.Musculo}</div>
-
+                    <div className='row_description'>
+                    {exercise.Modalidad === ES_CARDIOVASCULAR ? exercise.Modalidad : exercise.Musculo}
+                  </div>
                   </div>
                   <div className="row_edit">
                       <i className={`bi bi-pencil-square card-icon ${editingExercise && editingExercise.ID_Ejercicio === exercise.ID_Ejercicio ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleEditClick(exercise); }}></i>
                     </div>
                 </div>
                 {expandedRow === exercise.ID_Ejercicio && (
-                  <>
-                    <div className="exercise-info">
-                      <div className="exercise-info-column">
-                        <div className="exercise-info-row">Dificultad: {exercise.Dificultad}</div>
-                        <div className="exercise-info-row">Equipo Necesario: {exercise.Equipo}</div>
-                        <div className="exercise-info-row">Tipo de ejercicio: {exercise.Tipo_Ejercicio}</div>
-                        <div className="exercise-info-row">Modalidad: {exercise.Modalidad}</div>
+                <>
+                  <div className="exercise-info">
+                    <div className="exercise-info-column">
+                      <div className="exercise-info-row">Dificultad: {exercise.Dificultad}</div>
+                      {/* Verifica si hay equipo necesario, si no, muestra "Ninguno" */}
+                      <div className="exercise-info-row">Equipo Necesario: {exercise.Equipo || "Ninguno"}</div>
+                      <div className="exercise-info-row">Tipo de ejercicio: {exercise.Tipo_Ejercicio}</div>
+                      <div className="exercise-info-row">Modalidad: {exercise.Modalidad}</div>
+                      {/* Verifica si hay lesión que afecta, si no, muestra "Ninguna" */}
+                      <div className="exercise-info-row">Lesión que afecta: {exercise.Lesion || "Ninguna"}</div>
+                      {/* Condicionalmente muestra músculos secundarios */}
+                      {exercise.Modalidad !== ES_CARDIOVASCULAR && (
                         <div className='row_description'>
-                        Músculos Secundarios: 
-                        {exercise.musculosSecundarios.map(ms => ms.descripcion).join(", ")}
-                        </div>                     
-                      </div>
-                      <div className="exercise-info-column">
-                        <div className="exercise-info-row">Posición inicial: {exercise.preparacion}</div>
-                        <div className="exercise-info-row">Ejecucion: {exercise.ejecucion}</div>
-                      </div>
+                          Músculos Secundarios: {exercise.musculosSecundarios && exercise.musculosSecundarios.length > 0 
+                            ? exercise.musculosSecundarios.map(ms => ms.descripcion).join(", ") 
+                            : "Ninguno"}
+                        </div>    
+                      )}
                     </div>
-                  </>
-                )}
+                    <div className="exercise-info-column">
+                      <div className="exercise-info-row">Posición inicial: {exercise.preparacion}</div>
+                      <div className="exercise-info-row">Ejecución: {exercise.ejecucion}</div>
+                    </div>
+                  </div>
+                </>
+              )}
                 {editingExercise && editingExercise.ID_Ejercicio === exercise.ID_Ejercicio && (
                   <>
                     <Exercises_management_edit exercise={editingExercise} />

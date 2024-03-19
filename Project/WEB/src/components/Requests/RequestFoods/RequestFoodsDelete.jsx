@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../../../styles/Management.css';
-
+import config from "../../../utils/conf";
 
 export default function  RequestFoodsDelete({ food }) {
   
@@ -8,16 +8,35 @@ export default function  RequestFoodsDelete({ food }) {
 
   const handleReasonChange = (event) => setReason(event.target.value);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!food.name  || !food.calories || !food.category || !food.weight || !food.calories || !food.carbohydrates || !food.fats || !food.protein) { 
+    if (!food.nombre || !food.calorias || !food.categoria || !food.peso || !food.calorias) { 
       alert('El alimento no cuenta con todos los campos necesarios para ser agregado a la base de datos.');
       return;
     }
+    try {
+      // Envía la solicitud DELETE al servidor
+      const response = await fetch(`${config.apiBaseUrl}/alimento/${food.ID_Alimento}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    
-    //TODO: GUARDAR EN BACK END DATOS AQUI
-    // TODO: refrescar la lista de comidas automaticamente
+      if (!response.ok) {
+        throw new Error('No se pudo eliminar el alimento.');
+      }
+
+      const result = await response.json();
+      console.log(result); 
+      alert('Alimento eliminado correctamente.');
+      window.location.reload(); 
+
+    } catch (error) {
+      console.error('Error al eliminar el alimento:', error);
+      alert('Error al eliminar el alimento.');
+    }
+
   };
 
   return (
@@ -25,15 +44,39 @@ export default function  RequestFoodsDelete({ food }) {
       <form onSubmit={handleSubmit}>
         <div className='form_add'>
         <div className="exercise-info">
-                   <div className="exercise-info-column">
-                     <div className="exercise-info-row">Peso: {food.weight} gramos</div>
-                     <div className="exercise-info-row">Calorias totales: {food.calories} kcal</div>
-                   </div>
-                   <div className="exercise-info-column">
-                     <div className="exercise-info-row">Carbohidratos: {food.carbohydrates} kcal</div>
-                     <div className="exercise-info-row">Proteína: {food.protein} kcal</div>
-                     <div className="exercise-info-row">Grasa: {food.fats} kcal</div>
-                   </div>
+        <div className="exercise-info">
+                  <div className="exercise-info-column">
+                    <div className="exercise-info-row">
+                      Peso: {food.peso} gramos
+                    </div>
+                    <div className="exercise-info-row">
+                      Calorias totales: {food.calorias} kcal
+                    </div>
+                  </div>
+                  <div className="exercise-info-column">
+                    <div className="exercise-info-row">
+                      Carbohidratos:{" "}
+                      {food.macronutrientes.find(
+                        (m) => m.macronutriente === "Carbohidratos"
+                      )?.cantidad || 0}{" "}
+                      kcal
+                    </div>
+                    <div className="exercise-info-row">
+                      Proteína:{" "}
+                      {food.macronutrientes.find(
+                        (m) => m.macronutriente === "Proteinas"
+                      )?.cantidad || 0}{" "}
+                      kcal
+                    </div>
+                    <div className="exercise-info-row">
+                      Grasa:{" "}
+                      {food.macronutrientes.find(
+                        (m) => m.macronutriente === "Grasas"
+                      )?.cantidad || 0}{" "}
+                      kcal
+                    </div>
+                  </div>
+                </div>
             </div>
         </div>
         <div className='button_container'>

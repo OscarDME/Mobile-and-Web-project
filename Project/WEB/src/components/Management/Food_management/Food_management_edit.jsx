@@ -90,7 +90,7 @@ export default function  Food_management_edit({ food }) {
       const result = await response.json();
       console.log(result);
       alert('Alimento actualizado con éxito.');
-  
+      window.location.reload(); 
       // TODO: Aquí podrías llamar a una función para cerrar el modal de edición y/o recargar la lista de alimentos
     } catch (error) {
       console.error('Error al actualizar el alimento:', error);
@@ -134,7 +134,7 @@ export default function  Food_management_edit({ food }) {
           </div>
           <div>
             <div className='add_exercise_rows'>
-            ¿Cúantas calorías tiene el alimento de carbohidratos?
+            ¿Cúantos gramos tiene el alimento de carbohidratos?
                 <NumberInput
                 placeholder="…"
                 value={Number(carbohydrates)}
@@ -144,7 +144,7 @@ export default function  Food_management_edit({ food }) {
                 />
             </div>
             <div className='add_exercise_rows'>
-            ¿Cúantas calorías tiene el alimento de proteínas? 
+            ¿Cúantos gramos tiene el alimento de proteínas? 
             <NumberInput
                 placeholder="…"
                 value={Number(protein)}
@@ -154,7 +154,7 @@ export default function  Food_management_edit({ food }) {
                 />
             </div>
               <div className='add_exercise_rows'>
-              ¿Cúantas calorías tiene el alimento de grasas? 
+              ¿Cúantos gramos tiene el alimento de grasas? 
               <NumberInput
                 placeholder="…"
                 value={Number(fats)}

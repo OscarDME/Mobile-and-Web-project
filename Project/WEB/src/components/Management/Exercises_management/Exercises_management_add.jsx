@@ -103,14 +103,16 @@ const handleMaterialNeededChange = (selectedOption) => {
   setMaterialNeeded(selectedOption);
 };
 
+const isCardio = selectedModalidad === 3;
+
   const esModalidadPesas = selectedModalidad === 2;
 
   const handleSubmit = async (event) => {
 
     event.preventDefault();
-    const regex = /^[\p{L}\p{N} _.,-]+$/u;
-
-    
+    const regex = /^[\p{L}\p{N} _.,'"-]+$/u;
+  
+      
     if (exerciseName.length > 50 || !regex.test(exerciseName)) {
       alert("El nombre del ejercicio contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones y guiones bajos.");
       return;
@@ -126,33 +128,34 @@ const handleMaterialNeededChange = (selectedOption) => {
       return; 
     }
 
-    if (
-      !exerciseName.trim() ||
-      primaryMuscle === null ||
-      exerciseType === null ||
-      !exercisePreparation.trim() ||
-      !exerciseIndications.trim() ||
-      exerciseDificulty === null ||
-      (esModalidadPesas && materialNeeded === null) || // Solo es obligatorio si es modalidad pesas
-      selectedMuscles.length === 0 // Asumiendo que al menos un músculo secundario es necesario
-    ) {
-      alert("Por favor completa todos los campos obligatorios.");
-      return;
-    }
+    const finalPrimaryMuscle = isCardio ? null : primaryMuscle;
+  const finalSelectedMuscles = isCardio ? [] : selectedMuscles;
 
-    const exerciseData = {
-      ejercicio: exerciseName,
-      preparacion: exercisePreparation,
-      ejecucion: exerciseIndications,
-      ID_Musculo: primaryMuscle,
-      ID_Lesion: affectedInjury,
-      ID_Tipo_Ejercicio: exerciseType,
-      ID_Dificultad: exerciseDificulty,
-      ID_Equipo: materialNeeded, // Asume que tu backend puede manejar null o un array vacío
-      ID_Modalidad: selectedModalidad,
-      musculosSecundarios: selectedMuscles, // Asegúrate de que este campo envíe solo los IDs de los músculos secundarios
-    };
+  if (
+    !exerciseName.trim() ||
+    !exercisePreparation.trim() ||
+    !exerciseIndications.trim() ||
+    exerciseDificulty === null ||
+    (esModalidadPesas && (materialNeeded === null || materialNeeded.length === 0)) ||
+    (!isCardio && selectedMuscles.length === 0) || // Solo validar músculos para no cardio
+    (!isCardio && affectedInjury === null) // No validar lesión si es cardio
+  ) {
+    alert("Por favor completa todos los campos obligatorios.");
+    return;
+  }
 
+  const exerciseData = {
+    ejercicio: exerciseName,
+    preparacion: exercisePreparation,
+    ejecucion: exerciseIndications,
+    ID_Musculo: finalPrimaryMuscle,
+    ID_Lesion: affectedInjury,
+    ID_Tipo_Ejercicio: exerciseType,
+    ID_Dificultad: exerciseDificulty,
+    ID_Equipo: materialNeeded,
+    ID_Modalidad: selectedModalidad,
+    musculosSecundarios: finalSelectedMuscles,
+  };
     console.log(exerciseData);
 
     try {
@@ -173,7 +176,6 @@ const handleMaterialNeededChange = (selectedOption) => {
       const result = await response.json();
       console.log(result);
       alert("Ejercicio añadido con éxito.");
-
       // Aquí podrías redirigir al usuario o limpiar el formulario
       onBackToList(); // Si deseas volver a la lista de ejercicios o manejar la navegación de otra manera
     } catch (error) {
@@ -250,24 +252,28 @@ const handleMaterialNeededChange = (selectedOption) => {
           </div>
           <div>
             {/* Músculo principal */}
-            <div className="add_exercise_rows">
-              ¿Cuál es el músculo principal trabajado?
-              <Dropdown
-                options={muscles}
-                selectedOption={findOptionByValue(muscles, primaryMuscle)}
-                onChange={handlePrimaryMuscleChange}
-              />
-            </div>
+            {selectedModalidad !== 3 && (
+              <div className="add_exercise_rows">
+                ¿Cuál es el músculo principal trabajado?
+                <Dropdown
+                  options={muscles}
+                  selectedOption={findOptionByValue(muscles, primaryMuscle)}
+                  onChange={handlePrimaryMuscleChange}
+                />
+              </div>
+            )}
             {/* Músculos secundarios */}
-            <div className="add_exercise_rows">
-              ¿Qué músculos secundarios trabaja?
-              <CheckboxList
-                options={muscles}
-                selectedOptions={selectedMuscles}
-                onChange={handleSelectedMusclesChange}
-                idPrefix="muscles"
-              />
-            </div>
+            {selectedModalidad !== 3 && (
+              <div className="add_exercise_rows">
+                ¿Qué músculos secundarios trabaja?
+                <CheckboxList
+                  options={muscles}
+                  selectedOptions={selectedMuscles}
+                  onChange={handleSelectedMusclesChange}
+                  idPrefix="muscles"
+                />
+              </div>
+            )}
             {/* Indicaciones */}
             <div className="add_exercise_rows">
               Indicaciones de ejecución:

@@ -12,9 +12,9 @@ getAllMobileUsersInfo
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
 import { createCuestionario } from "../Controllers/Cuestionario.Controllers.js";
-import { createEjercicio, getExercises, getEjercicioById, updateEjercicio, getAlternativeExercises } from "../Controllers/EjerciciosControllers.js";
-import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento } from "../Controllers/Alimento.Controllers.js";
-import { createReceta, getReceta, updateReceta, getIngredientes } from "../Controllers/Recetas.Controllers.js";
+import { createEjercicio, getExercises, getEjercicioById, updateEjercicio, getAlternativeExercises, requestEjercicio, getRequests, updateEstadoEjercicio, deleteEjercicio, updateRequest } from "../Controllers/EjerciciosControllers.js";
+import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, createAlimentoRequest, getAllAlimentosWithMacronutrientesRequest, updateEstadoAlimento, deleteAlimento, updateAndAcceptAlimento} from "../Controllers/Alimento.Controllers.js";
+import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta } from "../Controllers/Recetas.Controllers.js";
 import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas } from "../Controllers/Rutinas.Controllers.js";
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
 import { createCompleteRutinaForClient } from "../Controllers/AsignarRutinas.Controllers.js";
@@ -54,6 +54,7 @@ router.post("/deletesolicitudtrainer", deleteClientTrainerRequest);
 router.post("/checkpendingrequest", checkPendingRequest);
 router.post("/checkrequest", checkRequest);
 
+//Solitudes Entrenador-Nutricionista
 router.post("/insertTrainer", insertTrainerNutritionistRequest);
 router.get("/applicationdetails", getApplicationDetails)
 router.post("/acceptandcreatetrainer", acceptAndCreateTrainerNutritionist);
@@ -72,17 +73,32 @@ router.get("/ejercicio", getExercises);
 router.get("/ejercicio/:id", getEjercicioById);
 router.put("/ejercicio/:id", updateEjercicio);
 router.get("/alternativas/:id", getAlternativeExercises);
+router.post("/exerciserequest", requestEjercicio);
+router.get("/exerciserequest", getRequests);
+router.put("/estadoejercicio/:id", updateEstadoEjercicio);
+router.delete("/ejercicio/:id", deleteEjercicio);
+router.put("/ejerciciorequest/:id", updateRequest);
 
 //Alimentos
 router.post("/alimentos", createAlimento);
 router.get("/alimentos", getAllAlimentosWithMacronutrientes);
 router.put("/alimentos/:id", updateAlimento);
+router.post("/alimentorequest", createAlimentoRequest);
+router.get("/alimentorequest", getAllAlimentosWithMacronutrientesRequest);
+router.put("/estadoalimento/:id", updateEstadoAlimento);
+router.delete("/alimento/:id", deleteAlimento);
+router.put("/alimento/:id", updateAndAcceptAlimento);
 
 //Recetas
 router.post("/recetas", createReceta);
 router.get("/recetas", getReceta);
 router.put("/recetas/:id", updateReceta);
 router.get("/ingredientes/:id", getIngredientes);
+router.post("/recetarequest", createRecetaRequest);
+router.get("/recetarequest", getRecetaRequests);
+router.put("/estadoreceta/:id", updateEstadoReceta);
+router.delete("/receta/:id", deleteReceta);
+router.put("/receta/:id", updateAndAcceptReceta);
 
 //Rutinas
 router.post("/rutinas", createRutina);

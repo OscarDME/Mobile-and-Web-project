@@ -154,23 +154,23 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const regex = /^[\p{L}\p{N} _.,-]+$/u;
-
-    
-    if (exerciseName.length > 50 || !regex.test(exerciseName)) {
-      alert("El nombre del ejercicio contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones y guiones bajos.");
-      return;
-    }
-
-    if (exercisePreparation.length > 500 || !regex.test(exercisePreparation)) {
-      alert("Las indicaciones de preparación contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
-      return; 
-    }
-
-    if (exerciseIndications.length > 500 || !regex.test(exerciseIndications)) {
-      alert("Las indicaciones de ejecución contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
-      return; 
-    }
+    const regex = /^[\p{L}\p{N} _.,'"-]+$/u;
+  
+      
+      if (exerciseName.length > 50 || !regex.test(exerciseName)) {
+        alert("El nombre del ejercicio contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones y guiones bajos.");
+        return;
+      }
+  
+      if (exercisePreparation.length > 500 || !regex.test(exercisePreparation)) {
+        alert("Las indicaciones de preparación contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+        return; 
+      }
+  
+      if (exerciseIndications.length > 500 || !regex.test(exerciseIndications)) {
+        alert("Las indicaciones de ejecución contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+        return; 
+      }
 
     // Prepara los datos del formulario para enviarlos al backend
     const exerciseData = {
@@ -201,6 +201,7 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
   
       const result = await response.json();
       console.log(result);
+      window.location.reload(); 
       alert("Ejercicio modificado con éxito.");
     } catch (error) {
       alert("Error al modificar el ejercicio.");
@@ -258,24 +259,28 @@ export default function Exercises_management_edit({ exercise, onBackToList  }) {
           </div>
           <div>
             {/* Músculo principal */}
-            <div className="add_exercise_rows">
-              ¿Cuál es el músculo principal trabajado?
-              <Dropdown
-                options={muscles}
-                selectedOption={findOptionByValue(muscles, primaryMuscle)}
-                onChange={handlePrimaryMuscleChange}
-              />
-            </div>
+            {selectedModalidad !== 3 && (
+              <div className="add_exercise_rows">
+                ¿Cuál es el músculo principal trabajado?
+                <Dropdown
+                  options={muscles}
+                  selectedOption={findOptionByValue(muscles, primaryMuscle)}
+                  onChange={handlePrimaryMuscleChange}
+                />
+              </div>
+            )}
             {/* Músculos secundarios */}
-            <div className="add_exercise_rows">
-              ¿Qué músculos secundarios trabaja?
-              <CheckboxList
-                options={muscles}
-                selectedOptions={selectedMuscles}
-                onChange={handleSelectedMusclesChange}
-                idPrefix="muscles"
-              />
-            </div>
+            {selectedModalidad !== 3 && (
+              <div className="add_exercise_rows">
+                ¿Qué músculos secundarios trabaja?
+                <CheckboxList
+                  options={muscles}
+                  selectedOptions={selectedMuscles}
+                  onChange={handleSelectedMusclesChange}
+                  idPrefix="muscles"
+                />
+              </div>
+            )}
             {/* Indicaciones */}
             <div className="add_exercise_rows">
               Indicaciones de ejecución:

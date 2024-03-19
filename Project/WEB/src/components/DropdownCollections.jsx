@@ -11,7 +11,7 @@ function Dropdown({ options, selectedOption, onChange }) {
 
   return (
     <div>
-      <select value={selectedOption?.value ?? ''} onChange={handleChange} className='dropdown' required>
+      <select value={selectedOption?.value ?? ''} onChange={handleChange} className='dropdown'>
         <option value="">N/A</option>
         {options.map((option, index) => (
           <option key={index} value={option.value}>{option.label}</option>

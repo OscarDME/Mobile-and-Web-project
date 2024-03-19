@@ -54,7 +54,7 @@ export default function PrimaryFoodAdd({ onBackToList }) {
     console.log(alimentoData);
 
     try {
-      const response = await fetch(`${config.apiBaseUrl}/alimentos`, { 
+      const response = await fetch(`${config.apiBaseUrl}/alimentorequest`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export default function PrimaryFoodAdd({ onBackToList }) {
       
       const result = await response.json();
       console.log(result);
-      alert('Alimento agregado con éxito.');
+      alert('Alimento solicitado con éxito.');
       onBackToList(); // Regresa a la lista de alimentos
     } catch (error) {
       console.error('Error al guardar el alimento:', error);

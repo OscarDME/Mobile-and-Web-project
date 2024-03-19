@@ -103,41 +103,63 @@ const handleMaterialNeededChange = (selectedOption) => {
 };
 
   const esModalidadPesas = selectedModalidad === 2;
+  const isCardio = selectedModalidad === 3;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (
-      !exerciseName.trim() ||
-      primaryMuscle === null ||
-      exerciseType === null ||
-      !exercisePreparation.trim() ||
-      !exerciseIndications.trim() ||
-      exerciseDificulty === null ||
-      (esModalidadPesas && materialNeeded === null) || // Solo es obligatorio si es modalidad pesas
-      selectedMuscles.length === 0 // Asumiendo que al menos un músculo secundario es necesario
-    ) {
-      alert("Por favor completa todos los campos obligatorios.");
-      return;
-    }
 
-    const exerciseData = {
-      ejercicio: exerciseName,
-      preparacion: exercisePreparation,
-      ejecucion: exerciseIndications,
-      ID_Musculo: primaryMuscle,
-      ID_Lesion: affectedInjury,
-      ID_Tipo_Ejercicio: exerciseType,
-      ID_Dificultad: exerciseDificulty,
-      ID_Equipo: materialNeeded, // Asume que tu backend puede manejar null o un array vacío
-      ID_Modalidad: selectedModalidad,
-      musculosSecundarios: selectedMuscles, // Asegúrate de que este campo envíe solo los IDs de los músculos secundarios
-    };
+    const regex = /^[\p{L}\p{N} _.,'"-]+$/u;
+  
+      
+      if (exerciseName.length > 50 || !regex.test(exerciseName)) {
+        alert("El nombre del ejercicio contiene caracteres no permitidos o es demasiado largo. Debe tener 50 caracteres o menos y solo puede contener letras, números, espacios, guiones y guiones bajos.");
+        return;
+      }
+  
+      if (exercisePreparation.length > 500 || !regex.test(exercisePreparation)) {
+        alert("Las indicaciones de preparación contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+        return; 
+      }
+  
+      if (exerciseIndications.length > 500 || !regex.test(exerciseIndications)) {
+        alert("Las indicaciones de ejecución contienen caracteres no permitidos o son demasiado largas. Deben tener 500 caracteres o menos y solo pueden contener letras, números, espacios, guiones, guiones bajos, puntos y comas.");
+        return; 
+      }
 
+  const finalPrimaryMuscle = isCardio ? null : primaryMuscle;
+  const finalSelectedMuscles = isCardio ? [] : selectedMuscles;
+
+  if (
+    !exerciseName.trim() ||
+    !exercisePreparation.trim() ||
+    !exerciseIndications.trim() ||
+    exerciseDificulty === null ||
+    (esModalidadPesas && (materialNeeded === null || materialNeeded.length === 0)) ||
+    (!isCardio && selectedMuscles.length === 0) || // Solo validar músculos para no cardio
+    (!isCardio && affectedInjury === null) // No validar lesión si es cardio
+  ) {
+    alert("Por favor completa todos los campos obligatorios.");
+    return;
+  }
+
+
+  const exerciseData = {
+    ejercicio: exerciseName,
+    preparacion: exercisePreparation,
+    ejecucion: exerciseIndications,
+    ID_Musculo: finalPrimaryMuscle,
+    ID_Lesion: affectedInjury,
+    ID_Tipo_Ejercicio: exerciseType,
+    ID_Dificultad: exerciseDificulty,
+    ID_Equipo: materialNeeded,
+    ID_Modalidad: selectedModalidad,
+    musculosSecundarios: finalSelectedMuscles,
+  };
     console.log(exerciseData);
 
     try {
       // Realizar la solicitud POST al servidor
-      const response = await fetch(`${config.apiBaseUrl}/ejercicios`, {
+      const response = await fetch(`${config.apiBaseUrl}/exerciserequest`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +206,7 @@ const handleMaterialNeededChange = (selectedOption) => {
     <div className='container'>
       <div className='add_header'>
         <button className="back_icon card-icon" onClick={onBackToList}><i className="bi bi-arrow-left"></i> </button>
-        <h1 className='mtitle'>Añadir un ejercicio nuevo</h1>
+        <h1 className='mtitle'>Solicitar un nuevo ejercicio</h1>
       </div>
       <form className="form_add_exercise" onSubmit={handleSubmit}>
         <div className="add_exercise_area">
@@ -229,24 +251,28 @@ const handleMaterialNeededChange = (selectedOption) => {
           </div>
           <div>
             {/* Músculo principal */}
-            <div className="add_exercise_rows">
-              ¿Cuál es el músculo principal trabajado?
-              <Dropdown
-                options={muscles}
-                selectedOption={findOptionByValue(muscles, primaryMuscle)}
-                onChange={handlePrimaryMuscleChange}
-              />
-            </div>
+            {selectedModalidad !== 3 && (
+              <div className="add_exercise_rows">
+                ¿Cuál es el músculo principal trabajado?
+                <Dropdown
+                  options={muscles}
+                  selectedOption={findOptionByValue(muscles, primaryMuscle)}
+                  onChange={handlePrimaryMuscleChange}
+                />
+              </div>
+            )}
             {/* Músculos secundarios */}
-            <div className="add_exercise_rows">
-              ¿Qué músculos secundarios trabaja?
-              <CheckboxList
-                options={muscles}
-                selectedOptions={selectedMuscles}
-                onChange={handleSelectedMusclesChange}
-                idPrefix="muscles"
-              />
-            </div>
+            {selectedModalidad !== 3 && (
+              <div className="add_exercise_rows">
+                ¿Qué músculos secundarios trabaja?
+                <CheckboxList
+                  options={muscles}
+                  selectedOptions={selectedMuscles}
+                  onChange={handleSelectedMusclesChange}
+                  idPrefix="muscles"
+                />
+              </div>
+            )}
             {/* Indicaciones */}
             <div className="add_exercise_rows">
               Indicaciones de ejecución:
