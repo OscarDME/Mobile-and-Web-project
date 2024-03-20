@@ -1,98 +1,119 @@
 import React, { useState, useEffect } from 'react';
-import { APPOINTMENTS } from "../DATA_APPOINTMENTS";
 import SearchBar from '../SearchBar';
 import '../../styles/Management.css';
 import config from "../../utils/conf";
 import EditAppointment from './EditAppointment';
-
+import { useMsal } from "@azure/msal-react";
 
 export default function CanceledAppointments() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAppointment, setselectedAppointment] = useState(null);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
   const [showEditPage, setShowEditPage] = useState(false);
+  const [canceledAppointments, setCanceledAppointments] = useState([]);
 
+  const { instance } = useMsal();
+  const activeAccount = instance.getActiveAccount();
+  const senderId = activeAccount.idTokenClaims?.oid; 
 
-
-  const filteredAppointments = APPOINTMENTS.filter(appointment =>
-    appointment.assignedTo.toString().toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (appointment.status === 'Rechazada' || appointment.status === 'Cancelada')
-); 
-
-
-    const handleRowClick = (appointment) => {
-      if (expandedRow === appointment.id) {
-        setExpandedRow(null);
-        setselectedAppointment(null);
-      } else {
-        setExpandedRow(appointment.id);
-        setselectedAppointment(appointment);
+  useEffect(() => {
+    const fetchCanceledAppointments = async () => {
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/citasrechazadas/${senderId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        let data = await response.json();
+        setCanceledAppointments(data);
+      } catch (error) {
+        console.error('There was an error fetching the canceled appointments:', error);
       }
     };
+  
+    fetchCanceledAppointments();
+  }, [senderId]);
 
-    
-    const handleEditClick = (appointment) => {
-      setselectedAppointment(appointment);      
-      setShowEditPage(true); 
-    };
+  const filteredAppointments = canceledAppointments.filter(appointment =>
+    appointment.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (appointment.estado === 'Rechazada' || appointment.estado === 'Cancelada')
+  );
 
-    const handleBackToList = () => {
-        setShowEditPage(false); 
-    };
-    
+  const handleRowClick = (appointment) => {
+    if (expandedRow === appointment.ID_Cita) {
+      setExpandedRow(null);
+      setSelectedAppointment(null);
+    } else {
+      setExpandedRow(appointment.ID_Cita);
+      setSelectedAppointment(appointment);
+    }
+  };
 
-    if (showEditPage) {
-      return <EditAppointment onBackToList={handleBackToList} appointment={selectedAppointment} />;
+  const handleEditClick = (appointment) => {
+    setSelectedAppointment(appointment);      
+    setShowEditPage(true); 
+  };
+
+  const handleBackToList = () => {
+    setShowEditPage(false); 
+  };
+
+  if (showEditPage) {
+    return <EditAppointment onBackToList={handleBackToList} appointment={selectedAppointment} />;
   }
 
-    return (
-      <div className="container">
-          <div className="search-bar-container">
-            <div className='search-bar'>
-              <div className='addclient'><i className="bi bi-search h4"></i></div>
-              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            </div>
-          </div>
-          <ul className='cardcontainer'>
-            {filteredAppointments.map((appointment) => (
-              <li key={appointment.id} className={`row ${((selectedAppointment && selectedAppointment.id === appointment.id)) ? 'selected' : ''}`}>
-                <div onClick={() => handleRowClick(appointment)} className={`row_header ${((selectedAppointment && selectedAppointment.id === appointment.id)) ? 'selected' : ''}`}>
-                  <div>
-                    <div className='row_name'>Cliente: {appointment.assignedTo}</div>
-                    <div className='row_description'>{appointment.status} para el {appointment.date}</div>
-                  </div>
-                  <div className="row_edit">
-                      <i className={`bi bi-pencil-square  card-icon`} onClick={(e) => { e.stopPropagation(); handleEditClick(appointment); }}></i>
-                    </div>
-                </div>
-                {expandedRow === appointment.id && (
-                  <>
-                    <div className="exercise-info">
-                      <div className="exercise-info-column">
-                      <div className="exercise-info-row">
-                        Fecha de la cita: {appointment.date}
-                      </div>
-                      <div className="exercise-info-row">
-                        Inicio de la cita: {appointment.startsAt}
-                      </div>
-                      <div className="exercise-info-row">
-                        Fin de la cita: {appointment.endsAt}
-                      </div>
-                      </div>
-                      <div className="exercise-info-column">
-                      <div className="exercise-info-row">
-                        <a href={appointment.place} target="_blank"> Lugar de la cita</a>
-                      </div>
-                      <div className="exercise-info-row">
-                        Detalles extra: {appointment.details}
-                      </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+  return (
+    <div className="container">
+      <div className="search-bar-container">
+        <div className='search-bar'>
+          <div className='addclient'><i className="bi bi-search h4"></i></div>
+          <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        </div>
       </div>
-    );
+      <ul className='cardcontainer'>
+        {filteredAppointments.map((appointment) => (
+          <li key={appointment.ID_Cita} className={`row ${selectedAppointment && selectedAppointment.ID_Cita === appointment.ID_Cita ? 'selected' : ''}`}>
+            <div onClick={() => handleRowClick(appointment)} className={`row_header ${selectedAppointment && selectedAppointment.ID_Cita === appointment.ID_Cita ? 'selected' : ''}`}>
+              <div>
+                <div className='row_name'>Cliente: {appointment.nombre} {appointment.apellido}</div>
+                <div className='row_description'>{appointment.estado} para el {appointment.fecha}</div>
+              </div>
+              <div className="row_edit">
+                <i className={`bi bi-pencil-square card-icon`} onClick={(e) => { e.stopPropagation(); handleEditClick(appointment); }}></i>
+              </div>
+            </div>
+            {expandedRow === appointment.ID_Cita && ( 
+              <>
+                <div className="exercise-info">
+                  <div className="exercise-info-column">
+                    <div className="exercise-info-row">
+                      Fecha de la cita: {appointment.fecha}
+                    </div>
+                    <div className="exercise-info-row">
+                      Inicio de la cita: {appointment.hora_inicio} 
+                    </div>
+                    <div className="exercise-info-row">
+                      Fin de la cita: {appointment.hora_final}
+                    </div>
+                  </div>
+                  <div className="exercise-info-column">
+                    <div className="exercise-info-row">
+                      <a href={appointment.lugar} target="_blank"> Lugar de la cita</a> 
+                    </div>
+                    <div className="exercise-info-row">
+                      Detalles extra: {appointment.detalles} 
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
