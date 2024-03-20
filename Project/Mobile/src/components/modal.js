@@ -10,6 +10,7 @@ import Viaje from "../../assets/viaje.png";
 const height_proportion = '-180%';
 
 const Mas = ({ onDismiss }) => {
+  const [preferences, setPreferences] = useState({});
 
   const navigation = useNavigation();
 

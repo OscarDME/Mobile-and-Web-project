@@ -73,6 +73,7 @@ import UserChat from "../screens/Chat/UserChat";
 import Formulario1 from "../screens/Perfil/Formulario1"
 import Formulario2 from "../screens/Perfil/Formulario2"
 import DetallesEntrenador from "../screens/Descubre/Detalles"
+import WorkoutScreen from "../screens/Entrenamiento/Ejercicios";
 
 import Header from "../components/Header";
 {
@@ -244,6 +245,27 @@ const MainStack = () => {
     </StackMain.Navigator>
   );
 };
+
+
+const TrainingStack = createNativeStackNavigator();
+
+const TrainingStackScreen = () => {
+  return (
+    <TrainingStack.Navigator
+    initialRouteName="WorkoutScreen"
+    screenOptions={{
+      headerShown: false,
+      gestureEnabled: false,
+    }}
+    options={{
+    gestureEnabled: false,
+    }}
+  >
+      <TrainingStack.Screen name="WorkoutScreen" component={WorkoutScreen} />
+    </TrainingStack.Navigator>
+  );
+};
+
 
 const StackProfile = createNativeStackNavigator();
 const ProfileStack = () => {
@@ -457,6 +479,7 @@ const MainRoot = () => {
         <Stack.Screen name="Validation" component={ValidationStack} />
         <Stack.Screen name="Questionnaire" component={QuestionnaireStack} />
         <Stack.Screen name="Main" component={FooterTabs} />
+        <Stack.Screen name="TrainingStack" component={TrainingStackScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

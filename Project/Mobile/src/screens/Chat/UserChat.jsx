@@ -24,30 +24,34 @@ const UserChat = ({ route }) => {
   };
 
   useEffect(() => {
-    AsyncStorage.getItem('userOID').then((value) => {
-      if (value !== null) {
-        setOid(value);
-      }
-    });
-
-    const mensajesRef = collection(FIRESTORE_DB, `conversaciones/${conversacion.id}/mensajes`);
-    const q = query(mensajesRef, orderBy('enviadoEn', 'asc'));
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const fetchedMensajes = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setMensajes(fetchedMensajes);
-    }, (error) => {
-      console.error('Error al obtener mensajes:', error);
-    });
-
-    return () => {
-      unsubscribe();
-      flatListRef.current?.scrollToEnd({ animated: true });
+    const fetchMensajes = async () => {
+      const oid = await AsyncStorage.getItem('userOID');
+      if (!oid) return;
+  
+      setOid(oid);
+      const mensajesRef = collection(FIRESTORE_DB, `conversaciones/${conversacion.id}/mensajes`);
+      const q = query(mensajesRef, orderBy('enviadoEn', 'asc'));
+  
+      return onSnapshot(q, (querySnapshot) => {
+        const fetchedMensajes = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setMensajes(fetchedMensajes);
+        // Mueve el scroll al final solo cuando se reciben los mensajes
+        if (fetchedMensajes.length > 0) {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }
+      }, (error) => {
+        console.error('Error al obtener mensajes:', error);
+      });
     };
-  }, [conversacion.id, mensajes]);
+  
+    const unsubscribe = fetchMensajes();
+  
+    return () => unsubscribe && unsubscribe();
+  }, [conversacion.id]);
+  
 
   const enviarMensaje = async (texto, fileUrl, fileType) => {
     const nuevoMensaje = {
@@ -138,6 +142,12 @@ const UserChat = ({ route }) => {
     }
   };
   
+
+  useEffect(() => {
+    if (mensajes.length > 0) {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensajes]);
   
   
 
