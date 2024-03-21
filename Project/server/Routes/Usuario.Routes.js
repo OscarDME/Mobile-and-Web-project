@@ -19,6 +19,7 @@ import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createE
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
 import { createCompleteRutinaForClient } from "../Controllers/AsignarRutinas.Controllers.js";
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
+import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas } from "../Controllers/Citas.Controllers.js"
 
 
 //El que come callado repite
@@ -127,6 +128,19 @@ router.get("/dietaactual/:id/:selectedDate", getCurrentOrUpcomingDiet);
 router.post("/registrocompletado", registrarCompletado);
 router.get("/completados/:id/:fecha", obtenerCompletadosPorFecha);
 router.delete("/eliminarCompletado", eliminarCompletado);
+
+//Citas
+router.post("/cita", createCita);
+router.get("/cita/:id", getCitas);
+router.put("/aceptarcita/:id", aceptarCita);
+router.put("/pendientecita/:id", pendienteCita);
+router.put("/rechazarcita/:id", rechazarCita);
+router.put("/cancelarcita/:id", cancelarCita);
+router.put("/completarcita/:id", completarCita);
+router.get("/citasrechazadas/:id", getRejectedCitas);
+router.put("/cita/:id", actualizarCita);
+router.get("/citaspendientes/:id", getCitasMobile);
+router.get("/citasaceptadas/:id", getAceptadasCitas);
 
 export default router;
 

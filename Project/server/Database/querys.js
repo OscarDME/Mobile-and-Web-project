@@ -130,4 +130,20 @@ export const querys = {
     //AsignarRutinas
     createAsignarRutinas: "INSERT INTO AsignarRutinas (fecha_asignacion, fecha_eliminacion, fecha_inicio, fecha_fin, Hora_Inicio, ID_Rutina, ID_UsuarioMovil) VALUES (@fecha_asignacion, @fecha_eliminacion, @fecha_inicio, @fecha_fin , NULL, @ID_Rutina, @ID_UsuarioMovil)",
     
+    //Citas
+    createCita: `INSERT INTO Cita (ID_UsuarioMovil, ID_Usuario_WEB, fecha, hora_inicio, hora_final, lugar, detalles, ID_EstadoCita) VALUES (@ID_UsuarioMovil, @ID_Usuario_WEB, @fecha, @hora_inicio, @hora_final, @lugar, @detalles, 1); SELECT SCOPE_IDENTITY() as ID_Cita;`,
+    getCitas: `SELECT C.ID_Cita, CONVERT(char(10), C.fecha, 126) as fecha, 
+    CONVERT(varchar, C.hora_inicio, 108) as hora_inicio, 
+    CONVERT(varchar, C.hora_final, 108) as hora_final, C.lugar, C.detalles, c.ID_UsuarioMovil, EC.estado, U.nombre, U.apellido, U.ID_Usuario FROM Cita C INNER JOIN EstadoCita EC ON C.ID_EstadoCita = EC.ID_EstadoCita INNER JOIN UsuarioMovil UM ON C.ID_UsuarioMovil = UM.ID_UsuarioMovil INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario WHERE C.ID_Usuario_WEB = @ID_Usuario_WEB AND C.ID_EstadoCita IN (1, 2)`,
+    getAceptadasCitas: `SELECT C.ID_Cita, CONVERT(char(10), C.fecha, 126) as fecha, 
+    CONVERT(varchar, C.hora_inicio, 108) as hora_inicio, 
+    CONVERT(varchar, C.hora_final, 108) as hora_final, C.lugar, C.detalles, c.ID_UsuarioMovil, EC.estado, U.nombre, U.apellido, U.ID_Usuario FROM Cita C INNER JOIN EstadoCita EC ON C.ID_EstadoCita = EC.ID_EstadoCita INNER JOIN UsuarioMovil UM ON C.ID_UsuarioMovil = UM.ID_UsuarioMovil INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario WHERE C.ID_Usuario_WEB = @ID_Usuario_WEB AND C.ID_EstadoCita=4`,
+    getPendingCitas: "SELECT C.ID_Cita, CONVERT(char(10), C.fecha, 126) as fecha, CONVERT(varchar, C.hora_inicio, 108) as hora_inicio, CONVERT(varchar, C.hora_final, 108) as hora_final,  C.lugar, C.detalles, EC.estado, UM.ID_UsuarioMovil, U.nombre AS nombre_usuario_movil, U.apellido AS apellido_usuario_movil, U2.nombre AS nombre_usuario_web, U2.apellido AS apellido_usuario_web, TUW.tipo AS Tipo_Web FROM Cita C INNER JOIN EstadoCita EC ON C.ID_EstadoCita = EC.ID_EstadoCita INNER JOIN UsuarioMovil UM ON C.ID_UsuarioMovil = UM.ID_UsuarioMovil INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario INNER JOIN Usuario_WEB UW ON C.ID_Usuario_WEB = UW.ID_Usuario_WEB INNER JOIN Usuario U2 ON UW.ID_Usuario = U2.ID_Usuario LEFT JOIN Tipo_Web TUW ON UW.ID_Tipo_WEB = TUW.ID_Tipo_WEB WHERE C.ID_UsuarioMovil = @ID_UsuarioMovil AND C.ID_EstadoCita = 1;",
+    getRejectedCitas: `SELECT C.ID_Cita,CONVERT(char(10), C.fecha, 126) as fecha, CONVERT(varchar, C.hora_inicio, 108) as hora_inicio, CONVERT(varchar, C.hora_final, 108) as hora_final, C.lugar, C.detalles, c.ID_UsuarioMovil, EC.estado, U.nombre, U.apellido, U.ID_Usuario FROM Cita C INNER JOIN EstadoCita EC ON C.ID_EstadoCita = EC.ID_EstadoCita INNER JOIN UsuarioMovil UM ON C.ID_UsuarioMovil = UM.ID_UsuarioMovil INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario WHERE C.ID_Usuario_WEB = @ID_Usuario_WEB AND C.ID_EstadoCita IN (3, 5)`,
+    updateAceptarCita: `UPDATE Cita SET ID_EstadoCita = 2 WHERE ID_Cita = @ID_Cita`,
+    updatePendienteCita: `UPDATE Cita SET ID_EstadoCita = 1 WHERE ID_Cita = @ID_Cita`,
+    updateRechazarCita: `UPDATE Cita SET ID_EstadoCita = 3 WHERE ID_Cita = @ID_Cita`,
+    updateCompletarCita: `UPDATE Cita SET ID_EstadoCita = 4 WHERE ID_Cita = @ID_Cita`,
+    updateCancelarCita: `UPDATE Cita SET ID_EstadoCita = 5 WHERE ID_Cita = @ID_Cita`,
+    updateCita: `UPDATE Cita SET ID_UsuarioMovil = @ID_UsuarioMovil, ID_Usuario_WEB = @ID_Usuario_WEB, fecha = @fecha, hora_inicio = @hora_inicio, hora_final = @hora_final, lugar = @lugar, detalles = @detalles, ID_EstadoCita = @ID_EstadoCita WHERE ID_Cita = @ID_Cita`
 };
