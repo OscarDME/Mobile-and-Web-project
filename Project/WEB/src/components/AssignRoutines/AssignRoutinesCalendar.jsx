@@ -13,7 +13,33 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
 
     const { instance } = useMsal();
     const activeAccount = instance.getActiveAccount();
-    const [routines, setRoutines] = useState(RoutineCard);
+    const senderId = activeAccount.idTokenClaims?.oid;
+    const [routines, setRoutines] = useState([]);
+
+    useEffect(() => {
+        const fetchRoutines = async () => {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/rutinasasignar/${selectedUser.ID_Usuario}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setRoutines(data);
+                    console.log("Rutinas activas cargadas", data);
+                } else {
+                    console.error("Error al obtener las rutinas activas:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error al obtener las rutinas activas:", error);
+            }
+        };
+
+        fetchRoutines();
+    }, [senderId]);    
     let today = new Date();
     let month = today.getMonth();
     let year = today.getFullYear();
@@ -66,19 +92,18 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
     event.preventDefault();
   
     try {
-      // Validación de solapamiento de fechas
-      // const isOverlap = routines.some(routine => {
-      //   const routineStartDate = new Date(routine.fecha_inicio);
-      //   const routineEndDate = new Date(routine.fecha_fin);
-      //   return (
-      //     date[0] <= routineEndDate && date[date.length - 1] >= routineStartDate
-      //   );
-      // });
+      const isOverlap = routines.some(routine => {
+        const routineStartDate = new Date(routine.fecha_inicio);
+        const routineEndDate = new Date(routine.fecha_fin);
+        return (
+          date[0] <= routineEndDate && date[date.length - 1] >= routineStartDate
+        );
+      });
   
-      // if (isOverlap) {
-      //   alert("El usuario ya tiene una rutina asignada en el rango de fechas seleccionado.");
-      //   return;
-      // }
+      if (isOverlap) {
+        alert("El usuario ya tiene una rutina asignada en el rango de fechas seleccionado.");
+        return;
+      }
   
       // Verifica si updatedRoutine existe
       if (!updatedRoutine) {
@@ -86,25 +111,27 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
         return;
       }
   
-      // // Verifica si el nombre de la rutina está presente
-      // if (!updatedRoutine.name || updatedRoutine.name.trim() === "") {
-      //   alert("Por favor, especifica un nombre para la rutina.");
-      //   return;
-      // }
   
       // Verifica las fechas de asignación
       if (!date || date.length < 2 || !date[0] || !date[date.length - 1]) {
         alert("Por favor, selecciona un rango de fechas para la asignación de la rutina.");
         return;
       }
+
+      const formattedStartDate = date[0].toISOString().slice(0, 10); // Formato YYYY-MM-DD
+      const formattedEndDate = date[1].toISOString().slice(0, 10); // Formato YYYY-MM-DD
   
+      console.log(formattedStartDate);
+      console.log(formattedEndDate);
+
       // Preparar datos de la rutina para enviar
       const body = JSON.stringify({
-        ID_Usuario: selectedUser.ID_Usuario,
-        nombreRutina: updatedRoutine.name,
-        diasEntreno: updatedRoutine.days, // Ajusta según la estructura de tu rutina
-        fechaInicio: date[0].toISOString(), // Formato ISO de la fecha de inicio
-        fechaFin: date[date.length - 1].toISOString(), // Formato ISO de la fecha de fin
+        ID_Usuario: senderId,
+        ID_Movil: selectedUser.ID_Usuario,
+        routineName: updatedRoutine.nombre,
+        days: updatedRoutine.diasEntreno, // Ajusta según la estructura de tu rutina
+        fechaInicio: formattedStartDate, // Formato ISO de la fecha de inicio
+        fechaFin: formattedEndDate, // Formato ISO de la fecha de fin
       });
   
       console.log(body);
@@ -139,13 +166,13 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
     <>
     <h2 className='MainTitle'>Rutinas activas de {selectedUser.username}</h2>
     <div className='active-diet-container'>
-    {RoutineCard.map((routine, index)  => (  
+    {routines.map((routine, index)  => (  
         <>
         <div key={index} className='active-diet-card'>
-            <h4>{routine.name}</h4>
+            <h4>{routine.NombreRutina}</h4>
             <div>
-            <div>Fecha de inicio: </div>
-            <div>Fecha de finalización: </div>
+            <div>Fecha de inicio: {routine.fecha_inicio} </div>
+            <div>Fecha de finalización: {routine.fecha_fin}</div>
             </div>
         </div>
         </>

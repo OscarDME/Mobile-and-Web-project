@@ -78,8 +78,9 @@ export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
       };
 
       const handleUpdateClick = (routine) => {
-        setSelectedRoutine(routine)
-        setUpdateRoutinePage(true); 
+        setSelectedRoutine(routine); // Establecer selectedRoutine con la rutina seleccionada
+        setUpdatedRoutine(routine); // Asignar routine a updatedRoutine
+        setUpdateRoutinePage(true);
       };
 
       const handleDayClick = (day) => {

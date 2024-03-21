@@ -8,8 +8,8 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
 
 
   useEffect(() => {
-    setUpdatedRoutine(selectedRoutine);
-  }, [selectedRoutine]);
+  setUpdatedRoutine(selectedRoutine); // Asignar selectedRoutine a updatedRoutine
+}, [selectedRoutine]);
 
   
   function renderExercises(day, dayIndex) {
@@ -40,38 +40,38 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
                       <div className='container-center'>
                         Repeticiones:
                         <NumberInput
-  label="Repeticiones"
-  placeholder="..."
-  value={Number(conjunto.series[0].repeticiones)}
-  min={1}
-  max={600}
-  onChange={handleNumberInputChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'repeticiones')}
-/>
+                          label="Repeticiones"
+                          placeholder="..."
+                          value={Number(conjunto.series[0].repeticiones)}
+                          min={1}
+                          max={600}
+                          onChange={(event ,reps) => handleSetChange(dayIndex, exerciseIndex, 0, setIndex, 'repeticiones', reps)}
+                        />
 
                       </div>
                       <div className='container-center'>
                         Peso (kg):
                         <NumberInput
-  label="Peso"
-  placeholder="..."
-  min={1}
-  max={600}
-  value={Number(conjunto.series[0].peso)}
-  onChange={handleNumberInputChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'peso')}
-/>
+                          label="Peso"
+                          placeholder="..."
+                          min={1}
+                          max={600}
+                          value={Number(conjunto.series[0].peso)}
+                          onChange={(event ,peso) => handleSetChange(dayIndex, exerciseIndex, 0, setIndex, 'peso', peso)}
+                        />
                       </div>
                     </>
                   ) : (
                     <div className='container-center'>
                       Tiempo (minutos):
-                      <NumberInput
-  label="Tiempo"
-  placeholder="..."
-  min={1}
-  max={600}
-  value={Number(conjunto.series[0].tiempo)}
-  onChange={handleNumberInputChange(dayIndex, exerciseIndex, groupIndex, setIndex, 'tiempo')}
-/>
+                        <NumberInput
+                          label="Tiempo"
+                          placeholder="..."
+                          min={1}
+                          max={600}
+                          value={Number(conjunto.series[0].tiempo)}
+                          onChange={(event ,tiempo) => handleSetChange(dayIndex, exerciseIndex, 0, setIndex, 'tiempo', tiempo)}
+                        />
                     </div>
                   )}
                 </div>
@@ -90,51 +90,38 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
   }
   
   
-  const handleNumberInputChange = (dayIndex, exerciseIndex, groupIndex, setIndex, field) => event => {
-    const newValue = event.target.value;
-    handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, field, newValue);
+  const handleNumberInputChange = (dayIndex, exerciseIndex, groupIndex, setIndex, field) => (event) => {
+    console.log(event);
+    console.log("Valor", event.target.value);
+    const value = event.target.value;
+    handleSetChange(dayIndex, exerciseIndex, groupIndex, setIndex, field, value);
   };
+
   
-const handleSetChange = (dayIndex, exerciseIndex, groupIndex, setIndex, field, value) => {
+  
+
+
+ const handleSetChange = (dayIndex, exerciseIndex, groupIndex, setIndex, field, value) => {
+  console.log("DayIndex:", dayIndex);
+  console.log("ExerciseIndex:", exerciseIndex);
+  console.log("GroupIndex:", groupIndex);
   setUpdatedRoutine((prevState) => {
-    // Clonar profundamente solo las partes relevantes de la estructura que necesitamos modificar.
-    const newDiasEntreno = prevState.diasEntreno.map((day, dIdx) => {
-      if (dIdx !== dayIndex) return day; // Retornar los días no afectados tal como están.
 
-      return {
-        ...day,
-        ejercicios: day.ejercicios.map((exercise, eIdx) => {
-          if (eIdx !== exerciseIndex) return exercise;
+    // Si todo está correcto, sigue con la actualización
+    const newState = JSON.parse(JSON.stringify(prevState)); // Copia profunda del estado
+    console.log(newState.diasEntreno[dayIndex].ejercicios[exerciseIndex].bloqueSets[groupIndex]);
 
-          return {
-            ...exercise,
-            bloqueSets: exercise.bloqueSets.map((bloque, bIdx) => {
-              return {
-                ...bloque,
-                conjuntoSeries: bloque.conjuntoSeries.map((conjunto, cIdx) => {
-                  if (cIdx !== groupIndex) return conjunto;
 
-                  return {
-                    ...conjunto,
-                    series: conjunto.series.map((serie, sIdx) => {
-                      if (sIdx !== setIndex) return serie;
-                      return {
-                        ...serie,
-                        [field]: Number(value),
-                      };
-                    }),
-                  };
-                }),
-              };
-            }),
-          };
-        }),
-      };
-    });
+    newState.diasEntreno[dayIndex].ejercicios[exerciseIndex]
+      .bloqueSets[groupIndex].conjuntoSeries[setIndex]
+      .series[0][field] = Number(value);
 
-    return { ...prevState, diasEntreno: newDiasEntreno };
+    return newState; // Devuelve el nuevo estado actualizado
   });
 };
+
+  
+  
 
   useEffect(() => {
     if (updatedRoutine) {

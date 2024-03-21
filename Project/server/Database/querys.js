@@ -128,7 +128,7 @@ export const querys = {
     getTiemposComida: "SELECT * FROM TiempoComida",
 
     //AsignarRutinas
-    createAsignarRutinas: "INSERT INTO AsignarRutinas (fecha_asignacion, fecha_eliminacion, fecha_inicio, fecha_fin, Hora_Inicio, ID_Rutina, ID_UsuarioMovil) VALUES (@fecha_asignacion, @fecha_eliminacion, @fecha_inicio, @fecha_fin , NULL, @ID_Rutina, @ID_UsuarioMovil)",
+    createAsignarRutinas: "INSERT INTO Rutina_Asignada (fecha_asignacion, fecha_eliminacion, fecha_inicio, fecha_fin, Hora_Inicio, ID_Rutina, ID_UsuarioMovil, ID_Usuario_WEB) VALUES (@fecha_asignacion, @fecha_eliminacion, @fecha_inicio, @fecha_fin , NULL, @ID_Rutina, @ID_UsuarioMovil, @ID_Usuario_WEB)",
     
     //Citas
     createCita: `INSERT INTO Cita (ID_UsuarioMovil, ID_Usuario_WEB, fecha, hora_inicio, hora_final, lugar, detalles, ID_EstadoCita) VALUES (@ID_UsuarioMovil, @ID_Usuario_WEB, @fecha, @hora_inicio, @hora_final, @lugar, @detalles, 1); SELECT SCOPE_IDENTITY() as ID_Cita;`,

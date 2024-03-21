@@ -17,7 +17,7 @@ import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, cre
 import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta } from "../Controllers/Recetas.Controllers.js";
 import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas } from "../Controllers/Rutinas.Controllers.js";
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
-import { createCompleteRutinaForClient } from "../Controllers/AsignarRutinas.Controllers.js";
+import { createCompleteRutinaForClient, getAssignedRoutines } from "../Controllers/AsignarRutinas.Controllers.js";
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas } from "../Controllers/Citas.Controllers.js"
 
@@ -118,6 +118,7 @@ router.get("/rutinacompleta", getCompleteRutinas);
 
 //Asignar rutinas
 router.post("/rutinaasignar", createCompleteRutinaForClient);
+router.get("/rutinasasignar/:id", getAssignedRoutines);
 
 //Dietas
 router.get("/tiemposComida", getTiemposComida);
