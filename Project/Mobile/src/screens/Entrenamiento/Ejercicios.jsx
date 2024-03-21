@@ -211,7 +211,7 @@ useEffect(() => {
             });
   
             // Utiliza navigation para volver a la pantalla anterior
-            setTrainingFinished(true);
+            setTrainingCompleted(true);
             navigation.goBack();
           }
         }
@@ -252,6 +252,19 @@ useEffect(() => {
             } else {
               // Aquí podrías manejar el caso de que sea el último set
               console.log("Último set alcanzado. No se puede saltar más.");
+              const updatedSession = { ...sessionCopy };
+              const currentExercise = updatedSession.session[currentSetIndex];
+
+              if (currentExercise.exerciseToWork.type === "Cardiovascular") {
+                  currentExercise.time = 0; // Ajusta el tiempo a 0 para cardio
+              } else {
+                  currentExercise.weight = 0; // Ajusta peso y repeticiones a 0
+                  currentExercise.reps = 0;
+              }
+              
+              setSessionCopy(updatedSession); // Actualiza la sesión
+              setTrainingCompleted(true); // Marca el entrenamiento como completado
+              return; // Evita ejecutar el resto de la función
             }
           }
         }

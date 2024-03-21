@@ -74,6 +74,7 @@ import Formulario1 from "../screens/Perfil/Formulario1"
 import Formulario2 from "../screens/Perfil/Formulario2"
 import DetallesEntrenador from "../screens/Descubre/Detalles"
 import WorkoutScreen from "../screens/Entrenamiento/Ejercicios";
+import IndividualBodyMeasure from "../screens/Progreso/IndividualBodyMeasure";
 
 import Header from "../components/Header";
 {
@@ -212,7 +213,7 @@ const FooterTabs = () => {
       <Tab.Screen name="Rutinas" component={RutinasStack} />
       <Tab.Screen name="Entrenamiento" component={Entrenamiento} />
       <Tab.Screen name="Calendario" component={Calendario} />
-      <Tab.Screen name="Progreso" component={Progreso} />
+      <Tab.Screen name="Progreso" component={ProgressBodyMeasuresStackScreen} />
       <Tab.Screen name="Mas" component={Mas} />
       <Tab.Screen name="Chat" component={ChatStack} />
       <Tab.Screen name="Notificaciones" component={Notificaciones} />
@@ -257,12 +258,25 @@ const TrainingStackScreen = () => {
       headerShown: false,
       gestureEnabled: false,
     }}
-    options={{
-    gestureEnabled: false,
-    }}
   >
       <TrainingStack.Screen name="WorkoutScreen" component={WorkoutScreen} />
     </TrainingStack.Navigator>
+  );
+};
+
+const ProgressBodyMeasuresStack = createNativeStackNavigator();
+
+const ProgressBodyMeasuresStackScreen = () => {
+  return (
+    <ProgressBodyMeasuresStack.Navigator
+    initialRouteName="Progreso"
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+      <ProgressBodyMeasuresStack.Screen name="Progreso" component={Progreso} />
+      <ProgressBodyMeasuresStack.Screen name="IndividualBodyMeasure" component={IndividualBodyMeasure} />
+    </ProgressBodyMeasuresStack.Navigator>
   );
 };
 
