@@ -1,9 +1,12 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit'; 
 import { AntDesign } from '@expo/vector-icons';
+import { SelectList } from 'react-native-dropdown-select-list'
 
 const ProgressBodyMeasures = ({ navigation }) => {
+  const [selected, setSelected] = useState("Cuello");
+
   const data = {
     labels: ['15/01/24', '18/01/24'],
     datasets: [
@@ -12,18 +15,38 @@ const ProgressBodyMeasures = ({ navigation }) => {
         strokeWidth: 2, // optional
       },
     ],
-  };
+  };  
+  const measures = [
+    {key: 'cuello', value: 'Cuello'},
+    {key: 'pecho', value: 'Pecho'},
+    {key: 'hombros', value: 'Hombros'},
+    {key: 'bíceps', value: 'Bíceps'},
+    {key: 'antebrazo', value: 'Antebrazo'},
+    {key: 'cintura', value: 'Cintura'},
+    {key: 'cadera', value: 'Cadera'},
+    {key: 'pantorrillas', value: 'Pantorrillas'},
+    {key: 'muslos', value: 'Muslos'},
+  ];
 
   return (
     <View style={styles.container}>
+    <View style={styles.select}>
+    <SelectList 
+          setSelected={setSelected} 
+          data={measures} 
+          placeholder="Selecciona una medida"
+        />
+    </View>
+    
       <LineChart
         data={data}
         width={320} 
         height={220}
         chartConfig={{
+          backgroundColor: '#ee',
           backgroundGradientFrom: '#ee',
-          backgroundGradientTo: '#ee',
-          decimalPlaces: 2, // optional, defaults to 2dp
+          backgroundGradientTo: '#eee',
+          decimalPlaces: 2,
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         }}
@@ -82,6 +105,9 @@ const styles = StyleSheet.create({
     alignContent: 'flex-start',
     width: '80%',
     height: "100%",
+  },
+  select:{
+    width: '80%',
   }
 });
 
