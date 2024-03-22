@@ -7,11 +7,22 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 
-const MainMenu = ({ navigation }) => {
+const MainMenu = ({ navigation, route }) => {
   const [dietData, setDietData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [checkedItems, setCheckedItems] = useState(new Set());
+
+  useEffect(() => {
+    // Asume que 'selectedDate' se pasa como YYYY-MM-DD
+    const dateFromCalendar = route.params?.selectedDate;
+  
+    if (dateFromCalendar) {
+      setSelectedDate(new Date(dateFromCalendar));
+    }
+  
+    fetchDietData();
+  }, [route.params?.selectedDate]);
   
   const MealTimeItem = ({ data, onCheck }) => {
 

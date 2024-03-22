@@ -110,6 +110,90 @@ export const getCitas = async (req, res) => {
     }
   };
 
+  export const getAcceptedCitasMobile = async (req, res) => {
+    try {
+      const ID_UsuarioCliente = req.params.id; // Asumiendo que el ID del usuario web se pasa como parámetro en la URL
+      const pool = await getConnection();
+      const mobileUserResult = await pool
+      .request()
+      .input("ID_Usuario", sql.VarChar, ID_UsuarioCliente)
+      .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+  
+    const ID_UsuarioMovil = mobileUserResult.recordset[0].ID_UsuarioMovil;
+      
+      const result = await pool.request()
+        .input('ID_UsuarioMovil', sql.Int, ID_UsuarioMovil)
+        .query(querys.getAcceptedCitasMobile);
+      console.log("Resultado de la consulta:", result.recordset);
+      res.json(result.recordset);
+    } catch (error) {
+      console.error("Error al obtener las citas para el usuario web:", error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  export const getAcceptedCitasMobileAndDate = async (req, res) => {
+    try {
+      const ID_UsuarioCliente = req.params.id; // Asumiendo que el ID del usuario web se pasa como parámetro en la URL
+      const selectedDate = req.params.selectedDate; // Obtener la fecha seleccionada del parámetro de la URL
+      const pool = await getConnection();
+      const mobileUserResult = await pool
+        .request()
+        .input("ID_Usuario", sql.VarChar, ID_UsuarioCliente)
+        .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+  
+      const ID_UsuarioMovil = mobileUserResult.recordset[0].ID_UsuarioMovil;
+  
+      const query = `
+        SELECT 
+          C.ID_Cita, 
+          CONVERT(char(10), C.fecha, 126) as fecha, 
+          CONVERT(varchar, C.hora_inicio, 108) as hora_inicio, 
+          CONVERT(varchar, C.hora_final, 108) as hora_final, 
+          C.lugar, 
+          C.detalles, 
+          EC.estado, 
+          UM.ID_UsuarioMovil, 
+          U.nombre AS nombre_usuario_movil, 
+          U.apellido AS apellido_usuario_movil, 
+          U2.nombre AS nombre_usuario_web, 
+          U2.apellido AS apellido_usuario_web, 
+          TUW.tipo AS Tipo_Web 
+        FROM 
+          Cita C 
+        INNER JOIN 
+          EstadoCita EC ON C.ID_EstadoCita = EC.ID_EstadoCita 
+        INNER JOIN 
+          UsuarioMovil UM ON C.ID_UsuarioMovil = UM.ID_UsuarioMovil 
+        INNER JOIN 
+          Usuario U ON UM.ID_Usuario = U.ID_Usuario 
+        INNER JOIN 
+          Usuario_WEB UW ON C.ID_Usuario_WEB = UW.ID_Usuario_WEB 
+        INNER JOIN 
+          Usuario U2 ON UW.ID_Usuario = U2.ID_Usuario 
+        LEFT JOIN 
+          Tipo_Web TUW ON UW.ID_Tipo_WEB = TUW.ID_Tipo_WEB 
+        WHERE 
+          C.ID_UsuarioMovil = @ID_UsuarioMovil 
+          AND 
+          C.ID_EstadoCita = 2
+          AND
+          CONVERT(char(10), C.fecha, 126) = @selectedDate`; // Agregar la condición de fecha
+  
+      const result = await pool.request()
+        .input('ID_UsuarioMovil', sql.Int, ID_UsuarioMovil)
+        .input('selectedDate', sql.VarChar, selectedDate) // Pasar la fecha seleccionada como parámetro
+        .query(query);
+  
+      console.log("Resultado de la consulta:", result.recordset);
+      res.json(result.recordset);
+    } catch (error) {
+      console.error("Error al obtener las citas para el usuario web:", error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+  
+
   export const getRejectedCitas = async (req, res) => {
     try {
       const ID_Usuario = req.params.id; // Asumiendo que el ID del usuario web se pasa como parámetro en la URL

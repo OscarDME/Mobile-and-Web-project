@@ -19,7 +19,7 @@ import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createE
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
 import { createCompleteRutinaForClient, getAssignedRoutines } from "../Controllers/AsignarRutinas.Controllers.js";
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
-import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas } from "../Controllers/Citas.Controllers.js"
+import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 
 
 //El que come callado repite
@@ -142,6 +142,9 @@ router.get("/citasrechazadas/:id", getRejectedCitas);
 router.put("/cita/:id", actualizarCita);
 router.get("/citaspendientes/:id", getCitasMobile);
 router.get("/citasaceptadas/:id", getAceptadasCitas);
+router.get("/citasaceptada/:id", getAcceptedCitasMobile);
+router.get("/citasaceptada2/:id/:selectedDate", getAcceptedCitasMobileAndDate);
+
 
 export default router;
 

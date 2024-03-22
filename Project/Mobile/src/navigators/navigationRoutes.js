@@ -40,6 +40,7 @@ import SitUpTest from "../screens/PhysicalTestScreens/SitUpTest";
 import SitUpResultInputScreen from "../screens/PhysicalTestScreens/SitUpTestRes.js";
 import Entrenamiento from "../screens/Entrenamiento/Entrenamiento";
 import Calendario from "../screens/Calendario/Calendario";
+import DetallesCita from "../screens/Calendario/DetallesCita";
 import Rutinas from "../screens/Rutinas/Rutinas";
 import Progreso from "../screens/Progreso/Progreso";
 import Perfil from "../screens/Perfil/Perfil";
@@ -212,7 +213,7 @@ const FooterTabs = () => {
     >
       <Tab.Screen name="Rutinas" component={RutinasStack} />
       <Tab.Screen name="Entrenamiento" component={Entrenamiento} />
-      <Tab.Screen name="Calendario" component={Calendario} />
+      <Tab.Screen name="Calendario" component={StackCalendar} />
       <Tab.Screen name="Progreso" component={ProgressBodyMeasuresStackScreen} />
       <Tab.Screen name="Mas" component={Mas} />
       <Tab.Screen name="Chat" component={ChatStack} />
@@ -247,6 +248,21 @@ const MainStack = () => {
   );
 };
 
+
+const CalendarStack = createNativeStackNavigator();
+const StackCalendar = () => {
+  return (
+    <CalendarStack.Navigator
+    initialRouteName="Calendario"
+    screenOptions={{
+      headerShown: false,
+    }}
+    >
+      <CalendarStack.Screen name="Calendario" component={Calendario} />
+      <CalendarStack.Screen name="DetallesCita" component={DetallesCita} />
+    </CalendarStack.Navigator>
+    );
+  }
 
 const TrainingStack = createNativeStackNavigator();
 
