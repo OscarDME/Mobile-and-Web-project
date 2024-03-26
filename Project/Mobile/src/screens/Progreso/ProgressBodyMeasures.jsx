@@ -3,6 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { LineChart } from 'react-native-chart-kit'; 
 import { AntDesign } from '@expo/vector-icons';
 import { SelectList } from 'react-native-dropdown-select-list'
+import {BodyMeasures} from './DATA_MEASURES'
+import { Ionicons } from "@expo/vector-icons";
+
 
 const ProgressBodyMeasures = ({ navigation }) => {
   const [selected, setSelected] = useState("Cuello");
@@ -35,6 +38,8 @@ const ProgressBodyMeasures = ({ navigation }) => {
           setSelected={setSelected} 
           data={measures} 
           placeholder="Selecciona una medida"
+          searchPlaceholder="Buscar..."
+          notFoundText="No se encontraron resultados"
         />
     </View>
     
@@ -45,7 +50,7 @@ const ProgressBodyMeasures = ({ navigation }) => {
         chartConfig={{
           backgroundColor: '#ee',
           backgroundGradientFrom: '#ee',
-          backgroundGradientTo: '#eee',
+          backgroundGradientTo: '#ee',
           decimalPlaces: 2,
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
@@ -56,18 +61,23 @@ const ProgressBodyMeasures = ({ navigation }) => {
         withHorizontalLines={true}
         withVerticalLabels={true}
       />
-      <View>
+      <View style={styles.headerWithIcon}>
         <Text style={styles.headerHistory}>Historial de medidas</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('IndividualBodyMeasure')}>
+          <Ionicons name="add-circle-outline" size={24} color="black" />
+        </TouchableOpacity>
       </View>
       <ScrollView style={styles.contentContainer}>
-      <TouchableOpacity onPress={() => navigation.navigate('IndividualBodyMeasure')} style={styles.item}>
-            <Text style={styles.item}>20/03/2024</Text>
+      {BodyMeasures.map((measure) => (
+          <TouchableOpacity
+            key={measure.id}
+            onPress={() => navigation.navigate('IndividualBodyMeasure', { measureDetails: measure })}
+            style={styles.item}
+          >
+            <Text style={styles.item}>{measure.fecha}</Text>
             <AntDesign name="right" size={24} color="black" />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('IndividualBodyMeasure')} style={styles.item}>
-            <Text style={styles.item}>20/03/2023</Text>
-            <AntDesign name="right" size={24} color="black" />
-      </TouchableOpacity>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
     </View>
   );
@@ -79,16 +89,16 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 22,
+    paddingTop: 10,
   },
 
   chart: {
-    marginVertical: 8,
+    marginVertical: 16,
     borderRadius: 16,
   },
   headerHistory: {
     fontSize: 24,
-    marginTop: 16,
+    marginTop: 5,
   },
   item: {
     flexDirection: 'row',
@@ -108,7 +118,13 @@ const styles = StyleSheet.create({
   },
   select:{
     width: '80%',
-  }
+  }, headerWithIcon: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '80%', // Adjust the width as needed
+    paddingVertical: 5,
+  },
 });
 
 export default ProgressBodyMeasures;
