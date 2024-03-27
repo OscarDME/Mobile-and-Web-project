@@ -5,6 +5,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { SelectList } from 'react-native-dropdown-select-list'
 import {BodyMeasures} from './DATA_MEASURES'
 import { Ionicons } from "@expo/vector-icons";
+import { Dimensions } from "react-native";
+const screenWidth = Dimensions.get("window").width;
 
 
 const ProgressBodyMeasures = ({ navigation }) => {
@@ -15,10 +17,11 @@ const ProgressBodyMeasures = ({ navigation }) => {
     datasets: [
       {
         data: [10, 11],
-        strokeWidth: 2, // optional
       },
     ],
   };  
+
+
   const measures = [
     {key: 'cuello', value: 'Cuello'},
     {key: 'pecho', value: 'Pecho'},
@@ -41,23 +44,31 @@ const ProgressBodyMeasures = ({ navigation }) => {
           searchPlaceholder="Buscar..."
           notFoundText="No se encontraron resultados"
         />
+      <SelectList 
+          setSelected={setSelected} 
+          data={measures} 
+          placeholder="Tiempo"
+          searchPlaceholder="Buscar..."
+          notFoundText="No se encontraron resultados"
+        />
     </View>
-    
       <LineChart
         data={data}
-        width={320} 
+        width={screenWidth} 
         height={220}
         chartConfig={{
-          backgroundColor: '#ee',
-          backgroundGradientFrom: '#ee',
-          backgroundGradientTo: '#ee',
-          decimalPlaces: 2,
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        backgroundGradientFrom: "#ee",
+        backgroundGradientFromOpacity: 0,
+        backgroundGradientTo: "#ee",
+        backgroundGradientToOpacity: 0.5,
+        labelColor: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
+        color: (opacity = 1) => `rgba(7, 144, 207, ${opacity})`,
+        strokeWidth: 3, 
+        fillShadowGradientFrom: "rgba(7, 144, 207, 1)",
+        fillShadowGradientTo: "rgba(255, 255, 255, 0)",
         }}
         bezier
         style={styles.chart}
-        withShadow={false}
         withHorizontalLines={true}
         withVerticalLabels={true}
       />
@@ -117,7 +128,12 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   select:{
-    width: '80%',
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
   }, headerWithIcon: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import { View, Text, Button, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Button, ScrollView, TouchableOpacity, StyleSheet, ViewBase } from 'react-native';
 import ProgressBodyMeasures from './ProgressBodyMeasures';
 import ProgressExercise from './ProgressExercise';
+import Achievements from './Achievements';
 
 const Progreso = ({ navigation }) => {
 
@@ -17,8 +18,11 @@ const Progreso = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.title}>Progreso</Text>
       </View>
-    <View
-    style={styles.screenContainer}
+      <View>
+      <ScrollView
+          horizontal
+          style={styles.scrollContainer}
+          showsHorizontalScrollIndicator={false}
         >
           <TouchableOpacity
           onPress={() => handleScreenChange("ProgressBodyMeasures")}
@@ -38,13 +42,26 @@ const Progreso = ({ navigation }) => {
           >
             <Text>Ejercicios</Text>
           </TouchableOpacity>
-    </View>
+          <TouchableOpacity
+          onPress={() => handleScreenChange("Achievements")}
+            style={[
+              styles.screenButton,
+              selectedScreen === "Achievements" ? styles.selectedButton : null,
+            ]}
+          >
+            <Text>Logros</Text>
+          </TouchableOpacity>
+          </ScrollView>
+          </View>
     <View style={styles.contentContainer}>
         {selectedScreen === "ProgressBodyMeasures" ? (
           <ProgressBodyMeasures navigation={navigation}/>
         ) : (
+          selectedScreen === "Achievements" ? (
+          <Achievements navigation={navigation}/>
+        ) : (
           <ProgressExercise navigation={navigation}/>
-        )}
+        ))}
     </View>
     </>
   );
@@ -59,10 +76,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    width: 170,
     height: 40,
     backgroundColor: "#e0e0e0",
     borderRadius: 20,
+    marginHorizontal: 5,
   },screenContainer:{
     display: "flex",
     flexDirection: "row",
@@ -76,6 +93,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+  },
+  scrollContainer: {
+    flexDirection: "row",
+    width: "100%",
   }
 });
 

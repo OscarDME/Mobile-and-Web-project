@@ -234,7 +234,6 @@ const IndividualBodyMeasure = ({navigation, route }) => {
             keyboardType="numeric"
           />
           <Text style={styles.suffix}>cm</Text>
-
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Bicep</Text>
