@@ -25,6 +25,8 @@ const ProgressExercise = ({ navigation }) => {
       },
     ],
   };  
+
+  
   const measures = [
     {key: 'cuello', value: 'Cuello'},
     {key: 'pecho', value: 'Pecho'},

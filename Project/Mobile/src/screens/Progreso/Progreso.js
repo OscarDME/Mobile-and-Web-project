@@ -3,6 +3,7 @@ import { View, Text, Button, ScrollView, TouchableOpacity, StyleSheet, ViewBase 
 import ProgressBodyMeasures from './ProgressBodyMeasures';
 import ProgressExercise from './ProgressExercise';
 import Achievements from './Achievements';
+import BenchMarking from './BenchMarking';
 
 const Progreso = ({ navigation }) => {
 
@@ -51,6 +52,15 @@ const Progreso = ({ navigation }) => {
           >
             <Text>Logros</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+          onPress={() => handleScreenChange("BenchMarking")}
+            style={[
+              styles.screenButton,
+              selectedScreen === "BenchMarking" ? styles.selectedButton : null,
+            ]}
+          >
+            <Text>Comparación de rendimiento</Text>
+          </TouchableOpacity>
           </ScrollView>
           </View>
     <View style={styles.contentContainer}>
@@ -59,7 +69,9 @@ const Progreso = ({ navigation }) => {
         ) : (
           selectedScreen === "Achievements" ? (
           <Achievements navigation={navigation}/>
-        ) : (
+        ) : ( selectedScreen === "BenchMarking" ? (
+          <BenchMarking navigation={navigation}/>
+        ):
           <ProgressExercise navigation={navigation}/>
         ))}
     </View>
