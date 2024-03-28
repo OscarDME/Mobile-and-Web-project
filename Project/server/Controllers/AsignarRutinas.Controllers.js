@@ -98,12 +98,23 @@ import { querys } from "../Database/querys.js";
                 let idSerieActual; 
           
             if (!set.isDropSet) {
-              // Insertar el set principal y obtener su ID
-              const resultSerie = await pool.request()
+              const segundosTotales = set.tiempoEnSegundos; // Asegúrate de que este es el nombre correcto de la propiedad
+
+              // Convertir segundos a formato HH:MM:SS
+              let horas = Math.floor(segundosTotales / 3600).toString().padStart(2, '0');
+              let minutos = Math.floor((segundosTotales % 3600) / 60).toString().padStart(2, '0');
+              let segundos = (segundosTotales % 60).toString().padStart(2, '0');
+              let tiempoComoTime = `${horas}:${minutos}:${segundos}`;
+              if (tiempoComoTime === "00:00:00") {
+                tiempoComoTime = null;
+            }            
+
+                const resultSerie = await pool.request()
                 .input("repeticiones", sql.Int, set.repeticiones)
                 .input("peso", sql.Decimal(10, 2), set.peso) // Asumiendo que peso puede ser decimal
+                .input("tiempo", sql.Time, tiempoComoTime) // Asumiendo que peso puede ser decimal
                 .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
-                .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;");
+                .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;");
               idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
               lastSetId = idSerieActual; // Actualizar lastSetId para ser usado en drop sets
             } else {
@@ -111,6 +122,7 @@ import { querys } from "../Database/querys.js";
               const resultSerie = await pool.request()
                 .input("repeticiones", sql.Int, set.repeticiones)
                 .input("peso", sql.Decimal(10, 2), set.peso)
+                .input("tiempo", sql.Int, set.tiempo)
                 .input("ID_SeriePrincipal", sql.Int, lastSetId) // Usar lastSetId para relacionar el dropset con su set principal
                 .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, @ID_SeriePrincipal); SELECT SCOPE_IDENTITY() AS ID_Serie;");
               idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
@@ -254,17 +266,69 @@ import { querys } from "../Database/querys.js";
         );
       const fechaAsignacion = new Date().toISOString();
   
-      await pool
+      const asignarRutinaResult = await pool
+      .request()
+      .input("fecha_asignacion", sql.DateTime, fechaAsignacion)
+      .input("fecha_eliminacion", sql.DateTime, null)
+      .input("fecha_inicio", sql.DateTime, fechaInicio)
+      .input("fecha_fin", sql.DateTime, fechaFin)
+      .input("ID_Rutina", sql.Int, rutinaId)
+      .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil)
+      .input("ID_Usuario_WEB", sql.VarChar, ID_Usuario_WEB)
+      .query(querys.createAsignarRutinas + "; SELECT SCOPE_IDENTITY() AS ID_Rutina_Asignada;");
+
+        // Asegúrate de acceder correctamente al ID_Rutina_Asignada devuelto por la consulta
+        const ID_Rutina_Asignada = asignarRutinaResult.recordset[0].ID_Rutina_Asignada;
+
+        console.log("ID_Rutina_Asignada:", ID_Rutina_Asignada);
+
+      // Convertir fechas de inicio y fin a objetos Date
+    let currentDate = new Date(fechaInicio);
+    const endDate = new Date(fechaFin);
+
+    while (currentDate <= endDate) {
+      // Obtener el ID_Dia basado en el día de la semana de currentDate
+      const dayOfWeek = currentDate.getDay(); // Domingo = 0, Lunes = 1, ..., Sábado = 6
+      const ID_Dia = dayOfWeek + 1; // Ajustar según cómo estén definidos tus ID_Dia
+
+      const diasEntrenoResult = await pool
         .request()
-        .input("fecha_asignacion", sql.DateTime, fechaAsignacion)
-        .input("fecha_eliminacion", sql.DateTime, null)
-        .input("fecha_inicio", sql.DateTime, fechaInicio)
-        .input("fecha_fin", sql.DateTime, fechaFin)
         .input("ID_Rutina", sql.Int, rutinaId)
-        .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil)
-        .input("ID_Usuario_WEB", sql.VarChar, ID_Usuario_WEB)
-        .query(querys.createAsignarRutinas);
-  
+        .input("ID_Dia", sql.Int, ID_Dia)
+        .query("SELECT ID_Dias_Entreno FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina AND ID_Dia = @ID_Dia");
+
+      for (const row of diasEntrenoResult.recordset) {
+        const ID_Dias_Entreno = row.ID_Dias_Entreno;
+
+        const seriesResult = await pool
+          .request()
+          .input("ID_Dias_Entreno", sql.Int, ID_Dias_Entreno)
+          .query(`
+            SELECT CS.ID_Serie
+            FROM ConjuntoSeries CS
+            JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+            WHERE BS.ID_EjerciciosDia IN (
+              SELECT ID_EjerciciosDia FROM EjerciciosDia WHERE ID_Dias_Entreno = @ID_Dias_Entreno
+            )
+          `);
+
+        for (const serie of seriesResult.recordset) {
+          await pool
+            .request()
+            .input("ID_Serie", sql.Int, serie.ID_Serie)
+            .input("ID_Rutina_Asignada", sql.Int, ID_Rutina_Asignada)
+            .input("fecha", sql.Date, currentDate)
+            .input("completado", sql.Bit, 0) 
+            .query(`
+              INSERT INTO ResultadoSeriesUsuario (ID_Serie, ID_Rutina_Asignada, fecha, completado)
+              VALUES (@ID_Serie, @ID_Rutina_Asignada, @fecha, @completado)
+            `);
+        }
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
       res.status(201).json({
         message: "Rutina creada y asignada correctamente para el cliente.",
       });
@@ -273,6 +337,7 @@ import { querys } from "../Database/querys.js";
       res.status(500).json({ error: error.message });
     }
   };
+
   
   export const getAssignedRoutines = async (req, res) => {
     const ID_Usuario  = req.params.id; // Asume que obtienes el ID del usuario desde los parámetros del request

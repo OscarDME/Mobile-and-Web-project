@@ -3,6 +3,8 @@ import {Alert, View, Text, StyleSheet, TouchableOpacity, TextInput,Keyboard, Tou
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Progress from 'react-native-progress';
 import { Ionicons } from '@expo/vector-icons';
+import config from "../../utils/conf";
+
 
 const WorkoutScreen = ({route, navigation}) => {
 
@@ -14,11 +16,12 @@ const WorkoutScreen = ({route, navigation}) => {
   const [timer, setTimer] = useState(workoutSession.session[currentSetIndex].rest); 
   const [isResting, setIsResting] = useState(false); 
   const [cardioTime, setCardioTime] = useState(
-    workoutSession.session[currentSetIndex].exerciseToWork.type === "Cardiovascular" ? 
+    workoutSession.session[currentSetIndex].exerciseToWork.modalidad === "Cardiovascular" ? 
     workoutSession.session[currentSetIndex].time : 0
   );
+
   const [trainingCompleted, setTrainingCompleted] = useState(false);
-  const disableSkipButton = isResting && workoutSession.session[currentSetIndex].exerciseToWork.type !== "Cardiovascular";
+  const disableSkipButton = isResting && workoutSession.session[currentSetIndex].exerciseToWork.modalidad !== "Cardiovascular";
   
   const [cardioInProgress, setCardioInProgress] = useState(false);
 
@@ -73,8 +76,9 @@ const WorkoutScreen = ({route, navigation}) => {
     }, 1000);
   };
   
-  const finishCardio = () => {
+  const finishCardio = async () => {
     setCardioInProgress(false);
+    await updateExerciseData(); 
     console.log(`Ejercicio cardiovascular terminado con ${cardioTime} segundos restantes.`);
   
     const updatedSession = { ...sessionCopy };
@@ -110,8 +114,10 @@ const WorkoutScreen = ({route, navigation}) => {
   }, [isResting, timer]);
 
   useEffect(() => {
+    const handleRestFinishAndUpdate = async () => {
     if (timer === 0 && isResting) {
       setIsResting(false); // Termina el descanso
+      await updateExerciseData(); 
       if (currentSetIndex < workoutSession.session.length - 1) {
         setCurrentSetIndex(currentSetIndex + 1); // Mueve al siguiente set
         setWeight(workoutSession.session[currentSetIndex + 1].weight.toString());
@@ -123,7 +129,7 @@ const WorkoutScreen = ({route, navigation}) => {
           // Entrenamiento completado
           console.log('Entrenamiento Finalizado. Resumen de pesos, repeticiones y tiempo utilizados:');
           sessionCopy.session.forEach((set, index) => {
-            if(set.exerciseToWork.type === "Cardiovascular") {
+            if(set.exerciseToWork.modalidad === "Cardiovascular") {
               // Para ejercicios cardiovasculares, mostrar el tiempo en lugar de peso y repeticiones
               console.log(`Set ${index + 1}: Ejercicio: ${set.exerciseToWork.name}, Tiempo realizado: ${set.time} segundos`);
             } else {
@@ -135,6 +141,8 @@ const WorkoutScreen = ({route, navigation}) => {
         }
       }
     }
+  };
+  handleRestFinishAndUpdate();
   }, [timer, isResting, currentSetIndex, workoutSession.session, sessionCopy]);
 
   useEffect(() => {
@@ -154,7 +162,7 @@ useEffect(() => {
     setWeight(currentExercise.weight.toString());
     setReps(currentExercise.reps.toString());
     // Configura el tiempo de descanso o el tiempo del ejercicio cardiovascular
-    if (currentExercise.exerciseToWork.type === "Cardiovascular") {
+    if (currentExercise.exerciseToWork.modalidad === "Cardiovascular") {
       setCardioTime(currentExercise.time);
     } else {
       setTimer(currentExercise.rest);
@@ -165,7 +173,7 @@ useEffect(() => {
   
   
 
-  const handleExitPress = () => {
+  const handleExitPress = async () => {
     Alert.alert(
       "Terminar Entrenamiento",
       "¿Estás seguro de que quieres terminar el entrenamiento?",
@@ -177,11 +185,10 @@ useEffect(() => {
         },
         {
           text: "Sí", onPress: () => {
-            // Antes de finalizar, ajusta los sets no realizados.
             const updatedSession = sessionCopy.session.map((set, index) => {
               if (index >= currentSetIndex) {
                 // Para ejercicios cardiovasculares no realizados, ajusta el tiempo a 0
-                if (set.exerciseToWork.type === "Cardiovascular") {
+                if (set.exerciseToWork.modalidad === "Cardiovascular") {
                   return { ...set, time: 0 };
                 }
                 return { ...set, weight: 0, reps: 0 };
@@ -201,7 +208,7 @@ useEffect(() => {
             // Log de salida para debug. Remover o reemplazar según se requiera.
             console.log('Entrenamiento Finalizado Prematuramente. Resumen final:');
             updatedSession.forEach((set, index) => {
-              if(set.exerciseToWork.type === "Cardiovascular") {
+              if(set.exerciseToWork.modalidad === "Cardiovascular") {
                 // Para ejercicios cardiovasculares, mostrar el tiempo en lugar de peso y repeticiones
                 console.log(`Set ${index + 1}: Ejercicio: ${set.exerciseToWork.name}, Tiempo realizado: ${set.time} segundos`);
               } else {
@@ -255,7 +262,7 @@ useEffect(() => {
               const updatedSession = { ...sessionCopy };
               const currentExercise = updatedSession.session[currentSetIndex];
 
-              if (currentExercise.exerciseToWork.type === "Cardiovascular") {
+              if (currentExercise.exerciseToWork.modalidad === "Cardiovascular") {
                   currentExercise.time = 0; // Ajusta el tiempo a 0 para cardio
               } else {
                   currentExercise.weight = 0; // Ajusta peso y repeticiones a 0
@@ -271,6 +278,42 @@ useEffect(() => {
       ]
     );
   };
+
+
+
+  const updateExerciseData = async () => {
+    const currentExercise = workoutSession.session[currentSetIndex];
+    console.log(currentExercise);
+    const updateData = {
+      ID_ResultadoSeriesUsuario: currentExercise.idResultado, // Asume que tienes un identificador único por serie
+      repeticiones: parseInt(reps, 10),
+      peso: parseFloat(weight),
+      tiempo: cardioTime, // Asume que ya está en segundos para ejercicios cardiovasculares
+      completado: true, // Marcar como completado
+    };
+    console.log(updateData);
+  
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/entrenamiento`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error al actualizar datos del ejercicio');
+      }
+  
+      // Actualiza la UI o estado según sea necesario
+      console.log('Datos del ejercicio actualizados correctamente');
+  
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
   
 
   const startRestTimer = () => {
@@ -303,7 +346,7 @@ useEffect(() => {
 
 
 
-      {workoutSession.session[currentSetIndex].exerciseToWork.type === "Cardiovascular" ? (
+      {workoutSession.session[currentSetIndex].exerciseToWork.modalidad === "Cardiovascular" ? (
           // Contenido específico para ejercicios cardiovasculares
           <View style={styles.cardioContainer}>
             <Text style={styles.timerLabel}>Tiempo:</Text>

@@ -722,8 +722,9 @@ export const createCompleteRutina = async (req, res) => {
             const resultSerie = await pool.request()
               .input("repeticiones", sql.Int, set.reps)
               .input("peso", sql.Decimal(10, 2), set.weight) // Asumiendo que peso puede ser decimal
+              .input("tiempo", sql.Time, set.time) // Asumiendo que peso puede ser decimal
               .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
-              .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;");
+              .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;");
             idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
             lastSetId = idSerieActual; // Actualizar lastSetId para ser usado en drop sets
           } else {
@@ -903,7 +904,8 @@ export const getCompleteRutinas = async (req, res) => {
         // Obtener ejercicios para cada día de entrenamiento
         const ejerciciosDiaResult = await pool.request()
           .input('ID_Dias_Entreno', sql.Int, dia.ID_Dias_Entreno)
-          .query("SELECT ED.*,E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, DATEDIFF(SECOND,'00:00:00', ED.descanso) AS DescansoEnSegundos FROM EjerciciosDia ED JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo WHERE ED.ID_Dias_Entreno = @ID_Dias_Entreno;");
+          .query("SELECT ED.*,E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, DATEDIFF(SECOND,'00:00:00', ED.descanso) AS DescansoEnSegundos FROM EjerciciosDia ED LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo WHERE ED.ID_Dias_Entreno = @ID_Dias_Entreno;");
+
         dia.ejercicios = ejerciciosDiaResult.recordset;
 
         for (const ejercicio of dia.ejercicios) {
@@ -924,7 +926,8 @@ export const getCompleteRutinas = async (req, res) => {
               // Finalmente, obtener las series vinculadas a cada ConjuntoSeries
               const seriesResult = await pool.request()
                 .input('ID_Serie', sql.Int, conjuntoSerie.ID_Serie)
-                .query('SELECT * FROM Serie WHERE ID_Serie = @ID_Serie');
+                .query("SELECT ID_Serie, repeticiones, peso, FORMAT((DATEPART(HOUR, tiempo) * 60) + DATEPART(MINUTE, tiempo), '00') + ':' + FORMAT(DATEPART(SECOND, tiempo), '00') as tiempoEnMinutos, (DATEPART(HOUR, tiempo) * 3600) + (DATEPART(MINUTE, tiempo) * 60) + DATEPART(SECOND, tiempo) as tiempoEnSegundos, ID_SeriePrincipal FROM Serie WHERE ID_Serie = @ID_Serie");
+
               conjuntoSerie.series = seriesResult.recordset;
             }
           }

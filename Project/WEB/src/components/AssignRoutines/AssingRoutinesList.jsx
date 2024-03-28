@@ -125,63 +125,132 @@ export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
                       </div>
                 </div>
                 
-                 {expandedRow === routine.ID_Rutina && (
-  <div className="routine-info">
-{routine.diasEntreno.map((day) => (
-      <div key={day.ID_Dias_Entreno} className={`routine-day-info ${day.ID_Dias_Entreno % 2 === 0 ? 'day-even' : 'day-odd'}`}>
-        <div className={`routine-day ${expandedDay === day.ID_Dias_Entreno ? 'selected' : ''}`} onClick={() => handleDayClick(day.ID_Dias_Entreno)}>
-          <i className={`bi ${expandedDay === day.ID_Dias_Entreno ? 'bi-caret-down-fill' : 'bi-caret-right-fill'} day-icon`}></i>
-          {day.NombreDia}
-        </div>
-        {expandedDay === day.ID_Dias_Entreno && (
-          <div className='day-block'>
-          {day.ejercicios.map((exercise, exerciseIndex) => (
-  <div key={exercise.ID_Ejercicio} className='exercise-block'>
-    <ul className={`exercise-list ${exerciseIndex % 2 === 0 ? 'exercise-even' : 'exercise-odd'}`}>
-      <li className='exercise-row'>
-        <div className='exercise-name'>
-          <h5>{exercise.ejercicio}</h5>
-          {/* Asumiendo que ToolTip y la información de ejercicio a mostrar se ajustan a tus necesidades */}
-          <ToolTip muscles={exercise.Musculo} difficulty={exercise.Dificultad} material={exercise.Equipo} type={exercise.Tipo_Ejercicio}>
-            <i className="bi bi-info-circle-fill info-icon"></i>
-          </ToolTip>
-        </div>
+                {expandedRow === routine.ID_Rutina && (
+              <div className="routine-info">
+                {routine.diasEntreno.map((day) => (
+                  <div
+                    key={day.ID_Dias_Entreno}
+                    className={`routine-day-info ${
+                      day.ID_Dias_Entreno % 2 === 0 ? "day-even" : "day-odd"
+                    }`}
+                  >
+                    <div
+                      className={`routine-day ${
+                        expandedDay === day.ID_Dias_Entreno ? "selected" : ""
+                      }`}
+                      onClick={() => handleDayClick(day.ID_Dias_Entreno)}
+                    >
+                      <i
+                        className={`bi ${
+                          expandedDay === day.ID_Dias_Entreno
+                            ? "bi-caret-down-fill"
+                            : "bi-caret-right-fill"
+                        } day-icon`}
+                      ></i>
+                      {day.NombreDia}
+                    </div>
+                    {expandedDay === day.ID_Dias_Entreno && (
+                      <div className="day-block">
+                        {day.ejercicios.map((exercise, exerciseIndex) => (
+                          <div
+                            key={exercise.ID_Ejercicio}
+                            className="exercise-block"
+                          >
+                            <ul
+                              className={`exercise-list ${
+                                exerciseIndex % 2 === 0
+                                  ? "exercise-even"
+                                  : "exercise-odd"
+                              }`}
+                            >
+                              <li className="exercise-row">
+                                <div className="exercise-name">
+                                  <h5>{exercise.ejercicio}</h5>
+                                  {/* Asumiendo que ToolTip y la información de ejercicio a mostrar se ajustan a tus necesidades */}
+                                  <ToolTip
+                                    muscles={exercise.Musculo}
+                                    difficulty={exercise.Dificultad}
+                                    material={exercise.Equipo}
+                                    type={exercise.Tipo_Ejercicio}
+                                  >
+                                    <i className="bi bi-info-circle-fill info-icon"></i>
+                                  </ToolTip>
+                                </div>
+                                {/* Verificar si es un ejercicio cardiovascular */}
+                                {exercise.Modalidad === "Cardiovascular" && (
+                                  <>
+                                    {exercise.bloqueSets.map((bloque) =>
+                                      bloque.conjuntoSeries.map((conjunto) =>
+                                        conjunto.series.map((serie) => {
+                                          if (serie.tiempoEnMinutos) {
+                                            return (
+                                              <div>
+                                                Tiempo: {serie.tiempoEnMinutos}{" "}
+                                                minutos
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        })
+                                      )
+                                    )}
+                                  </>
+                                )}
 
-        {/* Mostrando información de descanso, ajustado para usar la propiedad directamente desde 'exercise' */}
-        <div>
-          {exercise.DescansoEnSegundos} segundos de descanso entre sets
-        </div>
-
-        {/* Iterar sobre los sets y los drop sets */}
-        {exercise.bloqueSets.flatMap((bloque, bloqueIndex) =>
-  bloque.conjuntoSeries.flatMap((conjunto, conjuntoIndex) => (
-    conjunto.series.map((serie, serieIndex) => {
-      // Determinar si es un drop set basado en si tiene ID_SeriePrincipal
-      const isDropSet = !!serie.ID_SeriePrincipal;
-      // Calcular el número de set, teniendo en cuenta si es un drop set
-      const setNumber = isDropSet ? `1` : `${conjuntoIndex + 1}`;
-      // Mostrar 'Drop-Set' para drop sets, 'Set' para sets normales
-      const setText = isDropSet ? `Drop-Set ${setNumber}` : `Set ${setNumber}`;
-
-      return (
-        <div key={`${bloqueIndex}-${conjuntoIndex}-${serieIndex}`} className='set-text'>
-          {setText}: {serie.repeticiones} repeticiones {serie.peso ? `con ${serie.peso} kg` : ''}
-        </div>
-      );
-    })
-  ))
-)}
-        <div className='superset-text'> {exercise.superset ? "Sí" : "No"} hace superserie con el siguiente ejercicio.</div>
-                                  </li>
-                                </ul>
-                              </div>
-                            ))}
+                                {/* Omitir la lógica para mostrar los sets y los drop sets si el ejercicio es cardiovascular */}
+                                {exercise.Modalidad !== "Cardiovascular" && (
+                                  <React.Fragment>
+                                    {/* Iterar sobre los sets y los drop sets */}
+                                    {exercise.bloqueSets.flatMap(
+                                      (bloque, bloqueIndex) =>
+                                        bloque.conjuntoSeries.flatMap(
+                                          (conjunto, conjuntoIndex) =>
+                                            conjunto.series.map(
+                                              (serie, serieIndex) => {
+                                                // Determinar si es un drop set basado en si tiene ID_SeriePrincipal
+                                                const isDropSet =
+                                                  !!serie.ID_SeriePrincipal;
+                                                // Calcular el número de set, teniendo en cuenta si es un drop set
+                                                const setNumber = isDropSet
+                                                  ? `1`
+                                                  : `${conjuntoIndex + 1}`;
+                                                // Mostrar 'Drop-Set' para drop sets, 'Set' para sets normales
+                                                const setText = isDropSet
+                                                  ? `Drop-Set ${setNumber}`
+                                                  : `Set ${setNumber}`;
+                                                return (
+                                                  <div
+                                                    key={`${bloqueIndex}-${conjuntoIndex}-${serieIndex}`}
+                                                    className="set-text"
+                                                  >
+                                                    {setText}:{" "}
+                                                    {serie.repeticiones}{" "}
+                                                    repeticiones{" "}
+                                                    {serie.peso
+                                                      ? `con ${serie.peso} kg`
+                                                      : ""}
+                                                  </div>
+                                                );
+                                              }
+                                            )
+                                        )
+                                    )}
+                                    <div className="superset-text">
+                                      {exercise.superset ? "Sí" : "No"} hace
+                                      superserie con el siguiente ejercicio.
+                                    </div>
+                                  </React.Fragment>
+                                )}
+                              </li>
+                            </ul>
                           </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
+                ))}
+              </div>
+            )}
               </li>
             ))}
           </ul>

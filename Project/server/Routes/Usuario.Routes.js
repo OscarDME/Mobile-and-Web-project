@@ -20,6 +20,7 @@ import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDi
 import { createCompleteRutinaForClient, getAssignedRoutines } from "../Controllers/AsignarRutinas.Controllers.js";
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
+import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
 
 
 //El que come callado repite
@@ -145,6 +146,9 @@ router.get("/citasaceptadas/:id", getAceptadasCitas);
 router.get("/citasaceptada/:id", getAcceptedCitasMobile);
 router.get("/citasaceptada2/:id/:selectedDate", getAcceptedCitasMobileAndDate);
 
+//Entrenamiento
+router.get("/entrenamiento/:id/:fecha", getWorkoutSession);
+router.post("/entrenamiento", updateWorkoutSeries);
 
 export default router;
 

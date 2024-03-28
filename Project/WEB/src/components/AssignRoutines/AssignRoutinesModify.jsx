@@ -69,7 +69,7 @@ export default function AssignRoutinesModify({ onBackToList, selectedUser ,selec
                           placeholder="..."
                           min={1}
                           max={600}
-                          value={Number(conjunto.series[0].tiempo)}
+                          value={Number(conjunto.series[0].tiempoEnSegundos)}
                           onChange={(event ,tiempo) => handleSetChange(dayIndex, exerciseIndex, 0, setIndex, 'tiempo', tiempo)}
                         />
                     </div>
