@@ -156,6 +156,7 @@
   overflow-x:hidden;
   overflow-y:scroll !important;
   margin-bottom: 0;
+  height: 100%;
 }
 .cardcontainer-colors2 .row-hard{
   color: var(--text);

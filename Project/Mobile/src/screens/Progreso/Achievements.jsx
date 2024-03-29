@@ -9,6 +9,7 @@ const screenWidth = Dimensions.get("window").width - 40;
 export default function Achievements() {
   //SOLAMENTE PONGO TODOS LOS TIPOS DE LOGROS QUE HAY, HABRA QUE MAPEAR SOBRE TODOS ESTOS
   return (
+    <>
     <ScrollView style={styles.container}>
       <View style={styles.item}>
       <View style={[styles.achievementHeader, styles.achievementConsistency]}>
@@ -50,6 +51,7 @@ export default function Achievements() {
         </View>
       </View>
     </ScrollView>
+    </>
   )
 }
 

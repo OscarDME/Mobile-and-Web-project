@@ -179,11 +179,16 @@ export default function Progress_Body_Measures({selectedUser}) {
     <>
       <div className='MainContainer'>
       <div className='body-measure-container'>
+      <div className='body-dropdown-container'>
+      <div>
+      Selecciona una medida para ver la gráfica
+      </div>
       <Dropdown 
             options={measureOptions} 
             selectedOption={selectedMeasureToShow} 
             onChange={handleMeasureToShowChange}
           />
+      </div>
       <Chart type="line" data={chartData} options={chartOptions} />
       </div>
       <div className='body-measure-container'>

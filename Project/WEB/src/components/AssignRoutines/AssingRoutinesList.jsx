@@ -15,8 +15,10 @@ export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
     const [expandedDay, setExpandedDay] = useState(null);
     const [showUpdateRoutinePage, setUpdateRoutinePage] = useState(false);
     const [routines, setRoutines] = useState([]);
+    const [selectedFilter, setSelectedFilter] = useState("all");
 
-    const loadRoutines = async () => {
+    const loadRoutines = async (filter) => {
+      setSelectedFilter(filter);
       try {
           const response = await fetch(`${config.apiBaseUrl}/rutinacompleta`); // Asume que este es tu endpoint para obtener las rutinas
           if (response.ok) {
@@ -43,6 +45,7 @@ export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
         setSelectedRoutine(null);
         setUpdatedRoutine(null);
         setUpdateRoutinePage(false);
+        setSelectedFilter("all");
     }, [selectedUser]);
 
 
@@ -110,6 +113,10 @@ export default function AssingRoutinesList({onRoutineUpdate, selectedUser}) {
       <div className='addclient'><i className="bi bi-search h4"></i></div>
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
     </div>
+    </div>
+    <div className='btn-filter-container'>
+    <button onClick={() => loadRoutines('all')} className={selectedFilter === 'all' ? 'selected-filter' : 'btn-filter-routine'}>Todas las rutinas</button>
+    <button onClick={() => loadRoutines('recommended')} className={selectedFilter === 'recommended' ? 'selected-filter' : 'btn-filter-routine'}>Rutinas sugeridas para {selectedUser.nombre}</button>
     </div>
           <ul className='cardcontainer-colors2'>
             {filteredExercises.map((routine) => (

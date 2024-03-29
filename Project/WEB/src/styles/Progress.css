@@ -14,12 +14,21 @@
   width: 50%;
   height: 80vh;
   justify-content: center;
+  row-gap: 50px;
+}
+.body-dropdown-container{
+  row-gap: 10px;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
 }
 
 .progress-exercise-container{
   display: flex;
   padding: 30px 100px;
   flex-direction: column;
+  row-gap: 50px;
 }
 
 .container3{

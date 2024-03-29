@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react'
 //import ".../styles/WhiteBoard.css";
 import { Chart } from 'primereact/chart';
-import Dropdown from '../DropDown';
+import Dropdown from '../DropdownCollections';
 
 export default function Progress_Excercises() {
 
   const [chartData, setChartData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
+  const [selectedExercise, setSelectedExercise] = useState(null);
 
   useEffect(() => {
     const documentStyle = getComputedStyle(document.documentElement);
@@ -81,8 +82,32 @@ export default function Progress_Excercises() {
     setChartOptions(options);
 }, []);
 
+const exercisesOptions = [
+    { label: "Cuello", value: 1 },
+    { label: "Bicep", value: 2 },
+    { label: "Cintura", value: 3 },
+    { label: "Cadera", value: 4 },
+    { label: "Pecho", value: 5 },
+    { label: "Muslo", value: 6 },
+  ];
+
+  const handleExerciseToShowChange = (selectedOption) => {
+    setSelectedExercise(selectedOption ?? null);
+    console.log(selectedOption);
+  };
+
   return (
     <div className='MainContainer progress-exercise-container'>
+          <div className='body-dropdown-container'>
+      <div>
+      Selecciona un ejercicio para ver la gráfica
+      </div>
+      <Dropdown 
+            options={exercisesOptions} 
+            selectedOption={selectedExercise} 
+            onChange={handleExerciseToShowChange}
+          />
+      </div>
           <Chart type="line" data={chartData} options={chartOptions} />
     </div>
   )
