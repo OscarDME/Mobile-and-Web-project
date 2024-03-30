@@ -39,7 +39,8 @@ export default function AssignRoutinesCalendar({client, selectedUser,updatedRout
         };
 
         fetchRoutines();
-    }, [senderId]);    
+    }, [senderId]);  
+      
     let today = new Date();
     let month = today.getMonth();
     let year = today.getFullYear();

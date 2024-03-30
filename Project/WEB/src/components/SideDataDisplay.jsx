@@ -66,10 +66,10 @@ export default function SideDataDisplay(props) {
             <div className='separator'>
             <h4>Cliente Seleccionado</h4>
             <div className={`selected-user-card`}>
-            { selectedUser.gender === "Mujer" && (
+            { selectedUser.sexo === "M" && (
               <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
             )}
-            {selectedUser.gender === "Hombre" &&(
+            {selectedUser.sexo === "H" &&(
               <div  className='icon'><i class="bi bi-person-standing"></i></div>
             )}
               <div>
@@ -97,10 +97,10 @@ export default function SideDataDisplay(props) {
               className={`card ${selectedUser && selectedUser.ID_Usuario === user.ID_Usuario ? 'selected' : ''}`}
               onClick={() => handleUserClick(user)}
             >
-            { user.gender === "Mujer" && (
+            { user.sexo === "M" && (
               <div  className='icon'><i class="bi bi-person-standing-dress"></i></div>
             )}
-            {user.gender === "Hombre" &&(
+            {user.sexo === "H" &&(
               <div  className='icon'><i class="bi bi-person-standing"></i></div>
             )}
               <div>
