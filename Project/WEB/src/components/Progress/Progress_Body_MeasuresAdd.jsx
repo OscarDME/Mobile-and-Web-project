@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { InputNumber } from 'primereact/inputnumber';
+import config from "../../utils/conf";
         
 export default function Progress_Body_MeasuresAdd({onBackToList, selectedUser}) {
   const [weight, setWeight] = useState(null);
@@ -18,9 +19,102 @@ export default function Progress_Body_MeasuresAdd({onBackToList, selectedUser}) 
   const [calfCircumference, setCalfCircumference] = useState(null);
 
   const handleSubmit = async (event) => {
+    event.preventDefault(); // Evitar el envío del formulario de forma predeterminada
+  
+    // Verificar que ningún campo se encuentre vacío
+    const allMeasures = [
+      weight, fat, pulse, muscleMass, bloodPressure,
+      neckCircumference, hipCircumference, waistCircumference,
+      chestCircumference, bicepsCircumference, shoulderCircumference,
+      forearmsCircumference, CuadricepsiCircumference, calfCircumference
+    ];
+  
+    if (allMeasures.some(measure => measure === null)) {
+      alert("Todos los campos deben ser completados.");
+      return;
+    }
+  
+    // Validaciones específicas
+    if (weight >= 300) {
+      alert("El peso debe ser menor a 300 kg.");
+      return;
+    }
+  
+    if (fat < 0 || fat > 100) {
+      alert("El porcentaje de grasa debe estar entre 0% y 100%");
+      return;
+    }
+  
+    if (muscleMass < 0 || muscleMass > 100) {
+      alert("La masa muscular neta debe estar entre 0 y 100.");
+      return;
+    }
+  
+    if (pulse < 0 || pulse > 300) {
+      alert("El ritmo cardíaco en reposo debe estar entre 0 bpm y 300 bpm");
+      return;
+    }
+  
+    if (bloodPressure < 0 || bloodPressure > 300) {
+      alert("La presión arterial debe estar entre 0 y 300.");
+      return;
+    }
+  
+    const bodyMeasures = [
+      neckCircumference, hipCircumference, waistCircumference,
+      chestCircumference, bicepsCircumference, shoulderCircumference,
+      forearmsCircumference, CuadricepsiCircumference, calfCircumference
+    ];
+  
+    if (bodyMeasures.some(measure => measure < 0 || measure > 200)) {
+      alert("Todas las medidas corporales deben estar entre 0 y 200 cm.");
+      return;
+    }
 
-    onBackToList();
+    const bodyMeasurementsData = {
+      porcentaje_grasa: fat,
+      masa_muscular: muscleMass,
+      presion_arterial: bloodPressure,
+      ritmo_cardiaco: pulse,
+      cuello: neckCircumference,
+      pecho: chestCircumference,
+      hombro: shoulderCircumference,
+      bicep: bicepsCircumference,
+      antebrazo: forearmsCircumference,
+      cintura: waistCircumference,
+      cadera: hipCircumference,
+      pantorrilla: calfCircumference,
+      muslo: CuadricepsiCircumference,
+      fecha: new Date().toISOString().slice(0, 10),
+      ID_UsuarioMovil: selectedUser.ID_Usuario,
+    };
+
+      console.log(bodyMeasurementsData);
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/createMilestone`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyMeasurementsData),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Algo salió mal al guardar el Hito.");
+        }
+  
+        // Respuesta del servidor
+        const result = await response.json();
+        console.log(result);
+        alert("Hito añadido con éxito.");
+
+        onBackToList(); 
+      } catch (error) {
+        console.error("Error al guardar el Hito:", error);
+        alert("Error al guardar el Hito.");
+      }
   }
+  
 
   return (
     <div className='container3 MainContainer'>
@@ -33,7 +127,7 @@ export default function Progress_Body_MeasuresAdd({onBackToList, selectedUser}) 
           <div>
             <div className="add_exercise_rows">
               Peso
-              <InputNumber value={weight} onValueChange={(e) => setWeight(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='kg' />
+              <InputNumber value={weight} onValueChange={(e) => setWeight(e.target.value)} maxFractionDigits={2} max={300} min={1} suffix='kg' />
             </div>
             <div className="add_exercise_rows">
               % de grasa
@@ -41,55 +135,55 @@ export default function Progress_Body_MeasuresAdd({onBackToList, selectedUser}) 
             </div>
             <div className="add_exercise_rows">
               Ritmo cardiaco en reposo
-              <InputNumber value={pulse} onValueChange={(e) => setPulse(e.target.value)} max={500} min={1} suffix='bpm' />
+              <InputNumber value={pulse} onValueChange={(e) => setPulse(e.target.value)} max={300} min={1} suffix='bpm' />
             </div>
             <div className="add_exercise_rows">
               Presión arterial
-              <InputNumber value={bloodPressure} onValueChange={(e) => setBloodPressure(e.target.value)} max={500} min={1} suffix='mm Hg' />
+              <InputNumber value={bloodPressure} onValueChange={(e) => setBloodPressure(e.target.value)} max={300} min={1} suffix='mm Hg' />
             </div>
             <div className="add_exercise_rows">
               Masa muscular neta
-              <InputNumber value={muscleMass} onValueChange={(e) => setMuscleMass(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='kg' />
+              <InputNumber value={muscleMass} onValueChange={(e) => setMuscleMass(e.target.value)} maxFractionDigits={2} max={100} min={1} suffix='kg' />
             </div>
           </div>
           <div>
             <div className="add_exercise_rows">
               Cuello
-              <InputNumber value={neckCircumference} onValueChange={(e) => setNeckCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={neckCircumference} onValueChange={(e) => setNeckCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Pecho
-              <InputNumber value={chestCircumference} onValueChange={(e) => setChestCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={chestCircumference} onValueChange={(e) => setChestCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Cintura
-              <InputNumber value={waistCircumference} onValueChange={(e) => setWaistCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={waistCircumference} onValueChange={(e) => setWaistCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Cadera
-              <InputNumber value={hipCircumference} onValueChange={(e) => setHipCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={hipCircumference} onValueChange={(e) => setHipCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Hombros
-              <InputNumber value={shoulderCircumference} onValueChange={(e) => setShoulderCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={shoulderCircumference} onValueChange={(e) => setShoulderCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
           </div>
           <div>
             <div className="add_exercise_rows">
               Bicep
-              <InputNumber value={bicepsCircumference} onValueChange={(e) => setBicepsCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={bicepsCircumference} onValueChange={(e) => setBicepsCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Antebrazo
-              <InputNumber value={forearmsCircumference} onValueChange={(e) => setForearmsCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={forearmsCircumference} onValueChange={(e) => setForearmsCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Muslos
-              <InputNumber value={CuadricepsiCircumference} onValueChange={(e) => setCuadricepsCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={CuadricepsiCircumference} onValueChange={(e) => setCuadricepsCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
             <div className="add_exercise_rows">
               Pantorrilla
-              <InputNumber value={calfCircumference} onValueChange={(e) => setCalfCircumference(e.target.value)} maxFractionDigits={2} max={500} min={1} suffix='cm' />
+              <InputNumber value={calfCircumference} onValueChange={(e) => setCalfCircumference(e.target.value)} maxFractionDigits={2} max={200} min={1} suffix='cm' />
             </div>
           </div>
         </div>

@@ -75,8 +75,8 @@ export default function CurrentExercises() {
           </div>
                   <ul className='cardcontainer'>
           {filteredExercises.map((exercise) => (
-            <li key={exercise.id} className={`row ${((selectedExercise && selectedExercise.id === exercise.id)) ? 'selected' : ''}`}>
-              <div onClick={() => handleRowClick(exercise)} className={`row_header ${((selectedExercise && selectedExercise.id === exercise.id)) ? 'selected' : ''}`}>
+            <li key={exercise.id} className={`row ${((selectedExercise && selectedExercise.ID_Ejercicio === exercise.ID_Ejercicio)) ? 'selected' : ''}`}>
+              <div onClick={() => handleRowClick(exercise)} className={`row_header ${((selectedExercise && selectedExercise.ID_Ejercicio === exercise.ID_Ejercicio)) ? 'selected' : ''}`}>
                 <div>
                   <div className='row_name'>{exercise.ejercicio}</div>
                   {/* Muestra tipo de ejercicio o músculo, dependiendo de si es cardiovascular */}
