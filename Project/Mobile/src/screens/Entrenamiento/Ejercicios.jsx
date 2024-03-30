@@ -225,6 +225,10 @@ useEffect(() => {
       ]
     );
   };
+
+  const doThis = async () =>{  //BORRAR ESTA MADRE
+    await updateExerciseData(); 
+  }
   
   
   const handleSkipSet = () => {
@@ -239,7 +243,7 @@ useEffect(() => {
         },
         {
           text: "Sí", onPress: () => {
-            // Logica para saltar el set
+            doThis();
             const updatedSession = {...sessionCopy};
             // Actualiza el set actual a 0 para peso y repeticiones
             updatedSession.session[currentSetIndex].weight = 0;

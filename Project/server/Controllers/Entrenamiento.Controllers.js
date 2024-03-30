@@ -95,7 +95,7 @@ const secondsToTimeFormat = (seconds) => {
 
 export const updateWorkoutSeries = async (req, res) => {
     const { ID_ResultadoSeriesUsuario, repeticiones, peso, tiempo, completado } = req.body;
-
+    console.log(ID_ResultadoSeriesUsuario);
     // Convertir los segundos a formato TIME (HH:MM:SS)
     const tiempoFormatoTime = secondsToTimeFormat(tiempo);
 
