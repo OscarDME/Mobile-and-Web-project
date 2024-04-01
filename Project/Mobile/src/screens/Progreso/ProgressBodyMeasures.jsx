@@ -57,9 +57,9 @@ const ProgressBodyMeasures = ({ navigation }) => {
         width={screenWidth} 
         height={220}
         chartConfig={{
-        backgroundGradientFrom: "#ee",
+        backgroundGradientFrom: "#EEEEEE",
         backgroundGradientFromOpacity: 0,
-        backgroundGradientTo: "#ee",
+        backgroundGradientTo: "#EEEEEE",
         backgroundGradientToOpacity: 0.5,
         labelColor: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
         color: (opacity = 1) => `rgba(7, 144, 207, ${opacity})`,

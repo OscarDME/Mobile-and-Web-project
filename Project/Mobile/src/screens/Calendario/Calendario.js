@@ -44,6 +44,10 @@ const Calendario = ({ navigation, route }) => {
   };
 
   const transformEventDates = (events, color, eventType, singleDay = false) => {
+    if (!Array.isArray(events)) {
+      console.error('Expected events to be an array, got:', events);
+      return {}; // Return empty object or handle as needed
+    }
     const markedDates = {};
     events.forEach(event => {
       let startDate, endDate;

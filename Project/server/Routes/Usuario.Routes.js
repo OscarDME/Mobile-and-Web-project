@@ -22,6 +22,7 @@ import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrai
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
+import { get1RMForExercise } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 
 
 //El que come callado repite
@@ -150,6 +151,9 @@ router.get("/citasaceptada2/:id/:selectedDate", getAcceptedCitasMobileAndDate);
 //Entrenamiento
 router.get("/entrenamiento/:id/:fecha", getWorkoutSession);
 router.post("/entrenamiento", updateWorkoutSeries);
+
+//Progreso de Ejercicios
+router.get("/RM/:id/:ejercicio", get1RMForExercise);
 
 //Hitos de progreso o medidas corporales
 router.post("/createMilestone", createMilestone);
