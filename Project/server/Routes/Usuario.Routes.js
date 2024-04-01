@@ -21,7 +21,7 @@ import { createCompleteRutinaForClient, getAssignedRoutines } from "../Controlle
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
-import { createMilestone, deleteMilestone, getIndividualMeasurements, getMilestones } from "../Controllers/Progress.Controllers.js";
+import { createMilestone, deleteMilestone, getIndividualMeasurements, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 
 
 //El que come callado repite
@@ -156,6 +156,7 @@ router.post("/createMilestone", createMilestone);
 router.get("/allMilestones/:id", getMilestones);
 router.get("/allMilestones/:id/:medida", getIndividualMeasurements);
 router.delete("/allMilestones/:id", deleteMilestone);
+router.patch("/allMilestones/:id", updateMilestone);
 
 
 export default router;

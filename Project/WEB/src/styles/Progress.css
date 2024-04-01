@@ -32,7 +32,7 @@
 }
 
 .container3{
-  padding-top: 20px;
+  padding-top: 10px;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -63,4 +63,33 @@
   overflow-x: hidden;
   overflow-y: scroll !important;
   margin-bottom: 0;
+}
+
+.col-3{
+  max-width: 50px;
+}
+
+.grid{
+  padding-top: 50px;
+  display: flex;
+  justify-content: space-around;
+  width: 350px;
+  flex-wrap: wrap;
+  margin-right: -.5rem;
+  margin-left: -.5rem;
+  margin-top: -.5rem;
+}
+
+
+.milestone-container{
+  width: 100% !important;
+  margin: 0;
+  background-color: var(--background);
+  display: flex;
+  flex-direction: column;
+}
+
+.images-container2{
+  align-self: center;
+  padding-bottom: 40px;
 }
