@@ -97,7 +97,7 @@ export default function Progress_Body_MeasuresAdd({onBackToList, selectedUser}) 
       cadera: hipCircumference,
       pantorrilla: calfCircumference,
       muslo: CuadricepsiCircumference,
-      fecha: new Date().toISOString().slice(0, 10),
+      fecha: new Date().toISOString(),
       ID_UsuarioMovil: selectedUser.ID_Usuario,
       estatura: height,
       peso: weight,

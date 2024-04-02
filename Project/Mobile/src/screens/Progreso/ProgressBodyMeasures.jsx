@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit'; 
 import { AntDesign } from '@expo/vector-icons';
@@ -7,53 +7,161 @@ import {BodyMeasures} from './DATA_MEASURES'
 import { Ionicons } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
 const screenWidth = Dimensions.get("window").width;
-
+import config from "../../utils/conf";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProgressBodyMeasures = ({ navigation }) => {
-  const [selected, setSelected] = useState("Cuello");
+  const [selectedMeasureToShow, setSelectedMeasureToShow] = useState('peso');
+  const [selectedInterval, setSelectedInterval] = useState('3MESES');
+  const [milestones, setMilestones] = useState([]);
+  const [chartData, setChartData] = useState({});
+  const [isLoadingChartData, setIsLoadingChartData] = useState(true);
 
-  const data = {
-    labels: ['15/01/24', '18/01/24'],
-    datasets: [
-      {
-        data: [10, 11],
-      },
-    ],
-  };  
+  const fetchMilestones = async () => {
+    try {
+      const oid = await AsyncStorage.getItem("userOID");
+        const response = await fetch(`${config.apiBaseUrl}/allMilestones/${oid}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
+        if (response.ok) {
+            const data = await response.json();
+            setMilestones(data);
+            console.log("Mediciones cargadas", data);
+        } else {
+            console.error("Error al obtener las mediciones:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Error al obtener las mediciones:", error);
+    }
+};
+
+const fetchGraphData = async () => {
+  if (!selectedMeasureToShow) {
+    console.log("No se ha seleccionado una medida para mostrar");
+    return;
+  }
+  setIsLoadingChartData(true);
+  try {
+    const oid = await AsyncStorage.getItem("userOID");
+      const response = await fetch(`${config.apiBaseUrl}/allMilestonesMobile/${oid}/${selectedMeasureToShow}/${selectedInterval}`, {
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+          },
+      });
+
+      if (response.ok) {
+        const { fechas, valores } = await response.json();
+        console.log("Respuesta del backend:", { fechas, valores });
+  
+        // Actualiza los datos del gráfico
+        setChartData({
+          labels: fechas, // Las fechas van en el eje X
+          datasets: [
+            {
+              data: valores,
+            }
+          ]
+        });
+        setIsLoadingChartData(false);
+        console.log("Datos del gráfico cargados", { fechas, valores });
+      } else {
+        setIsLoadingChartData(false);
+        console.error("Error al obtener los datos de la grafica:", response.statusText);
+      }
+    } catch (error) {
+      setIsLoadingChartData(false);
+      console.error("Error al obtener los datos de la grafica:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchGraphData();
+    fetchMilestones();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchMilestones();
+      fetchGraphData();
+    });
+  
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    fetchGraphData();
+    console.log("Datos del gráfico:", chartData);
+  }, [selectedMeasureToShow, selectedInterval]);
+
+
+  const measuresClient = [
+    { key: "cuello", value: "Cuello" },
+    { key: "estatura", value: "Estatura" },
+    { key: "peso", value: "Peso" },
+    { key: "IMC", value: "IMC" },
+    { key: "pecho", value: "Pecho" },
+    { key: "hombro", value: "Hombro" },
+    { key: "bicep", value: "Bicep" },
+    { key: "antebrazo", value: "Antebrazo" },
+    { key: "cintura", value: "Cintura" },
+    { key: "cadera", value: "Cadera" },
+    { key: "pantorilla", value: "Pantorilla" },
+    { key: "muslo", value: "Muslo" },
+    { key: "porcentaje_grasa", value: "Porcentaje grasa" },
+    { key: "masa_muscular", value: "Masa muscular" },
+    { key: "presion_arterial", value: "Presion arterial" },
+    { key: "ritmo_cardiaco", value: "Ritmo cardiaco" },
+  ];
 
   const measures = [
-    {key: 'cuello', value: 'Cuello'},
-    {key: 'pecho', value: 'Pecho'},
-    {key: 'hombros', value: 'Hombros'},
-    {key: 'bíceps', value: 'Bíceps'},
-    {key: 'antebrazo', value: 'Antebrazo'},
-    {key: 'cintura', value: 'Cintura'},
-    {key: 'cadera', value: 'Cadera'},
-    {key: 'pantorrillas', value: 'Pantorrillas'},
-    {key: 'muslos', value: 'Muslos'},
+    {key: 'peso', value: 'Peso'},
+    {key: 'estatura', value: 'Estatura'},
+    {key: 'IMC', value: 'IMC'},
+  ];
+
+  const intervals = [
+    {key: 'SEMANA', value: '1 semana'},
+    {key: 'MES', value: '1 Mes'},
+    {key: '3MESES', value: '3 Meses'},
+    {key: '6MESES', value: '6 Meses'},
+    {key: 'ANO', value: '1 Año'},
+    {key: '3ANOS', value: '3 Años'},
+    {key: 'TODOS', value: 'Todas las medidas'},
   ];
 
   return (
     <View style={styles.container}>
     <View style={styles.select}>
     <SelectList 
-          setSelected={setSelected} 
-          data={measures} 
+          setSelected={(val) => setSelectedMeasureToShow(val)} 
+          data={measuresClient} 
+          onSelect={() => console.log(selectedMeasureToShow)}
           placeholder="Selecciona una medida"
           searchPlaceholder="Buscar..."
           notFoundText="No se encontraron resultados"
+          defaultOption={measures[0]}
+
         />
       <SelectList 
-          setSelected={setSelected} 
-          data={measures} 
+          setSelected={setSelectedInterval} 
+          data={intervals} 
           placeholder="Tiempo"
           searchPlaceholder="Buscar..."
           notFoundText="No se encontraron resultados"
+          defaultOption={intervals[2]}
         />
     </View>
+
+    {isLoadingChartData ? (
+      <Text>Cargando datos del gráfico...</Text>
+    ) : chartData.labels && chartData.labels.length > 0 ? ( 
       <LineChart
-        data={data}
+        data={chartData}
         width={screenWidth} 
         height={220}
         chartConfig={{
@@ -72,6 +180,10 @@ const ProgressBodyMeasures = ({ navigation }) => {
         withHorizontalLines={true}
         withVerticalLabels={true}
       />
+    ) : (
+      <Text style={styles.noDataText}>No hay suficientes datos para formar la gráfica</Text> 
+    )}
+
       <View style={styles.headerWithIcon}>
         <Text style={styles.headerHistory}>Historial de medidas</Text>
         <TouchableOpacity onPress={() => navigation.navigate('IndividualBodyMeasure')}>
@@ -79,13 +191,13 @@ const ProgressBodyMeasures = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.contentContainer}>
-      {BodyMeasures.map((measure) => (
+      {milestones.map((milestone) => (
           <TouchableOpacity
-            key={measure.id}
-            onPress={() => navigation.navigate('IndividualBodyMeasure', { measureDetails: measure })}
+            key={milestone.id}
+            onPress={() => navigation.navigate('IndividualBodyMeasure', { measureDetails: milestone })}
             style={styles.item}
           >
-            <Text style={styles.item}>{measure.fecha}</Text>
+            <Text style={styles.item}>{milestone.fecha}</Text>
             <AntDesign name="right" size={24} color="black" />
           </TouchableOpacity>
         ))}
@@ -125,7 +237,7 @@ const styles = StyleSheet.create({
   contentContainer:{
     alignContent: 'flex-start',
     width: '80%',
-    height: "100%",
+    height: "30%",
   },
   select:{
     flexDirection: 'row',
@@ -138,9 +250,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '80%', // Adjust the width as needed
+    width: '80%', 
     paddingVertical: 5,
-  },
+  },noDataText:{
+    paddingVertical:130,
+    fontSize:18,
+    marginHorizontal:10,
+  }
 });
 
 export default ProgressBodyMeasures;

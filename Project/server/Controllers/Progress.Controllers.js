@@ -203,3 +203,75 @@ export const getIndividualMeasurements = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+
+  export const getIndividualMeasurementsWithInterval = async (req, res) => {
+    const ID_Usuario = req.params.id;
+    const medida = req.params.medida;
+    const intervalo = req.params.intervalo;
+  
+    try {
+      const pool = await getConnection();
+      const mobileUserResult = await pool
+        .request()
+        .input("ID_Usuario", sql.VarChar, ID_Usuario)
+        .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+  
+      const ID_UsuarioMovil = mobileUserResult.recordset[0].ID_UsuarioMovil;
+      
+      // Define la parte WHERE de la consulta basada en el intervalo
+      let whereClause = "";
+      switch(intervalo.toUpperCase()) {
+        case 'SEMANA':
+          whereClause = "AND MC.fecha >= DATEADD(WEEK, -1, GETDATE())";
+          break;
+        case 'MES':
+          whereClause = "AND MC.fecha >= DATEADD(MONTH, -1, GETDATE())";
+          break;
+        case '3MESES':
+          whereClause = "AND MC.fecha >= DATEADD(MONTH, -3, GETDATE())";
+          break;
+        case '6MESES':
+          whereClause = "AND MC.fecha >= DATEADD(MONTH, -6, GETDATE())";
+          break;
+        case 'ANO':
+          whereClause = "AND MC.fecha >= DATEADD(YEAR, -1, GETDATE())";
+          break;
+        case '3ANOS':
+          whereClause = "AND MC.fecha >= DATEADD(YEAR, -3, GETDATE())";
+          break;
+        case 'TODOS':
+          whereClause = ""; // No añade ninguna condición adicional
+          break;
+        default:
+          // Manejo de intervalo desconocido
+          return res.status(400).json({ error: "Intervalo desconocido" });
+      }
+  
+      let query = `
+        SELECT 
+            CONVERT(char(10), MC.fecha, 126) AS fecha,
+            MC.${medida} AS valor
+        FROM 
+            Medidas_Corporales MC
+        WHERE 
+            MC.ID_UsuarioMovil = @ID_UsuarioMovil
+            ${whereClause}
+        ORDER BY 
+            MC.fecha DESC; 
+      `;
+  
+      const result = await pool.request()
+        .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil)
+        .query(query);
+  
+      const fechas = result.recordset.map(item => item.fecha);
+      const valores = result.recordset.map(item => item.valor);
+  
+      res.json({ fechas, valores });
+    } catch (error) {
+      console.error("Error al obtener las medidas corporales:", error.message);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+

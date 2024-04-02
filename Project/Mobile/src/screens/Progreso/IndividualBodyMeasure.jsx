@@ -16,6 +16,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
   const defaultMeasureDetails = {
     fecha: date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear(),
     peso: '',
+    estatura: '',
     porcentajeDeGrasa: '',
     IMC: '',
     masaMuscularNeta: '',
@@ -151,14 +152,14 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.suffix}>kg</Text>
         </View>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>% de grasa</Text>
+          <Text style={styles.label}>Altura</Text>
           <TextInput
             style={styles.input}
-            value={details.porcentajeDeGrasa !== '' ? String(details.porcentajeDeGrasa) : '-'}
+            value={details.estatura !== '' ? String(details.estatura) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
-          <Text style={styles.suffix}>%</Text>
+          <Text style={styles.suffix}>cm</Text>
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>IMC</Text>
@@ -172,10 +173,20 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.suffix}></Text>
         </View>
         <View style={styles.inputContainer}>
+          <Text style={styles.label}>% de grasa</Text>
+          <TextInput
+            style={styles.input}
+            value={details.porcentajeDeGrasa !== '' ? String(details.porcentaje_grasa) : '-'}
+            onChangeText={(text) => handleInputChange('pecho', text)}
+            keyboardType="numeric"
+          />
+          <Text style={styles.suffix}>%</Text>
+        </View>
+        <View style={styles.inputContainer}>
           <Text style={styles.label}>Masa Muscular</Text>
           <TextInput
             style={styles.input}
-            value={details.masaMuscularNeta !== '' ? String(details.masaMuscularNeta) : '-'}
+            value={details.masaMuscularNeta !== '' ? String(details.masa_muscular) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
@@ -185,7 +196,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Ritmo Cardiaco</Text>
           <TextInput
             style={styles.input}
-            value={details.ritmoCardiacoEnReposo !== '' ? String(details.ritmoCardiacoEnReposo) : '-'}
+            value={details.ritmoCardiacoEnReposo !== '' ? String(details.ritmo_cardiaco) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
@@ -195,7 +206,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Presión arterial</Text>
           <TextInput
             style={styles.input}
-            value={details.presionArterial !== '' ? String(details.presionArterial) : '-'}
+            value={details.presionArterial !== '' ? String(details.presion_arterial) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
@@ -229,7 +240,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Hombros</Text>
           <TextInput
             style={styles.input}
-            value={details.hombros !== '' ? String(details.hombros) : '-'}
+            value={details.hombros !== '' ? String(details.hombro) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
@@ -239,7 +250,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Bicep</Text>
           <TextInput
             style={styles.input}
-            value={details.biceps !== '' ? String(details.biceps) : '-'}
+            value={details.biceps !== '' ? String(details.bicep) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
@@ -283,7 +294,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Pantorrillas</Text>
           <TextInput
             style={styles.input}
-            value={details.pantorrillas !== '' ? String(details.pantorrillas) : '-'}
+            value={details.pantorrillas !== '' ? String(details.pantorrilla) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
@@ -294,7 +305,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Muslos</Text>
           <TextInput
             style={styles.input}
-            value={details.muslos !== '' ? String(details.muslos) : '-'}
+            value={details.muslos !== '' ? String(details.muslo) : '-'}
             onChangeText={(text) => handleInputChange('pecho', text)}
             keyboardType="numeric"
           />
