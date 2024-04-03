@@ -133,8 +133,6 @@ export const getIndividualMeasurements = async (req, res) => {
             MC.fecha DESC; 
       `;
   
-      // Si no se especifica una medida, podrías ajustar la consulta para devolver todas las medidas
-      // o manejarlo según la lógica de tu aplicación.
   
       const result = await pool.request()
         .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil)

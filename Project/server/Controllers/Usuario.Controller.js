@@ -228,3 +228,39 @@ export const getAllMobileUsersInfo = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' }); // Manejo de error de servidor
   }
 };
+
+
+
+//obtener el tipo de usuario a partir del id
+export const getMobileUserTypeByID = async (req, res) => {
+  const oid = req.params.oid; 
+
+  try {
+    const pool = await getConnection();
+
+    // Consulta para obtener la información de todos los usuarios móviles y su tipo
+    const result = await pool.request()
+    .input("oid", sql.VarChar, oid) 
+    .query(`
+      SELECT 
+        u.ID_Usuario, 
+        um.ID_Tipo, 
+        t.descripcion AS tipo_descripcion
+      FROM 
+        Usuario u
+      INNER JOIN UsuarioMovil um ON u.ID_Usuario = um.ID_Usuario
+      INNER JOIN Tipo t ON um.ID_Tipo = t.ID_Tipo
+      WHERE u.ID_Usuario = @oid
+    `);
+
+    // Verificar si se encontró información para los usuarios móviles
+    if (result.recordset.length > 0) {
+      res.json(result.recordset);
+    } else {
+      res.status(404).json({ message: "No se encontraron usuarios móviles" }); // Manejo de usuarios no encontrados
+    }
+  } catch (error) {
+    console.error('Error al obtener la información de los usuarios móviles:', error);
+    res.status(500).json({ error: 'Error interno del servidor' }); // Manejo de error de servidor
+  }
+};

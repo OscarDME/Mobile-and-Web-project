@@ -7,7 +7,8 @@ import {
     getUserAndType,
     getUserById, updateComparacionRendimiento,
     updateViajeGimnasio,
-getAllMobileUsersInfo
+getAllMobileUsersInfo,
+getMobileUserTypeByID
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
@@ -38,6 +39,7 @@ router.get("/user/:oid", getUserById);
 router.put('/Rendimiento/:id', updateComparacionRendimiento);
 router.put('/ViajeGimnasio/:id', updateViajeGimnasio);
 router.get("/mobileuser", getAllMobileUsersInfo);
+router.get("/userType/:oid", getMobileUserTypeByID);
 
 //Solicitudes
 router.post("/solicitud", createTrainerClientRequest);

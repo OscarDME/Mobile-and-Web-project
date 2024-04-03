@@ -9,6 +9,7 @@ import { Dimensions } from "react-native";
 const screenWidth = Dimensions.get("window").width;
 import config from "../../utils/conf";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { measure } from 'react-native-reanimated';
 
 const ProgressBodyMeasures = ({ navigation }) => {
   const [selectedMeasureToShow, setSelectedMeasureToShow] = useState('peso');
@@ -16,6 +17,8 @@ const ProgressBodyMeasures = ({ navigation }) => {
   const [milestones, setMilestones] = useState([]);
   const [chartData, setChartData] = useState({});
   const [isLoadingChartData, setIsLoadingChartData] = useState(true);
+  const [userType, setUserType] = useState(null);
+  const [measuresToShow, setMeasuresToShow] = useState([]);
 
   const fetchMilestones = async () => {
     try {
@@ -30,13 +33,53 @@ const ProgressBodyMeasures = ({ navigation }) => {
         if (response.ok) {
             const data = await response.json();
             setMilestones(data);
-            console.log("Mediciones cargadas", data);
         } else {
             console.error("Error al obtener las mediciones:", response.statusText);
         }
     } catch (error) {
         console.error("Error al obtener las mediciones:", error);
     }
+};
+
+const fetchUserType = async () => {
+  try {
+    const oid = await AsyncStorage.getItem("userOID");
+      const response = await fetch(`${config.apiBaseUrl}/userType/${oid}`, {
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+          },
+      });
+
+      if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            setUserType(data[0].tipo_descripcion);
+          } else {
+            console.error('No se encontraron datos para el usuario:', oid);
+          }
+          console.log("Tipo de usuario", userType);
+
+          switch (userType) {
+            case 'cliente':
+              setMeasuresToShow(measuresClient);
+              console.log("Medidas cliente:", measuresToShow);
+              break;
+            case 'normal':
+              setMeasuresToShow(measures);
+              console.log("Medidas normal:", measuresToShow);
+              break;
+            default:
+              console.log("Medidas default:", measuresToShow);
+              break;
+          }
+
+      } else {
+          console.error("Error al obtener el tipo de usuario:", response.statusText);
+      }
+  } catch (error) {
+      console.error("Error al obtener el tipo de usuario:", error);
+  }
 };
 
 const fetchGraphData = async () => {
@@ -56,7 +99,6 @@ const fetchGraphData = async () => {
 
       if (response.ok) {
         const { fechas, valores } = await response.json();
-        console.log("Respuesta del backend:", { fechas, valores });
   
         // Actualiza los datos del gráfico
         setChartData({
@@ -68,7 +110,6 @@ const fetchGraphData = async () => {
           ]
         });
         setIsLoadingChartData(false);
-        console.log("Datos del gráfico cargados", { fechas, valores });
       } else {
         setIsLoadingChartData(false);
         console.error("Error al obtener los datos de la grafica:", response.statusText);
@@ -80,6 +121,7 @@ const fetchGraphData = async () => {
   };
 
   useEffect(() => {
+    fetchUserType();
     fetchGraphData();
     fetchMilestones();
   }, []);
@@ -98,7 +140,20 @@ const fetchGraphData = async () => {
     console.log("Datos del gráfico:", chartData);
   }, [selectedMeasureToShow, selectedInterval]);
 
+  useEffect(() => {
+    switch (userType) {
+      case 'cliente':
+        setMeasuresToShow(measuresClient);
+        break;
+      case 'normal':
+        setMeasuresToShow(measures);
+        break;
+      default:
+        break;
+    }
+  }, [userType]);
 
+  
   const measuresClient = [
     { key: "cuello", value: "Cuello" },
     { key: "estatura", value: "Estatura" },
@@ -139,7 +194,7 @@ const fetchGraphData = async () => {
     <View style={styles.select}>
     <SelectList 
           setSelected={(val) => setSelectedMeasureToShow(val)} 
-          data={measuresClient} 
+          data={measuresToShow} 
           onSelect={() => console.log(selectedMeasureToShow)}
           placeholder="Selecciona una medida"
           searchPlaceholder="Buscar..."
@@ -186,15 +241,17 @@ const fetchGraphData = async () => {
 
       <View style={styles.headerWithIcon}>
         <Text style={styles.headerHistory}>Historial de medidas</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('IndividualBodyMeasure')}>
+        {userType === 'cliente'?(<></>):(        
+          <TouchableOpacity onPress={() => navigation.navigate('IndividualBodyMeasure', {userType: userType })}>
           <Ionicons name="add-circle-outline" size={24} color="black" />
-        </TouchableOpacity>
+        </TouchableOpacity>)}
+
       </View>
       <ScrollView style={styles.contentContainer}>
-      {milestones.map((milestone) => (
+      {milestones.map((milestone, index) => (
           <TouchableOpacity
-            key={milestone.id}
-            onPress={() => navigation.navigate('IndividualBodyMeasure', { measureDetails: milestone })}
+            key={index}
+            onPress={() => navigation.navigate('IndividualBodyMeasure', { measureDetails: milestone, userType: userType })}
             style={styles.item}
           >
             <Text style={styles.item}>{milestone.fecha}</Text>
