@@ -153,5 +153,107 @@ export const querys = {
 
     //Progreso
     createMilestone: `INSERT INTO Medidas_Corporales (porcentaje_grasa, masa_muscular, presion_arterial, ritmo_cardiaco, cuello, pecho, hombro,bicep,antebrazo,cintura,cadera,pantorrilla,muslo,fecha,ID_UsuarioMovil) VALUES (@porcentaje_grasa, @masa_muscular, @presion_arterial, @ritmo_cardiaco, @cuello, @pecho, @hombro, @bicep, @antebrazo, @cintura, @cadera, @pantorrilla, @muslo, @fecha, @ID_UsuarioMovil); SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
+
+    //Progreso Ejercicios: 
+    geT1RMForExercise: `DECLARE @FechaInicio DATE = DATEADD(DAY, -30, GETDATE());
+        DECLARE @FechaFin DATE = GETDATE();
+        SELECT
+            ED.ID_Ejercicio,
+            MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) AS Max1RM
+        FROM
+            ResultadoSeriesUsuario RSU
+        INNER JOIN Serie S ON
+            RSU.ID_Serie = S.ID_Serie
+        INNER JOIN ConjuntoSeries CS ON
+            S.ID_Serie = CS.ID_Serie
+        INNER JOIN BloqueSets BS ON
+            CS.ID_BloqueSets = BS.ID_BloqueSets
+        INNER JOIN EjerciciosDia ED ON
+            BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+        INNER JOIN Dias_Entreno DE ON
+            ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
+        INNER JOIN Rutina_Asignada RA ON
+            DE.ID_Rutina = RA.ID_Rutina
+        WHERE
+            RA.ID_UsuarioMovil = @ID_UsuarioMovil
+            AND ED.ID_Ejercicio = @ID_Ejercicio
+            AND RSU.fecha BETWEEN @FechaInicio AND @FechaFin
+            AND RSU.completado = 1
+        GROUP BY
+            ED.ID_Ejercicio`,
+    getHistorical1RMForExercise: `
+        SELECT
+            CONVERT(char(10), RSU.fecha, 126) AS fecha,
+            MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) AS Max1RM
+        FROM
+            ResultadoSeriesUsuario RSU
+        INNER JOIN Serie S ON
+            RSU.ID_Serie = S.ID_Serie
+        INNER JOIN ConjuntoSeries CS ON
+            S.ID_Serie = CS.ID_Serie
+        INNER JOIN BloqueSets BS ON
+            CS.ID_BloqueSets = BS.ID_BloqueSets
+        INNER JOIN EjerciciosDia ED ON
+            BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+        INNER JOIN Dias_Entreno DE ON
+            ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
+        INNER JOIN Rutina_Asignada RA ON
+            DE.ID_Rutina = RA.ID_Rutina
+        WHERE
+            RA.ID_UsuarioMovil = @ID_UsuarioMovil
+            AND ED.ID_Ejercicio = @ID_Ejercicio
+            AND RSU.completado = 1
+        GROUP BY
+            RSU.fecha
+        ORDER BY
+            RSU.fecha
+        `,     
+    get1RMForDates: `SELECT CONVERT(char(10), RSU.fecha, 126) AS fecha, MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) / 75 AS FuerzaAbsoluta FROM ResultadoSeriesUsuario RSU INNER JOIN Serie S ON RSU.ID_Serie = S.ID_Serie INNER JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia INNER JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno INNER JOIN Rutina_Asignada RA ON DE.ID_Rutina = RA.ID_Rutina WHERE RA.ID_UsuarioMovil = @ID_UsuarioMovil AND ED.ID_Ejercicio = @ID_Ejercicio AND RSU.completado = 1 AND RSU.fecha BETWEEN @FechaInicio AND @FechaFin GROUP BY RSU.fecha ORDER BY RSU.fecha
+    `,   
+    get1RMForDatesWithValues: `
+    SELECT 
+        CONVERT(char(10), RSU.fecha, 126) AS fecha, 
+        MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) AS RM 
+    FROM ResultadoSeriesUsuario RSU 
+    INNER JOIN Serie S ON RSU.ID_Serie = S.ID_Serie 
+    INNER JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie 
+    INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets 
+    INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia 
+    INNER JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno 
+    INNER JOIN Rutina_Asignada RA ON DE.ID_Rutina = RA.ID_Rutina 
+    WHERE RA.ID_UsuarioMovil = @ID_UsuarioMovil 
+        AND ED.ID_Ejercicio = @ID_Ejercicio 
+        AND RSU.completado = 1 
+        AND RSU.fecha BETWEEN @FechaInicio AND @FechaFin 
+    GROUP BY RSU.fecha 
+    ORDER BY RSU.fecha
+    `,
+  getWeight:`SELECT 
+        CONVERT(char(10), RSU.fecha, 126) AS fecha, 
+        MAX(RSU.peso) AS PesoMaximo
+        FROM 
+        ResultadoSeriesUsuario RSU
+        INNER JOIN 
+        Serie S ON RSU.ID_Serie = S.ID_Serie
+        INNER JOIN 
+        ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie
+        INNER JOIN 
+        BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+        INNER JOIN 
+        EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+        INNER JOIN 
+        Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
+        INNER JOIN 
+        Rutina_Asignada RA ON DE.ID_Rutina = RA.ID_Rutina
+        WHERE 
+        RA.ID_UsuarioMovil = @ID_UsuarioMovil 
+        AND ED.ID_Ejercicio = @ID_Ejercicio 
+        AND RSU.completado = 1 
+        AND RSU.fecha BETWEEN @FechaInicio AND @FechaFin
+        GROUP BY 
+        RSU.fecha
+        ORDER BY 
+        RSU.fecha
+        `,
   };
 

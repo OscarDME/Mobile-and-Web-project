@@ -1,12 +1,35 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { View, Text, Button, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryScatter, VictoryTheme, VictoryLabel, VictoryAxis } from 'victory-native';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { Dimensions } from "react-native";
+import config from "../../utils/conf";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const screenWidth = Dimensions.get("window").width;
 
 export default function BenchMarking() {
-  const [selected, setSelected] = useState("Cuello");
+  const [ejercicios, setEjercicios] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
+  useEffect(() => {
+    const fetchEjercicios = async () => {
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/ejercicio`);
+        const data = await response.json();
+        // Transformar datos si es necesario para que coincidan con lo esperado por SelectList
+        const ejerciciosTransformados = data.map((ejercicio) => ({
+          key: ejercicio.ID_Ejercicio.toString(),
+          value: ejercicio.ejercicio,
+          type: ejercicio.Modalidad,
+        }));
+        setEjercicios(ejerciciosTransformados);
+      } catch (error) {
+        console.error("Error al obtener los ejercicios:", error);
+      }
+    };
+
+    fetchEjercicios();
+  }, []);
 
     const data = [
         { edad: 1, fuerzaAbsoluta: 2},
@@ -35,16 +58,21 @@ export default function BenchMarking() {
   return (
     <View style={styles.container}>
     <View style={styles.select}>
-        <SelectList 
-          setSelected={setSelected} 
-          data={measures} 
+    <SelectList
+          setSelected={(selectedKey) => {
+            const ejercicioSeleccionado = ejercicios.find(
+              (ejercicio) => ejercicio.key === selectedKey
+            );
+            setSelectedExercise(ejercicioSeleccionado);
+          }}
+          data={ejercicios}
           placeholder="Selecciona un ejercicio"
           searchPlaceholder="Buscar..."
           notFoundText="No se encontraron resultados"
           width={300}
         />
         </View>
-        <Text style={styles.sectionTitle}>¡En <Text style={styles.exercise}>{selected}</Text>, eres más fuerte que el <Text style={styles.exercise}>{}%</Text> de las personas en tu rango de edad!</Text>
+        <Text style={styles.sectionTitle}>¡En <Text style={styles.exercise}>{selectedExercise}</Text>, eres más fuerte que el <Text style={styles.exercise}>{}%</Text> de las personas en tu rango de edad!</Text>
       <View>
       <VictoryChart
       theme={VictoryTheme.material}

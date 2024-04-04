@@ -21,11 +21,8 @@ import { createCompleteRutinaForClient, getAssignedRoutines } from "../Controlle
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
-<<<<<<< HEAD
-import { get1RMForExercise } from "../Controllers/Progreso.Ejercicios.Controllers.js";
-=======
+import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getMilestones } from "../Controllers/Progress.Controllers.js";
->>>>>>> dea59858ab6e37870ce36cb6e475317cb2e63767
 
 
 //El que come callado repite
@@ -157,6 +154,11 @@ router.post("/entrenamiento", updateWorkoutSeries);
 
 //Progreso de Ejercicios
 router.get("/RM/:id/:ejercicio", get1RMForExercise);
+router.get("/HistoricalRM/:id/:ejercicio", getHistorical1RMForExercise);
+router.get("/HistoricalRMAbsoluta/:id/:ejercicio/:fecha", getHistorical1RMForTime);
+router.get("/HistoricalRMs/:id/:ejercicio/:fecha", get1RMForTime);
+router.get("/Weights/:id/:ejercicio/:fecha", getWeights);
+
 
 //Hitos de progreso o medidas corporales
 router.post("/createMilestone", createMilestone);
