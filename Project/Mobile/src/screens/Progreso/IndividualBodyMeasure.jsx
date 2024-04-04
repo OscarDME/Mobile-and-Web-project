@@ -1,52 +1,113 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, Button, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Button, TouchableOpacity, Image, Alert } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { STORAGE_BUCKET } from '../../../FirebaseConfig';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-
+import config from "../../utils/conf";
+import { Dimensions } from "react-native";
+const screenWidth = Dimensions.get("window").width;
 
 const IndividualBodyMeasure = ({navigation, route }) => {
   const measureDetails = route.params?.measureDetails;
-  const [images, setImages] = useState([])
-
+  const userType = route.params?.userType;
+  const [weight, setWeight] = useState(measureDetails  ? String(measureDetails?.peso) : '');
+  const [fat, setFat] = useState(measureDetails  ? String(measureDetails?.porcentaje_grasa) : '');
+  const [pulse, setPulse] = useState(measureDetails  ? String(measureDetails?.ritmo_cardiaco) : '');
+  const [muscleMass, setMuscleMass] = useState(measureDetails  ? String(measureDetails?.masa_muscular) : '');
+  const [bloodPressure, setBloodPressure] = useState(measureDetails  ? String(measureDetails?.presion_arterial) : '');
+  const [neckCircumference, setNeckCircumference] = useState(measureDetails  ? String(measureDetails?.cuello) : '');
+  const [hipCircumference, setHipCircumference] = useState(measureDetails  ? String(measureDetails?.cadera) : '');
+  const [waistCircumference, setWaistCircumference] = useState(measureDetails  ? String(measureDetails?.cintura) : '');
+  const [chestCircumference, setChestCircumference] = useState(measureDetails  ? String(measureDetails?.pecho) : '');
+  const [bicepsCircumference, setBicepsCircumference] = useState(measureDetails  ? String(measureDetails?.bicep) : '');
+  const [shoulderCircumference, setShoulderCircumference] = useState(measureDetails  ? String(measureDetails?.hombro) : '');
+  const [forearmsCircumference, setForearmsCircumference] = useState(measureDetails  ? String(measureDetails?.antebrazo) : '');
+  const [CuadricepsiCircumference, setCuadricepsCircumference] = useState(measureDetails  ? String(measureDetails?.muslo) : '');
+  const [calfCircumference, setCalfCircumference] = useState(measureDetails  ? String(measureDetails?.pantorrilla) : '');
+  const [height, setHeight] = useState(measureDetails  ? String(measureDetails?.estatura) : '');
+  const [IMC, setIMC] = useState(measureDetails  ? String(measureDetails?.IMC) : '0');
+  const [images, setImages] = useState(measureDetails ? [measureDetails.foto_frente, measureDetails.foto_lado, measureDetails.foto_espalda] : []);
   const date = new Date();
+  const [fecha, setFecha]= useState(measureDetails?.fecha || date.toISOString().slice(0,10));
 
-  const defaultMeasureDetails = {
-    fecha: date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear(),
-    peso: '',
-    porcentajeDeGrasa: '',
-    IMC: '',
-    masaMuscularNeta: '',
-    ritmoCardiacoEnReposo: '',
-    presionArterial: '',
-    cuello: '',
-    pantorrillas: '',
-    cadera: '',
-    biceps: '',
-    antebrazo: '',
-    hombros: '',
-    pecho: '',
-    cintura: '',
-    muslos: '',
-  };
-
-
-  const [details, setDetails] = useState(measureDetails || defaultMeasureDetails);
-
-  const handleInputChange = (name, value) => {
-    setDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
-    }));
-  };
 
   const saveChanges = () => {
-//GUARDAR CAMBIOS EN LA BASE DE DATOS O GUARDAR NUEVA MEDIDA EN LA BASE DE DATOS
-    console.log('Detalles guardados:', details);
+    console.log("Guardando cambios...");
+    handleSubmit();
   };
 
+
+  const handleSubmit = async () => {
+    // Verificar que ningún campo se encuentre vacío
+    console.log("Guardando medidas...");
+    const allMeasures = [
+      weight, height
+    ];
+  
+    if (allMeasures.some(measure => measure === null)) {
+      Alert.alert("Error", "Todos los campos deben ser completados.");
+      return;
+    }
+  
+    // Validaciones específicas
+    if (weight >= 300 || weight<=0) {
+      Alert.alert("Error", "El peso debe ser menor a 300 kg y no debe ser cero.");
+      return;
+    }
+  
+  
+    if (height >= 3 || height <= 0) {
+      Alert.alert("Error", "La altura no puede ser mayor a 3 metros o cero.");
+      return;
+    }
+    console.log("1");
+
+    const image1 = images.length > 0 ? images[0]: null;
+    const image2 = images.length > 1 ? images[1]: null;
+    const image3 = images.length > 2 ? images[2]: null;
+
+    const oid = await AsyncStorage.getItem("userOID");
+
+    const bodyMeasurementsData = {
+      fecha: new Date().toISOString(),
+      ID_UsuarioMovil: oid,
+      estatura: height,
+      peso: weight,
+      IMC: IMC,
+      foto_frente: image1,
+      foto_lado: image2,
+      foto_espalda: image3
+    };
+
+      console.log(bodyMeasurementsData);
+
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/createMilestone`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyMeasurementsData),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Algo salió mal al guardar el Hito.");
+        }
+  
+        // Respuesta del servidor
+        const result = await response.json();
+        console.log(result);
+        console.log("Hito añadido con éxito.");
+
+        navigation.goBack();
+      } catch (error) {
+        console.error("Error al guardar el Hito:", error);
+        console.log("Error al guardar el Hito.");
+      }
+  }
+  
 
   useEffect(() => {
     (async () => {
@@ -63,8 +124,8 @@ const IndividualBodyMeasure = ({navigation, route }) => {
       quality: 1,
     });
 
-    const puedeSubirImagen = await actualizarContadorDeSubidas();
-    if (!puedeSubirImagen) {
+    if (images.length >= 3) {
+      Alert.alert('Error', 'Solo puedes agregar hasta 3 imágenes');
       return; 
     }
 
@@ -95,36 +156,21 @@ const IndividualBodyMeasure = ({navigation, route }) => {
   
       const url = await getDownloadURL(fileRef);
       console.log(`URL obtenida con éxito: ${url}`);
+      setImages([...images, url]);
 
     } catch (error) {
       console.error('Error al subir archivo:', error);
     }
   };
+  
 
-  const actualizarContadorDeSubidas = async () => {
-    const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-    const limiteImagenesPorDia = 3;
-    const historialSubidas = JSON.parse(await AsyncStorage.getItem('historialSubidas')) || {};
+  useEffect(() => {
+    const weightNum = parseFloat(weight);
+    const heightMeters = parseFloat(height); 
+    const calculatedIMC = weightNum && heightMeters ? (weightNum/((heightMeters)**2)).toFixed(2) : '0'; 
   
-    if (historialSubidas.fecha === hoy) {
-      // Si ya se subieron imágenes hoy, verifica el contador
-      if (historialSubidas.contador >= limiteImagenesPorDia) {
-        Alert.alert('Límite alcanzado', 'No puedes subir más de 3 imágenes por día.');
-        return false;
-      } else {
-        // Incrementa el contador
-        historialSubidas.contador += 1;
-      }
-    } else {
-      // Si no hay registros de hoy, inicia el contador
-      historialSubidas.fecha = hoy;
-      historialSubidas.contador = 1;
-    }
-  
-    await AsyncStorage.setItem('historialSubidas', JSON.stringify(historialSubidas));
-    return true;
-  };
-  
+    setIMC(calculatedIMC); 
+  }, [weight, height]);
 
   return (
     <>
@@ -132,11 +178,77 @@ const IndividualBodyMeasure = ({navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{details.fecha}</Text>
-        <TouchableOpacity onPress={saveChanges}>
-          <Ionicons name="save-outline" size={24} color="black" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{fecha}</Text>
+        {!measureDetails ?(
+          <>
+            <TouchableOpacity onPress={saveChanges}>
+              <Ionicons name="save-outline" size={24} color="black" />
+            </TouchableOpacity>
+        </>
+        ):(<></>)}
       </View>
+    {userType === null ? (
+      <View>
+        <Text>
+        Espere un momento...
+        </Text>
+      </View>
+    ):( userType === 'normal'?(
+        <>
+        <ScrollView style={styles.container}>
+        <Text style={styles.sectionTitle}>Medidas corporales</Text>
+    <View style={styles.measureContainer}>
+    <View style={styles.inputContainer}>
+          <Text style={styles.label}>Peso</Text>
+          <TextInput
+            style={styles.input}
+            value={weight}
+            onChangeText={(text) => setWeight(text)}
+            keyboardType="numeric"
+            editable={!measureDetails}
+          />
+          <Text style={styles.suffix}>kg</Text>
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Altura</Text>
+          <TextInput
+            style={styles.input}
+            value={height}
+            onChangeText={(text) => setHeight(text)}
+            keyboardType="numeric"
+            editable={!measureDetails}
+          />
+          <Text style={styles.suffix}>m</Text>
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>IMC</Text>
+          <TextInput
+            style={styles.input}
+            value={IMC}
+            onChangeText={(text)=> setIMC(text)}
+            keyboardType="numeric"
+            editable={false}
+          />
+          <Text style={styles.suffix}></Text>
+        </View>
+        </View>
+        {!measureDetails ?
+        <>
+        <Text>Nota: Puede agruegar hasta 3 imagenes para ver su progreso, lo recomendado es una de frente, una de lado y otra de espalda</Text>
+        <Button title="Seleccionar imagenes" onPress={seleccionarYEnviarImagen} editable={!measureDetails} />
+        </>
+        :        
+        <></>
+        }
+        <View style={styles.imagesContainer}>
+          {images.map((imageUri, index) => (
+            <Image key={index} source={{ uri: imageUri }} style={styles.image} />
+          ))}
+        </View>
+        </ScrollView>
+        </>
+      ):(
+        <>
     <ScrollView style={styles.container}>
     <Text style={styles.sectionTitle}>Medidas corporales</Text>
     <View style={styles.measureContainer}>
@@ -144,40 +256,49 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Peso</Text>
           <TextInput
             style={styles.input}
-            value={details.peso !== '' ? String(details.peso) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={weight}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>kg</Text>
         </View>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>% de grasa</Text>
+          <Text style={styles.label}>Altura</Text>
           <TextInput
             style={styles.input}
-            value={details.porcentajeDeGrasa !== '' ? String(details.porcentajeDeGrasa) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={height}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
-          <Text style={styles.suffix}>%</Text>
+          <Text style={styles.suffix}>m</Text>
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>IMC</Text>
           <TextInput
             style={styles.input}
-            value={details.IMC !== '' ? String(details.IMC) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={IMC}
             keyboardType="numeric"
             editable={false}
           />
           <Text style={styles.suffix}></Text>
         </View>
         <View style={styles.inputContainer}>
+          <Text style={styles.label}>% de grasa</Text>
+          <TextInput
+            style={styles.input}
+            value={fat}
+            keyboardType="numeric"
+            editable={!measureDetails}
+          />
+          <Text style={styles.suffix}>%</Text>
+        </View>
+        <View style={styles.inputContainer}>
           <Text style={styles.label}>Masa Muscular</Text>
           <TextInput
             style={styles.input}
-            value={details.masaMuscularNeta !== '' ? String(details.masaMuscularNeta) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={muscleMass}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>kg</Text>
         </View>
@@ -185,9 +306,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Ritmo Cardiaco</Text>
           <TextInput
             style={styles.input}
-            value={details.ritmoCardiacoEnReposo !== '' ? String(details.ritmoCardiacoEnReposo) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={pulse}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>lpm</Text>
         </View>
@@ -195,9 +316,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Presión arterial</Text>
           <TextInput
             style={styles.input}
-            value={details.presionArterial !== '' ? String(details.presionArterial) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={bloodPressure}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>mm hg</Text>
         </View>
@@ -208,9 +329,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Cuello</Text>
           <TextInput
             style={styles.input}
-            value={details.cuello !== '' ? String(details.cuello) : '-'}
-            onChangeText={(text) => handleInputChange('cuello', text)}
+            value={neckCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
         </View>
@@ -218,9 +339,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Pecho</Text>
           <TextInput
             style={styles.input}
-            value={details.pecho !== '' ? String(details.pecho) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={chestCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
@@ -229,9 +350,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Hombros</Text>
           <TextInput
             style={styles.input}
-            value={details.hombros !== '' ? String(details.hombros) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={shoulderCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
         </View>
@@ -239,9 +360,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Bicep</Text>
           <TextInput
             style={styles.input}
-            value={details.biceps !== '' ? String(details.biceps) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={bicepsCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
@@ -250,9 +371,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Antebrazo</Text>
           <TextInput
             style={styles.input}
-            value={details.antebrazo !== '' ? String(details.antebrazo) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={forearmsCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
@@ -261,9 +382,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Cintura</Text>
           <TextInput
             style={styles.input}
-            value={details.cintura !== '' ? String(details.cintura) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value= {waistCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
@@ -272,9 +393,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Cadera</Text>
           <TextInput
             style={styles.input}
-            value={details.cadera !== '' ? String(details.cadera) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value= {hipCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
@@ -283,9 +404,9 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Pantorrillas</Text>
           <TextInput
             style={styles.input}
-            value={details.pantorrillas !== '' ? String(details.pantorrillas) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={calfCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
@@ -294,21 +415,23 @@ const IndividualBodyMeasure = ({navigation, route }) => {
           <Text style={styles.label}>Muslos</Text>
           <TextInput
             style={styles.input}
-            value={details.muslos !== '' ? String(details.muslos) : '-'}
-            onChangeText={(text) => handleInputChange('pecho', text)}
+            value={CuadricepsiCircumference}
             keyboardType="numeric"
+            editable={!measureDetails}
           />
           <Text style={styles.suffix}>cm</Text>
 
         </View>
         </View>
-        <Button title="Seleccionar imagenes" onPress={seleccionarYEnviarImagen} />
         <View style={styles.imagesContainer}>
           {images.map((imageUri, index) => (
             <Image key={index} source={{ uri: imageUri }} style={styles.image} />
           ))}
         </View>
     </ScrollView>
+    </>
+      )
+    )}
   </>
   );
 };
@@ -384,8 +507,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: screenWidth/1.5,
+    height: screenWidth/1.5,
     margin: 5,
   },
 });

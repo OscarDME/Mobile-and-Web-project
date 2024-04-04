@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import { Chart } from 'primereact/chart';
 import Progress_Body_MeasuresAdd from './Progress_Body_MeasuresAdd';
 import Dropdown from '../DropdownCollections';
 import Progress_Body_MeasuresEdit from './Progress_Body_MeasuresEdit';
 import { milestones } from '../DATA_MILESTONES';
 import config from "../../utils/conf";
-
+import { Galleria } from 'primereact/galleria';
 
 
 export default function Progress_Body_Measures({selectedUser}) {
@@ -17,6 +17,8 @@ export default function Progress_Body_Measures({selectedUser}) {
   const [selectedMilestone, setSelectedMilestone] = useState(null);
   const [selectedMeasureToShow, setSelectedMeasureToShow] = useState(null);
   const [milestones, setMilestones] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);    
+  const galleria = useRef(null);
 
 
   //datos de la grafica
@@ -120,6 +122,7 @@ export default function Progress_Body_Measures({selectedUser}) {
     setShowEditPage(false);
     setShowAddPage(false);
     fetchMilestones();
+    fetchGraphData();
   };
 
   const handleDeleteMilestone = (milestone) => {
@@ -174,7 +177,7 @@ export default function Progress_Body_Measures({selectedUser}) {
             labels: fechas, // Las fechas van en el eje X
             datasets: [
               {
-                label: selectedMeasureToShow.label, // Usamos la etiqueta de la medida seleccionada como etiqueta del dataset
+                label: selectedMeasureToShow.label,
                 data: valores, // Los valores de la medida van en el eje Y
                 fill: false,
                 borderColor: '#0790cf',
@@ -214,6 +217,9 @@ export default function Progress_Body_Measures({selectedUser}) {
     fetchGraphData();
     setSelectedMeasureToShow(null);
     setChartData({});
+    setEliminatingMilestone(null);
+    setShowAddPage(false);
+    setShowEditPage(false);
   }, [selectedUser]);  
 
   useEffect(() => {
@@ -238,6 +244,9 @@ export default function Progress_Body_Measures({selectedUser}) {
   
   const measureOptions = [
     { label: "Cuello", value: "cuello" },
+    { label: "Estatura", value: "estatura" },
+    { label: "Peso", value: "peso" },
+    { label: "IMC", value: "IMC" },
     { label: "Pecho", value: "pecho" },
     { label: "Hombro", value: "hombro" },
     { label: "Bicep", value: "bicep" },
@@ -256,6 +265,15 @@ export default function Progress_Body_Measures({selectedUser}) {
     setSelectedMeasureToShow(selectedOption ?? null);
     console.log(selectedOption);
   };
+
+
+  const itemTemplate = (item) => {
+    return <img src={item.itemImageSrc} alt={item.alt} style={{ width: '100%', display: 'block' }} />;
+  }
+
+  const thumbnailTemplate = (item) => {
+      return <img src={item.thumbnailImageSrc} alt={item.alt} style={{ display: 'block' }} />;
+  }
 
   return (
     <>
@@ -293,7 +311,7 @@ export default function Progress_Body_Measures({selectedUser}) {
                     </div>
                     <div className="row_buttons">
                       <div className="row_edit">
-                          <i className={`bi bi-trash card-icon`} onClick={(e) => { setSelectedMilestone(milestone); e.stopPropagation(); handleDeleteClick(milestone); }}></i>
+                          <i className={`bi bi-trash card-icon ${eliminatingMilestone && eliminatingMilestone.ID_MedidasCorporales === milestone.ID_MedidasCorporales ? 'selected' : ''}`} onClick={(e) => { setSelectedMilestone(milestone); e.stopPropagation(); handleDeleteClick(milestone); }}></i>
                       </div>
                       <div className="row_edit">
                         <i className={`bi bi-pencil-square card-icon`} onClick={(e) => { e.stopPropagation(); handleEditClick(milestone); }}></i>
@@ -302,10 +320,12 @@ export default function Progress_Body_Measures({selectedUser}) {
                   </div>
                   {expandedRow === milestone.ID_MedidasCorporales && (
                   <>
+                  <div className='milestone-container'>
                     <div className="exercise-info">
                       <div className="exercise-info-column">
                       <div className="exercise-info-row"><h5>Datos biométricos</h5></div>
-                        <div className="exercise-info-row">Peso: {milestone.weight}</div>
+                        <div className="exercise-info-row">Peso: {milestone.peso}</div>
+                        <div className="exercise-info-row">Estatura: {milestone.estatura}</div>
                         <div className="exercise-info-row">IMC: {milestone.IMC}</div>
                         <div className="exercise-info-row">Masa muscular neta: {milestone.masa_muscular}</div>
                         <div className="exercise-info-row">% de grasa: {milestone.porcentaje_grasa}</div>
@@ -324,7 +344,26 @@ export default function Progress_Body_Measures({selectedUser}) {
                       <div className="exercise-info-row">Muslos: {milestone.muslo} cm</div>
                       <div className="exercise-info-row">Pantorrilla: {milestone.pantorrilla} cm</div>
                       </div>
-
+                      </div>
+                      <div className="images-container2 flex justify-content-center">
+                        <Galleria ref={galleria} value={[{itemImageSrc: selectedMilestone.foto_frente, thumbnailImageSrc: selectedMilestone.foto_frente},{itemImageSrc: selectedMilestone.foto_lado, thumbnailImageSrc: selectedMilestone.foto_lado},{itemImageSrc: selectedMilestone.foto_espalda, thumbnailImageSrc: selectedMilestone.foto_espalda} ]} numVisible={7} style={{ maxWidth: '850px' }}
+                        activeIndex={activeIndex} onItemChange={(e) => setActiveIndex(e.index)}
+                        circular fullScreen showItemNavigators showThumbnails={false} item={itemTemplate} thumbnail={thumbnailTemplate} />
+                        <div className="grid" style={{ maxWidth: '400px' }}>
+                            {
+                              [{itemImageSrc: selectedMilestone.foto_frente, thumbnailImageSrc: selectedMilestone.foto_frente},{itemImageSrc: selectedMilestone.foto_lado, thumbnailImageSrc: selectedMilestone.foto_lado},{itemImageSrc: selectedMilestone.foto_espalda, thumbnailImageSrc: selectedMilestone.foto_espalda} ] && [{itemImageSrc: selectedMilestone.foto_frente, thumbnailImageSrc: selectedMilestone.foto_frente},{itemImageSrc: selectedMilestone.foto_lado, thumbnailImageSrc: selectedMilestone.foto_lado},{itemImageSrc: selectedMilestone.foto_espalda, thumbnailImageSrc: selectedMilestone.foto_espalda} ].map((image, index) => {
+                                    let imgEl = <img src={image.thumbnailImageSrc} alt={image.alt} style={{ cursor: 'pointer', height:"100px", width:"100px" }} onClick={
+                                        () => {setActiveIndex(index); galleria.current.show()}
+                                    } />
+                                    return (
+                                        <div className="col-3" key={index}>
+                                            {imgEl}
+                                        </div>
+                                    )
+                                })
+                            }
+                        </div>
+                    </div>
                     </div>
                   </>
                 )}
@@ -335,9 +374,9 @@ export default function Progress_Body_Measures({selectedUser}) {
                   </div>
                   </>
                 )}
-  </li>
-))}
-</ul>
+          </li>
+        ))}
+        </ul>
       </div>
       </div>
       </div>

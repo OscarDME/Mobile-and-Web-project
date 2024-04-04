@@ -7,7 +7,8 @@ import {
     getUserAndType,
     getUserById, updateComparacionRendimiento,
     updateViajeGimnasio,
-getAllMobileUsersInfo
+getAllMobileUsersInfo,
+getMobileUserTypeByID
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
@@ -22,7 +23,7 @@ import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrai
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights } from "../Controllers/Progreso.Ejercicios.Controllers.js";
-import { createMilestone, deleteMilestone, getIndividualMeasurements, getMilestones } from "../Controllers/Progress.Controllers.js";
+import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 
 
 //El que come callado repite
@@ -38,6 +39,7 @@ router.get("/user/:oid", getUserById);
 router.put('/Rendimiento/:id', updateComparacionRendimiento);
 router.put('/ViajeGimnasio/:id', updateViajeGimnasio);
 router.get("/mobileuser", getAllMobileUsersInfo);
+router.get("/userType/:oid", getMobileUserTypeByID);
 
 //Solicitudes
 router.post("/solicitud", createTrainerClientRequest);
@@ -165,6 +167,8 @@ router.post("/createMilestone", createMilestone);
 router.get("/allMilestones/:id", getMilestones);
 router.get("/allMilestones/:id/:medida", getIndividualMeasurements);
 router.delete("/allMilestones/:id", deleteMilestone);
+router.patch("/allMilestones/:id", updateMilestone);
+router.get("/allMilestonesMobile/:id/:medida/:intervalo", getIndividualMeasurementsWithInterval);
 
 
 export default router;
