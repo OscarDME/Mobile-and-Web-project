@@ -13,6 +13,7 @@ import config from "../../utils/conf";
 const AddSetsScreen = ({ navigation, route }) => {
   const [sets, setSets] = useState([]);
   const [error, setError] = useState('');
+  const [datosCargados, setDatosCargados] = useState(false);
 
   const { exerciseId } = route.params;
   const [bloqueSets, setBloqueSets] = useState({
@@ -38,9 +39,14 @@ const AddSetsScreen = ({ navigation, route }) => {
               weight: subset.peso,
             })),
           }));
-  
           setSets(setsInicializados);
-        } else {
+          setDatosCargados(true);
+        } else if (respuesta.status === 404) {
+          console.log('No se encontraron sets para este ejercicio.');
+          setDatosCargados(false);
+        }
+        else {
+          setDatosCargados(false);
           console.error('Respuesta no exitosa:', respuesta);
         }
       } catch (error) {
@@ -172,7 +178,7 @@ const AddSetsScreen = ({ navigation, route }) => {
     };
   
     const setsExisten = sets.length > 0;
-    const method = setsExisten ? 'PUT' : 'POST'; 
+    const method = datosCargados ? 'PUT' : 'POST';
     const url = `${config.apiBaseUrl}/bloquesets`; 
   
     try {
