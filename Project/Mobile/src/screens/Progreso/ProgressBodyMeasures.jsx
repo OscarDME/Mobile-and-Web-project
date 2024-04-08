@@ -99,13 +99,14 @@ const fetchGraphData = async () => {
 
       if (response.ok) {
         const { fechas, valores } = await response.json();
-  
+        const processedValores = valores.map(value => value == null ? 0 : value); // Replace null with 0 or some default value
+
         // Actualiza los datos del gráfico
         setChartData({
-          labels: fechas, // Las fechas van en el eje X
+          labels: fechas,                           // Las fechas van en el eje X
           datasets: [
             {
-              data: valores,
+              data: processedValores,
             }
           ]
         });

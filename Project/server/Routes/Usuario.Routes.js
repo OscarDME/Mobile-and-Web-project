@@ -24,7 +24,7 @@ import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendien
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
-
+import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
 
 //El que come callado repite
 
@@ -170,6 +170,8 @@ router.delete("/allMilestones/:id", deleteMilestone);
 router.patch("/allMilestones/:id", updateMilestone);
 router.get("/allMilestonesMobile/:id/:medida/:intervalo", getIndividualMeasurementsWithInterval);
 
+//Rutina personalizada
+router.post("/rutinapersonalizada", createRutinaPersonalizada);
 
 export default router;
 

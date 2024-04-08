@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import * as Progress from 'react-native-progress';
+import config from "../../utils/conf";
+
 
 const GeneratingScreen = ({ route, navigation }) => {
   const [progress, setProgress] = useState(0);
@@ -14,21 +16,50 @@ const GeneratingScreen = ({ route, navigation }) => {
     }
   }, [route.params?.progress]);
 
+  
   useEffect(() => {
-    // Verifica si el progreso ha alcanzado el 100%
+    const handleCompletion = async () => {
+      setMessage("Datos enviados correctamente. Generando rutina...");
+
+      // Aquí se llama a la API para crear la rutina personalizada
+      try {
+        await createPersonalizedRoutine(oid);
+        setMessage("Rutina personalizada creada con éxito.");
+        
+        // Navegación después de un breve retraso para mostrar el mensaje de éxito
+        setTimeout(() => {
+          navigation.navigate('Main', {screen: "MainMenu",
+          params: { oid: oid }, });
+        }, 2000); // Ajusta este tiempo según lo necesario
+      } catch (error) {
+        console.error('Error al crear la rutina personalizada:', error);
+        // Maneja el error, posiblemente actualizando el estado para mostrar un mensaje de error
+        setMessage("Error al crear la rutina personalizada.");
+      }
+    };
+
     if (progress === 1) {
-      setMessage("Datos enviados correctamente");
-
-      // Establece un temporizador para navegar a otra pantalla después de un retraso
-      const timer = setTimeout(() => {
-        navigation.navigate('Main', {screen: "MainMenu",
-        params: { oid: oid }, }); // Reemplaza 'NextScreenName' con el nombre real de tu siguiente pantalla
-      }, 2000); // Cambia 2000 a la cantidad de milisegundos de retraso deseada
-
-      // Limpia el temporizador si la pantalla se desmonta antes de que se ejecute
-      return () => clearTimeout(timer);
+      handleCompletion();
     }
-  }, [progress, navigation]);
+  }, [progress, navigation, oid]);
+
+
+ const createPersonalizedRoutine = async (oid) => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/rutinapersonalizada`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ID_Usuario: oid }),
+      });
+      const data = await response.json();
+      return data; // Retorna la respuesta del servidor, asumiendo éxito
+    } catch (error) {
+      console.error('Error creating personalized routine:', error);
+      throw error; // Propaga el error para manejarlo en el componente
+    }
+  };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

@@ -167,7 +167,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
   useEffect(() => {
     const weightNum = parseFloat(weight);
     const heightMeters = parseFloat(height); 
-    const calculatedIMC = weightNum && heightMeters ? (weightNum/((heightMeters)**2)).toFixed(2) : '0'; 
+    const calculatedIMC = weightNum && heightMeters ? (weightNum/((heightMeters)**2))?.toFixed(2) : '0'; 
   
     setIMC(calculatedIMC); 
   }, [weight, height]);
