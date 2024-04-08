@@ -765,7 +765,6 @@ export default function MyRoutinesAdd({ onBackToList }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log("handleSubmit se está ejecutando");
-    alert("handleSubmit se está ejecutando");
     // Verifica si el nombre de la rutina está vacío
     if (!routineName.trim()) {
       alert("Por favor, ingresa el nombre de la rutina.");
@@ -885,7 +884,7 @@ export default function MyRoutinesAdd({ onBackToList }) {
         days: daysPayload,
       };
 
-      console.log(payload);
+      console.log("Request al server: ",payload);
 
       const response = await fetch(`${config.apiBaseUrl}/rutinacompleta`, {
         method: "POST",
@@ -900,7 +899,8 @@ export default function MyRoutinesAdd({ onBackToList }) {
         onBackToList();
       } else {
         const error = await response.json();
-        alert(error.message);
+        console.log("Ocurrio un error", error.message);
+        alert("Ocurrio un error", error.message);
       }
     } catch (error) {
       alert("Error al guardar la rutina: " + error.message);

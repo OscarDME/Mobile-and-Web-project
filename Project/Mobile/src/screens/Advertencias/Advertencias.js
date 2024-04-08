@@ -73,11 +73,11 @@ const MainMenu = ({ navigation }) => {
   </ScrollView>
     <ScrollView style={styles.container}>
       <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementConsistency]}>
+      <View style={[styles.achievementHeader, styles.achievementRealize]}>
       <AntDesign name="warning" size={24} color="#333333" />
         <Text style={styles.achievementTitle}>Carga</Text>
         </View>
-        <View style={styles.achievementBodyConsistency}>
+        <View style={styles.achievementBodyRealize}>
         <Text style={styles.achievementDescription}>
           En tu última sesión de entrenamiento, nos dimos cuenta que pasaste de levantar
           <Text style={styles.emphasis}> 20kg </Text>en
@@ -88,11 +88,11 @@ const MainMenu = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementConsistency]}>
+      <View style={[styles.achievementHeader, styles.achievementRealize]}>
       <AntDesign name="warning" size={24} color="#333333" />
         <Text style={styles.achievementTitle}>Sesión prolongada</Text>
         </View>
-        <View style={styles.achievementBodyConsistency}>
+        <View style={styles.achievementBodyRealize}>
         <Text style={styles.achievementDescription}>
           En tu último entrenamiento duraste un total de <Text style={styles.emphasis}> 3 horas y 45 minutos</Text>,
           cuando debio durar un total de 
@@ -102,11 +102,11 @@ const MainMenu = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.item}>
-      <View style={[styles.achievementHeader,  styles.achievementsResistence]}>
+      <View style={[styles.achievementHeader,  styles.achievementsAssign]}>
       <AntDesign name="warning" size={24} color="#333333" />
         <Text style={styles.achievementTitle}>Lesión</Text>
         </View>
-        <View style={styles.achievementBodyResistence}>
+        <View style={styles.achievementBodyAssign}>
         <Text style={styles.achievementDescription}>
           La rutina <Text style={styles.emphasis}> KFC </Text>
           que tienes asignada, puede dañarte el 
@@ -116,11 +116,11 @@ const MainMenu = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.item}>
-      <View style={[styles.achievementHeader,  styles.achievementsResistence]}>
+      <View style={[styles.achievementHeader,  styles.achievementsAssign]}>
       <AntDesign name="warning" size={24} color="#333333" />
         <Text style={styles.achievementTitle}>Objetivo</Text>
         </View>
-        <View style={styles.achievementBodyResistence}>
+        <View style={styles.achievementBodyAssign}>
         <Text style={styles.achievementDescription}>
           La rutina <Text style={styles.emphasis}> me voy a desmayar </Text>
           puede que no se alinee con tu objetivo de entrenamiento.
@@ -128,11 +128,11 @@ const MainMenu = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementsStrength]}>
+      <View style={[styles.achievementHeader, styles.achievementsCreate]}>
       <AntDesign name="warning" size={24} color="#333333" />
         <Text style={styles.achievementTitle}>Sobreentrenamiento</Text>
         </View>
-        <View style={styles.achievementBodyStrenght}>
+        <View style={styles.achievementBodyCreate}>
           <Text style={styles.achievementDescription}>
           La rutina<Text style={styles.emphasis}> ill go shredded or ill die</Text>,
           tiene 
@@ -142,11 +142,11 @@ const MainMenu = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementsStrength]}>
+      <View style={[styles.achievementHeader, styles.achievementsCreate]}>
       <AntDesign name="warning" size={24} color="#333333" />
         <Text style={styles.achievementTitle}>Variabilidad</Text>
         </View>
-        <View style={styles.achievementBodyStrenght}>
+        <View style={styles.achievementBodyCreate}>
           <Text style={styles.achievementDescription}>
           La rutina<Text style={styles.emphasis}> patas de canguro </Text>
           cuenta con demasiados ejercicios de 
@@ -187,35 +187,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  achievementConsistency:{
+  achievementRealize:{
     backgroundColor: '#9F7AEA',
     padding: 10,
     width:screenWidth,
     borderRadius:10,
     borderBottomLeftRadius:0,
     borderBottomRightRadius:0,
+    paddingHorizontal: 20,
   },
-  achievementsResistence:{
+  achievementsAssign:{
     backgroundColor: '#F6E05E',
     padding: 10,
     width:screenWidth,
     borderRadius:10,
     borderBottomLeftRadius:0,
     borderBottomRightRadius:0,
+    paddingHorizontal: 20,
+
   },
-  achievementsStrength:{
+  achievementsCreate:{
     backgroundColor: '#4FD080',
     padding: 10,
     width:screenWidth,
     borderRadius:10,
     borderBottomLeftRadius:0,
     borderBottomRightRadius:0,
+    paddingHorizontal: 20,
+
   },
   achievementBody:{
     flexDirection: 'row',
     alignItems: 'center',
   },
-  achievementBodyStrenght:{
+  achievementBodyCreate:{
     backgroundColor: '#CFF2DC',
     paddingVertical: 10,
     padding: 10,
@@ -224,7 +229,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius:0,
     borderRadius: 10,
   },
-  achievementBodyResistence:{
+  achievementBodyAssign:{
     backgroundColor: '#FCF3C5',
     padding: 10,
     borderTopLeftRadius:0,
@@ -232,7 +237,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius:0,
     borderRadius: 10,
   },
-  achievementBodyConsistency:{
+  achievementBodyRealize:{
     backgroundColor: '#D9CAF7',
     padding: 10,
     width:screenWidth,

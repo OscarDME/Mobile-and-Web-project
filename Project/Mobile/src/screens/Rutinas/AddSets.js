@@ -6,6 +6,8 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import config from "../../utils/conf";
@@ -15,7 +17,7 @@ const AddSetsScreen = ({ navigation, route }) => {
   const [error, setError] = useState('');
   const [datosCargados, setDatosCargados] = useState(false);
 
-  const { exerciseId } = route.params;
+  const { exerciseId } = route.params.ID_EjerciciosDia;
   const [bloqueSets, setBloqueSets] = useState({
     ID_EjerciciosDia: route.params.ID_EjerciciosDia, // Asume que este es el ID del ejercicio del día
     ConjuntoSeries: [] // Aquí irán los conjuntos de series, incluyendo los dropsets
@@ -205,12 +207,13 @@ const AddSetsScreen = ({ navigation, route }) => {
   };
 
   return (
+    <TouchableWithoutFeedback>
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}></Text>
+        <Text style={styles.headerTitle}>{route.params.ejercicio}</Text>
         <TouchableOpacity
           onPress={saveSetsToDatabase}
         >
@@ -253,7 +256,7 @@ const AddSetsScreen = ({ navigation, route }) => {
                 <Ionicons name="trash-outline" size={24} color="red" />
               </TouchableOpacity>
               <Text onPress={() => addSubSet(item.id)} style={styles.addDropSetText}>
-                Crear Dropset
+                Añadir Dropset
               </Text>
             </View>
             {item.dropSet &&
@@ -295,6 +298,7 @@ const AddSetsScreen = ({ navigation, route }) => {
         <Text style={styles.addButtonText}>Agregar nuevo set</Text>
       </TouchableOpacity>
     </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -445,15 +449,16 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   addButton: {
-    backgroundColor: "#28a745",
+    backgroundColor: "#D8F2FE",
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 15,
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 10,
   },
   addButtonText: {
-    color: "#fff",
+    color: "#333333",
     fontSize: 16,
     fontWeight: "bold",
   },

@@ -25,8 +25,10 @@ import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenami
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
+import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck } from "../Controllers/Advertencias.Controller.js";
 
 //El que come callado repite
+//El que escoge no coge 
 
 const router = Router();
 //Usuarios
@@ -172,6 +174,16 @@ router.get("/allMilestonesMobile/:id/:medida/:intervalo", getIndividualMeasureme
 
 //Rutina personalizada
 router.post("/rutinapersonalizada", createRutinaPersonalizada);
+
+//Advertencias
+//router.get("/allWarnings/:id", getWarnings);
+router.post("/allWarnings/overTraining/fourExercisesSameMuscleADay/:id/:ID_Dias_Entreno", createWarningFourExercisesSameMuscleADay);
+router.post("/allWarnings/overTraining/eightExercisesADay/:id/:ID_Dias_Entreno", createWarningEightExercisesADay );
+router.post("/allWarnings/variability/fourExercisesSameMaterialADay/:id/:ID_Dias_Entreno", createWarningFourExercisesSameMaterialADay );
+router.post("/allWarnings/intensity/threeExercisesHighIntensityADay/:id/:ID_Dias_Entreno", createWarningThreeExercisesHighIntensityADay );
+router.post("/allWarnings/overTraining/shortRestTime/:id/:ID_Dias_Entreno", createWarningLessThanAMinuteOfRestPerExercise );
+router.post("/allWarnings/weeklyCheck/:id", createWarningWeeklyCheck );
+
 
 export default router;
 

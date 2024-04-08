@@ -234,8 +234,10 @@ const IndividualBodyMeasure = ({navigation, route }) => {
         </View>
         {!measureDetails ?
         <>
-        <Text>Nota: Puede agruegar hasta 3 imagenes para ver su progreso, lo recomendado es una de frente, una de lado y otra de espalda</Text>
-        <Button title="Seleccionar imagenes" onPress={seleccionarYEnviarImagen} editable={!measureDetails} />
+        <Text style={styles.noteText}>Nota: Puede agruegar hasta 3 imagenes para ver su progreso, lo recomendado es una de frente, una de lado y otra de espalda</Text>
+        <TouchableOpacity  style={styles.picButton} onPress={seleccionarYEnviarImagen} editable={!measureDetails} >
+          <Text style={styles.picButtonText}>Agregar imagen</Text>
+        </TouchableOpacity>
         </>
         :        
         <></>
@@ -511,6 +513,28 @@ const styles = StyleSheet.create({
     height: screenWidth/1.5,
     margin: 5,
   },
+  picButton: {
+    width: screenWidth/2,
+    height: 50,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0790cf',
+    alignSelf: 'center',
+  },
+  noteText: {
+    padding: 10,
+    textAlign: 'center',
+    borderRadius: 20,
+    marginHorizontal: 10,
+  },
+  picButtonText:{
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  }
 });
 
 export default IndividualBodyMeasure;
