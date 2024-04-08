@@ -405,6 +405,7 @@ export const crearBloqueSetsConSeries = async (req, res) => {
         "INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);"
       );
     const ID_BloqueSets = resultBloqueSets.recordset[0].ID_BloqueSets;
+    
 
     for (const serie of series) {
       // Insertar la Serie principal
