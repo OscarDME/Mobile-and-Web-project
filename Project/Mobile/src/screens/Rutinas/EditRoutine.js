@@ -112,6 +112,7 @@ const EditRoutineScreen = ({ navigation, route }) => {
       navigation.navigate('AddEjercicio', {
         day: day,
         dayID: dayID,
+        ID_Rutina: routineDetails.ID_Rutina,
       });
     } else {
       // Muestra un mensaje de error o realiza alguna acción si el día no está definido.
@@ -119,9 +120,24 @@ const EditRoutineScreen = ({ navigation, route }) => {
     }
   };
 
+
+  const checkForConsecutiveDays = (workouts) => {
+    const sortedIds = workouts.map(workout => workout.ID_Dia).sort((a, b) => a - b);
+    for (let i = 0; i < sortedIds.length - 4; i++) {
+      if (sortedIds[i + 4] - sortedIds[i] === 4) { 
+        console.log("Se encontraron 5 días consecutivos de entrenamiento");
+        return true; 
+      }
+    }
+    return false; 
+  }
+  
+
   const saveRoutine = async () => {
     const todosTienenDia = workouts.every((workout) => workout.ID_Dia !== null);
     const idsUnicos = new Set(workouts.map((workout) => workout.ID_Dia));
+
+
 
     if (!todosTienenDia) {
       setError("Todos los días de entrenamiento deben tener un día asignado.");
@@ -164,6 +180,29 @@ const EditRoutineScreen = ({ navigation, route }) => {
 
       if (response.ok) {
         console.log("Rutina actualizada exitosamente");
+
+        //Manejo de las advertencias
+        const responseWarning = await fetch(`${config.apiBaseUrl}/allWarnings/weeklyCheck/${routineDetails.ID_Rutina}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workouts: workouts,
+          })
+        });
+
+        if (responseWarning.ok) {
+          const jsonResponseWarning = await responseWarning.json();
+          console.log("Warning procesado con exito:", jsonResponseWarning);
+        } else {
+          throw new Error("No se pudo asignar la advertencia al ejercicio");
+        }
+
+        if (checkForConsecutiveDays(workouts)) {
+          //Advertencia no se puede tener 5 dias de entrenamiento consecutivos sin descanso
+        }
+
         if (route.params?.onReturn) {
             route.params.onReturn();
           }        
@@ -227,7 +266,7 @@ const EditRoutineScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         ))}
         <View style={styles.switchContainer}>
-  <Text>¿Rutina Pública?</Text>
+  <Text>¿Hacer Rutina Pública?</Text>
   <Switch
     trackColor={{ false: "#767577", true: "#81b0ff" }}
     thumbColor={isPublic ? "#f5dd4b" : "#f4f3f4"}
@@ -305,6 +344,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "white",
     fontWeight: "bold",
+    fontSize: 18,
   },
   dropdownText: {
     fontSize: 16,

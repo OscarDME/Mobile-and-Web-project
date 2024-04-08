@@ -7,6 +7,7 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
+  TouchableWithoutFeedback
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Asegúrate de instalar expo-vector-icons
 import config from "../../utils/conf";
@@ -57,13 +58,13 @@ const ExerciseDayScreen = ({ navigation, route }) => {
   
   const [exercises, setExercises] = useState([]);
 
-  const handlePressExercise = (ID_Ejercicio) => {
+  const handlePressExercise = (ID_Ejercicio, ejercicio) => {
     // Encuentra el ejercicio seleccionado basado en el ID_Ejercicio
     const selectedExercise = exercises.find(exercise => exercise.ID_Ejercicio === ID_Ejercicio);
   
     if (selectedExercise) {
       // Navega a AddSetsScreen, pasando ID_EjerciciosDia del ejercicio seleccionado como parámetro
-      navigation.navigate("AddSets", { ID_EjerciciosDia: selectedExercise.ID_EjerciciosDia });
+      navigation.navigate("AddSets", { ID_EjerciciosDia: selectedExercise.ID_EjerciciosDia, ejercicio:ejercicio });
     } else {
       console.error("Ejercicio no encontrado");
     }
@@ -135,6 +136,8 @@ const ExerciseDayScreen = ({ navigation, route }) => {
         ...exercise,
         restTime: formatRestTime(parseInt(exercise.restTime)),
       }));  
+      const allExercisesID = exercises.map(exercise => exercise.ID_Ejercicio);
+
       console.log("Ejercicios a guardar:", exercises);
       console.log("ID_Dia:", ID_Dia);
       const dataToSend = {
@@ -167,8 +170,101 @@ const ExerciseDayScreen = ({ navigation, route }) => {
       if (response.ok) {
         const jsonResponse = await response.json();
         console.log("Guardado con éxito:", jsonResponse);
+        //ADVERTENCIAS POR SOBREENTRENAMIENTO
+        // Mandar ID de los ejercicios para advertencias de (Una rutina tiene mas de 4 ejercicios de un mismo musculo en un dia)
+        const responseWarning = await fetch(`${config.apiBaseUrl}/allWarnings/overTraining/fourExercisesSameMuscleADay/${route.params.ID_Rutina}/${route.params.dayID}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ID_Ejercicios: allExercisesID,
+          })
+        });
+
+        if (responseWarning.ok) {
+          const jsonResponseWarning = await responseWarning.json();
+          console.log("Warning procesado con exito:", jsonResponseWarning);
+        } else {
+          throw new Error("No se pudo asignar la advertencia al ejercicio");
+        }
+
+        // Si hay mas de 8 ejercicios mandar ID de la rutina para que se agregue el warning (una rutina tiene mas de 8 ejercicios en un dia)
+          const responseWarning2 = await fetch(`${config.apiBaseUrl}/allWarnings/overTraining/eightExercisesADay/${route.params.ID_Rutina}/${route.params.dayID}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              exercises: exercises,
+            })
+          });
+        if (responseWarning2.ok) {
+            const jsonResponseWarning2 = await responseWarning2.json();
+            console.log("Warning 2 procesado con exito:", jsonResponseWarning2);
+          } else {
+            throw new Error("No se pudo asignar la advertencia al 2 ejercicio");
+          }
+
+
+        //Una rutina tenga tiempos de descanso muy cortos (menos  de un minuto)
+        const responseWarning3 = await fetch(`${config.apiBaseUrl}/allWarnings/overTraining/shortRestTime/${route.params.ID_Rutina}/${route.params.dayID}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            exercises: exercises,
+          })
+        });
+        if (responseWarning3.ok) {
+            const jsonResponseWarning3 = await responseWarning3.json();
+            console.log("Warning 3 procesado con exito:", jsonResponseWarning3);
+          } else {
+            throw new Error("No se pudo asignar la advertencia al 3 ejercicio");
+          }
+
+        
+        //Cuando Una rutina excede un tiempo de dos horas sin tomar en cuenta los descansos
+
+        //ADVERTENCIAS POR VARIABILIDAD
+        //Cuando Cuatro ejercicios o mas dentro de un dia de entrenamiento utilicen el mismo material
+        const responseWarning5 = await fetch(`${config.apiBaseUrl}/allWarnings/variability/fourExercisesSameMaterialADay/${route.params.ID_Rutina}/${route.params.dayID}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ID_Ejercicios: allExercisesID,
+          })
+        });
+        if (responseWarning5.ok) {
+          const jsonResponseWarning5 = await responseWarning5.json();
+          console.log("Warning 5 procesado con exito:", jsonResponseWarning5);
+        } else {
+          throw new Error("No se pudo asignar la advertencia 5 al ejercicio");
+        }
+
+
+        //ADVERTENCIAS POR INTENSIDAD
+        //Mas de 3 ejercicios dentro de un dia de entrenamiento tienen un nivel de intensidad alto 
+        const responseWarning6 = await fetch(`${config.apiBaseUrl}/allWarnings/intensity/threeExercisesHighIntensityADay/${route.params.ID_Rutina}/${route.params.dayID}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ID_Ejercicios: allExercisesID,
+          })
+        });
+        if (responseWarning6.ok) {
+          const jsonResponseWarning6 = await responseWarning6.json();
+          console.log("Warning 6 procesado con exito:", jsonResponseWarning6);
+        } else {
+          throw new Error("No se pudo asignar la advertencia 6 al ejercicio");
+        }
+
         navigation.goBack();
-        // Manejo adicional si es necesario
       } else {
         throw new Error("No se pudo guardar los ejercicios");
       }
@@ -178,28 +274,35 @@ const ExerciseDayScreen = ({ navigation, route }) => {
   };
 
   return (
+    <TouchableWithoutFeedback>
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{day}</Text>
+        <Text style={styles.headerTitle}>{route.params.day}</Text>
         <TouchableOpacity onPress={saveExercises}>
-          <Text style={styles.saveButton}>Guardar</Text>
+        <Ionicons name="save-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
       <Text style={styles.sectionTitle}>Ejercicios</Text>
       <FlatList
-  data={exercises}
-  keyExtractor={(item) => item.ID_Ejercicio.toString()}
-  renderItem={({ item, index }) => (
+        data={exercises}
+        keyExtractor={(item) => item.ID_Ejercicio.toString()}
+        renderItem={({ item, index }) => (
+
     <View style={styles.exerciseItem}>
       <TouchableOpacity
-        onPress={() => handlePressExercise(item.ID_Ejercicio)}
+        onPress={() => handlePressExercise(item.ID_Ejercicio, item.ejercicio)}
         style={{ flex: 1 }}
       >
+      <View style={styles.exerciseNameContainer}>
         <Text style={styles.exerciseName}>{item.ejercicio}</Text>
-        <View style={styles.checkboxContainer}>
+        <TouchableOpacity onPress={() => deleteExercise(item.ID_Ejercicio)}>
+        <Ionicons name="trash-outline" size={30} color="red" />
+      </TouchableOpacity>
+      </View>
+        <View style={styles.infoContainer}>
           <Text style={styles.supersetQuestion}>¿Es superset?</Text>
           <TouchableOpacity
             style={styles.checkbox}
@@ -208,21 +311,21 @@ const ExerciseDayScreen = ({ navigation, route }) => {
             <Ionicons
               name={item.isSuperset ? "checkmark-circle" : "ellipse-outline"}
               size={24}
-              color={item.isSuperset ? "green" : "grey"}
+              color={item.isSuperset ? "#0790cf" : "grey"}
             />
           </TouchableOpacity>
+          <View style={styles.restTimeContainer}>
+          <Text style={styles.supersetQuestion}>Descanso (seg)</Text>
           <TextInput
             style={styles.input}
             onChangeText={(text) => setRestTime(text, index)}
             value={item.restTime}
             placeholder="Descanso (seg)"
             keyboardType="numeric"
+            nameSuffix="seg"
           />
+          </View>
         </View>
-      </TouchableOpacity>
-      {/* Botón de eliminar */}
-      <TouchableOpacity onPress={() => deleteExercise(item.ID_Ejercicio)}>
-        <Ionicons name="trash-outline" size={24} color="red" />
       </TouchableOpacity>
     </View>
   )}
@@ -234,6 +337,7 @@ const ExerciseDayScreen = ({ navigation, route }) => {
         <Text style={styles.addButtonText}>Añadir Ejercicio</Text>
       </TouchableOpacity>
     </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -263,21 +367,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 10,
   }, 
-  checkboxContainer: {
+  infoContainer: {
+    width: "100%",
+    borderTopColor: "#CCCCCC",
+    borderTopWidth: 2,
+    paddingTop: 10,
     flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8, // Ajusta este valor según sea necesario
+    alignContent: "center",
+    justifyContent: "space-around",
+    marginTop: 16, // Ajusta este valor según sea necesario
   },
   icon: {
-    position: "absolute",
-    right: 16,
+
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
   },
   saveButton: {
-    color: "#0000ff",
+    color: "#0790cf",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -285,18 +393,16 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 20,
     fontWeight: "bold",
-    backgroundColor: "#f7f7f7",
+    backgroundColor: "#ffff",
   },
   exerciseItem: {
-    flexDirection: "row",
+    flexDirection: "collumn",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
     borderRadius: 10,
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 16,
-    elevation: 3, // Añade sombra en Android
-    // Para iOS, puedes usar shadowColor, shadowOffset, shadowOpacity, shadowRadius
   },
   exerciseInfo: {
     flex: 1,
@@ -314,19 +420,41 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   addButton: {
-    backgroundColor: "#0000ff",
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    margin: 16,
     alignItems: "center",
-    marginVertical: 16,
-    marginHorizontal: 16,
+    backgroundColor: "#0790cf",
+    padding: 10,
+    borderRadius: 5,
   },
   addButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
   },
+  restTimeContainer:{
+    flexDirection: "collumn",
+    justifyContent: "center",
+    alignItems: "center",
+    rowGap: 5,
+  },
+  exerciseNameContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    rowGap: 5,
+  },
+  infoCollumn:{
+    flexDirection: "collumn",
+    rowGap: 5,
+    alignItems: "center",
+  },
+  input: {
+    fontSize: 25,
+    borderBottomWidth: 1,
+    paddingBottom: 3,
+    paddingHorizontal: 10,
+    borderBottomColor: "#CCCCCC",
+  }
 });
 
 export default ExerciseDayScreen;
