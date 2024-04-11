@@ -24,11 +24,11 @@ import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendien
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
-import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, getWarnings } from "../Controllers/Advertencias.Controller.js";
-import { getCardiovascularTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
-
+import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
+import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck } from "../Controllers/Advertencias.Controller.js";
 
 //El que come callado repite
+//El que escoge no coge 
 
 const router = Router();
 //Usuarios
@@ -171,6 +171,9 @@ router.get("/allMilestones/:id/:medida", getIndividualMeasurements);
 router.delete("/allMilestones/:id", deleteMilestone);
 router.patch("/allMilestones/:id", updateMilestone);
 router.get("/allMilestonesMobile/:id/:medida/:intervalo", getIndividualMeasurementsWithInterval);
+
+//Rutina personalizada
+router.post("/rutinapersonalizada", createRutinaPersonalizada);
 
 //Advertencias
 router.get("/allWarnings/:id", getWarnings);

@@ -257,4 +257,24 @@ export const querys = {
         `,
     createMilestone: `INSERT INTO Medidas_Corporales (porcentaje_grasa, masa_muscular, presion_arterial, ritmo_cardiaco, cuello, pecho, hombro,bicep,antebrazo,cintura,cadera,pantorrilla,muslo,fecha,ID_UsuarioMovil, estatura, peso, IMC, foto_frente, foto_lado, foto_espalda) VALUES (@porcentaje_grasa, @masa_muscular, @presion_arterial, @ritmo_cardiaco, @cuello, @pecho, @hombro, @bicep, @antebrazo, @cintura, @cadera, @pantorrilla, @muslo, @fecha, @ID_UsuarioMovil, @estatura, @peso, @IMC, @foto_frente, @foto_lado, @foto_espalda); SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
     updateMilestone: `UPDATE Medidas_Corporales SET porcentaje_grasa=@porcentaje_grasa, masa_muscular=@masa_muscular, presion_arterial=@presion_arterial, ritmo_cardiaco=@ritmo_cardiaco, cuello=@cuello, pecho=@pecho, hombro=@hombro, bicep=@bicep, antebrazo=@antebrazo, cintura=@cintura, cadera=@cadera, pantorrilla=@pantorrilla, muslo=@muslo, estatura=@estatura, peso=@peso, IMC=@IMC WHERE ID_MedidasCorporales = @ID_MedidasCorporales; SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
+
+    //Rutina personalizada
+    
+    getCuestionario: `SELECT 
+    ID_Cuestionario,
+    ID_UsuarioMovil,
+    -- Convertir y formatear el tiempo a HH:MM
+    SUBSTRING(CONVERT(varchar, tiempo_disponible, 108), 1, 5) AS TiempoDisponible,
+    ID_Objetivo,
+    ID_NivelFormaFisica,
+    ID_EspacioDisponible,
+    ID_Musculo
+FROM 
+    Cuestionario;
+`,
+    getUsuario:"SELECT * FROM Usuario WHERE ID_Usuario = @ID_Usuario;",
+    getPadece: `SELECT * FROM Padece WHERE ID_Cuestionario = @ID_Cuestionario;`,
+    getQuiereEntrenar: `SELECT * FROM QuiereEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
+    getDispone: `SELECT * FROM Dispone WHERE ID_Cuestionario = @ID_Cuestionario;`,
+    getPuedeEntrenar: `SELECT * FROM PuedeEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
   };
