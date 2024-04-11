@@ -1,13 +1,44 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import { View, Text, Button, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Dimensions } from "react-native";
 import { Feather } from '@expo/vector-icons';
 const screenHeight = Dimensions.get("window").height-100;
 const screenWidth = Dimensions.get("window").width - 40;
+import config from "../../utils/conf";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 export default function Achievements() {
-  //SOLAMENTE PONGO TODOS LOS TIPOS DE LOGROS QUE HAY, HABRA QUE MAPEAR SOBRE TODOS ESTOS
+
+
+  useEffect(() => {
+    const fetchOIDAndWorkoutData = async () => {
+      const oid = await AsyncStorage.getItem("userOID");
+      if (!oid) {
+        console.error("OID not found");
+        return;
+      }
+      fetchAchievements(oid);
+    };
+  })
+
+  const fetchAchievements = async (oid) => {
+    const response = await fetch(
+      `${config.apiBaseUrl}/consistencyAchievements/${oid}`
+    );
+
+
+    const response2 = await fetch(
+      `${config.apiBaseUrl}/cardiovascularAchievements/${oid}`
+    );
+
+    const response3 = await fetch(
+      `${config.apiBaseUrl}/compuoundAchievements/${oid}`
+    );
+  };
+
+
   return (
     <>
     <ScrollView style={styles.container}>

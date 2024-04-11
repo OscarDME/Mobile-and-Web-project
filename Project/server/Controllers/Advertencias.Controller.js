@@ -2,6 +2,34 @@ import { getConnection } from "../Database/connection.js";
 import { sql } from "../Database/connection.js";
 import { querys } from "../Database/querys.js";
 
+
+
+export const getWarnings = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const oid = req.params.id;
+    
+    const result = await pool.request()
+    .input("ID_Usuario", sql.VarChar, oid)
+    .query(`
+    select a.ID_Advertencia, r.nombre, a.ID_AdvertenciaTiempo, d.dia, a.ID_Rutina, a.ID_Usuario, a.ID_DescripcionAdvertencia, t.Descripcion
+    from Advertencia a
+    left join Dias_Entreno e on a.ID_Dias_Entreno = e.ID_Dias_Entreno
+    left join Dia d on e.ID_Dia = d.ID_Dia
+    inner join Rutina r on a.ID_Rutina = r.ID_Rutina
+    inner join DescripcionAdvertencia da on a.ID_DescripcionAdvertencia = da.ID_DescripcionAdvertencia
+    inner join TipoAdvertencia t on da.ID_TipoAdvertencia = t.ID_TipoAdvertencia
+    where a.ID_Usuario = @ID_Usuario
+    `)
+
+    res.status(200).json(result.recordset);
+  }
+  catch (error) {
+    console.error("Error al consultar las advertencias", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
     try {
       const { ID_Ejercicios } = req.body;
@@ -482,7 +510,7 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
         .query(`
           INSERT INTO Advertencia (ID_Rutina, ID_Usuario, ID_DescripcionAdvertencia, ID_AdvertenciaTiempo)
           VALUES (@ID_Rutina, @ID_Usuario, @ID_DescripcionAdvertencia, @ID_AdvertenciaTiempo)
-        `);
+        `);t
       }
 
 
