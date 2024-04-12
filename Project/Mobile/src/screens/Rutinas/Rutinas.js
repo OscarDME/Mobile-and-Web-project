@@ -12,6 +12,8 @@ import config from "../../utils/conf";
 
 const MainMenu = ({ navigation }) => {
   const [rutinas, setRutinas] = useState([]);
+  const [rutinasPublicas, setRutinasPublicas] = useState([]);
+
 
   const fetchRutinas = async () => {
     console.log("Cargando rutinas");
@@ -32,10 +34,35 @@ const MainMenu = ({ navigation }) => {
     }
   };
 
-  // Datos de ejemplo para las rutinas
+  // Datos de ejemplo para las rutina
   useEffect(() => {
     fetchRutinas();
   }, []);
+
+  const fetchRutinasPublicas = async () => {
+    console.log("Cargando rutinas");
+    try {
+      const oid = await AsyncStorage.getItem("userOID");
+      if (oid) {
+        const response = await fetch(`${config.apiBaseUrl}/rutinaspublicas/${oid}`);
+        if (response.ok) {
+          const rutinasObtenidas = await response.json();
+          console.log(rutinasObtenidas);
+          setRutinasPublicas(rutinasObtenidas);
+        } else {
+          console.error("Error al obtener las rutinas publicas");
+        }
+      }
+    } catch (error) {
+      console.error("Error al cargar las rutinas:", error);
+    }
+  };
+
+  // Datos de ejemplo para las rutinas
+  useEffect(() => {
+    fetchRutinasPublicas();
+  }, []);
+
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -76,6 +103,27 @@ const MainMenu = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <Text style={styles.secondTitle}>Rutinas Públicas</Text>
+      <ScrollView
+        horizontal={true}
+        style={styles.rutinasContainer2}
+        showsHorizontalScrollIndicator={false}
+      >
+        {rutinasPublicas.map((rutina) => (
+          <TouchableOpacity
+            key={rutina.ID_Rutina}
+            style={styles.rutinaCard}
+            onPress={() =>
+              navigation.navigate("DetallesRutinaVisualizar", {
+                routineId: rutina.ID_Rutina,
+              })
+            }
+          >
+            <Text style={styles.rutinaNombre}>{rutina.NombreRutina}</Text>
+            <Text style={styles.rutinaAutor}>Por: {rutina.Autor}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -99,28 +147,37 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     // Ajusta el margen para alinear el texto como desees
   },
-  
+  secondTitle: {
+    fontSize: 24,
+    flex:1,
+    marginRight: 200,
+    // Ajusta el margen para alinear el texto como desees
+  },
   rutinasContainer: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: -30,
+  },
+  rutinasContainer2: {
+    flexDirection: "row",
+    marginBottom: 220,
   },
   rutinaCard: {
     backgroundColor: "#0790cf",
     borderRadius: 10,
-    height: 100,
+    height: 150,
     padding: 20,
     marginRight: 16,
-    width: 200, // Ajusta el ancho según tus necesidades
+    width: 250, // Ajusta el ancho según tus necesidades
   },
   rutinaNombre: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 30,
     color:"#fff",
   
   },
   rutinaAutor: {
-    fontSize: 14,
+    fontSize: 16,
     color:"#fff",
   },
   // Agrega más estilos aquí según sea necesario

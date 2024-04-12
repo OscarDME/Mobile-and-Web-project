@@ -9,7 +9,7 @@ const HeaderComponent = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {/* Logo on the left */}
-      <TouchableOpacity onPress={() => navigation.navigate("MainMenu")}>
+      <TouchableOpacity onPress={() => navigation.navigate("Rutinas")}>
         <Image source={Logo} style={styles.logo} />
       </TouchableOpacity>
 

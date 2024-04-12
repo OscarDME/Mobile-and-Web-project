@@ -16,9 +16,9 @@ import { createCuestionario } from "../Controllers/Cuestionario.Controllers.js";
 import { createEjercicio, getExercises, getEjercicioById, updateEjercicio, getAlternativeExercises, requestEjercicio, getRequests, updateEstadoEjercicio, deleteEjercicio, updateRequest } from "../Controllers/EjerciciosControllers.js";
 import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, createAlimentoRequest, getAllAlimentosWithMacronutrientesRequest, updateEstadoAlimento, deleteAlimento, updateAndAcceptAlimento} from "../Controllers/Alimento.Controllers.js";
 import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta } from "../Controllers/Recetas.Controllers.js";
-import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas } from "../Controllers/Rutinas.Controllers.js";
+import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas, getRutinasPublicasByUsuario, cloneRutinaById } from "../Controllers/Rutinas.Controllers.js";
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
-import { createCompleteRutinaForClient, getAssignedRoutines } from "../Controllers/AsignarRutinas.Controllers.js";
+import { createCompleteRutinaForClient, getAssignedRoutines, assignRoutine, removeAssignedRoutine } from "../Controllers/AsignarRutinas.Controllers.js";
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
@@ -111,6 +111,7 @@ router.put("/receta/:id", updateAndAcceptReceta);
 //Rutinas
 router.post("/rutinas", createRutina);
 router.get("/rutinas/:oid", getRutinasByUsuario);
+router.get("/rutinaspublicas/:oid", getRutinasPublicasByUsuario);
 router.get("/rutina/:id", getRutinaByID);
 router.put("/rutina/:id", updateRutina);
 router.post("/rutinaejercicios", createEjerciciosDia);
@@ -122,10 +123,13 @@ router.get("/sets/:id", obtenerSetsPorEjercicioDia);
 router.delete("/rutina/:id", deleteRutina);
 router.post("/rutinacompleta", createCompleteRutina);
 router.get("/rutinacompleta", getCompleteRutinas);
+router.post("/clonarrutina", cloneRutinaById);
 
 //Asignar rutinas
 router.post("/rutinaasignar", createCompleteRutinaForClient);
 router.get("/rutinasasignar/:id", getAssignedRoutines);
+router.post("/asignar", assignRoutine);
+router.post("/borrarasignacion/:id", removeAssignedRoutine);
 
 //Dietas
 router.get("/tiemposComida", getTiemposComida);

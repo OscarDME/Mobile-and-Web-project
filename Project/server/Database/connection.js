@@ -9,7 +9,7 @@ var sql = require('mssql/msnodesqlv8');
 //Oscar
 
 const config = {
-  connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubPrueba;Trusted_Connection=yes;TrustServerCertificate=yes"}
+  connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubBD;Trusted_Connection=yes;TrustServerCertificate=yes"}
 /*
   connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubBD;Trusted_Connection=yes;TrustServerCertificate=yes"}
 */

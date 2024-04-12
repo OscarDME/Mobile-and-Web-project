@@ -11,14 +11,9 @@ import { Ionicons } from "@expo/vector-icons";
 import config from "../../utils/conf";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const RoutineDetailsScreen = ({ navigation, route }) => {
+const RoutineDetailsViewScreen = ({ navigation, route }) => {
   const { routineId } = route.params;
   const [routineDetails, setRoutineDetails] = useState(null);
-  const [assignedRoutines, setAssignedRoutines] = useState([]);
-  const [currentAssignedID, setCurrentAssignedID] = useState(null);
-  const [isAssigned, setIsAssigned] = useState(false);
-  const [assignedDates, setAssignedDates] = useState(null);
-
 
   const fetchRoutineDetails = async () => {
     try {
@@ -37,102 +32,35 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
     }
   };
 
-  const fetchAssignedRoutines = async () => {
-    const ID_Usuario = await AsyncStorage.getItem('userOID');
-    if (!ID_Usuario) {
-      console.log('ID de usuario no encontrado.');
-      return;
-    }
-
+  const addRoutineToMyRoutines = async () => {
     try {
-      const response = await fetch(`${config.apiBaseUrl}/rutinasasignar/${ID_Usuario}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAssignedRoutines(data);
+      const oid = await AsyncStorage.getItem("userOID");
+      console.log("Hago la consulta");
+      const response = await fetch(`${config.apiBaseUrl}/clonarrutina`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ID_Rutina: routineId,
+          ID_Usuario: oid,
+        }),
+      });
 
-        const currentRoutine = data.find(r => r.ID_Rutina === routineId);
-        if (currentRoutine) {
-          setIsAssigned(true);
-          setAssignedDates(`${currentRoutine.fecha_inicio} - ${currentRoutine.fecha_fin}`);
-          // Suponiendo que quieres almacenar el ID_Rutina_Asignada para usarlo al remover la asignación
-          setCurrentAssignedID(currentRoutine.ID_Rutina_Asignada);
-        } else {
-          setIsAssigned(false);
-          setAssignedDates(null);
-        }
+      if (response.ok) {
+        Alert.alert("Éxito", "Rutina agregada a tus rutinas con éxito.");
+        navigation.goBack();
       } else {
-        console.error("No se pudieron obtener las rutinas asignadas.");
+        // Manejo de errores según el caso
+        Alert.alert("Error", "No se pudo agregar la rutina a tus rutinas.");
       }
     } catch (error) {
-      console.error("Error al obtener las rutinas asignadas:", error);
+      console.error("Error al agregar la rutina a tus rutinas:", error);
+      Alert.alert(
+        "Error",
+        "Hubo un problema al agregar la rutina a tus rutinas."
+      );
     }
-};
-
-  
-  useEffect(() => {
-    fetchRoutineDetails();
-    fetchAssignedRoutines(); // Llamada para obtener las rutinas asignadas
-  }, [routineId]);
-
-  const removeAssignment = async () => {
-    if (!currentAssignedID) {
-      Alert.alert("Error", "No se encontró el ID de asignación.");
-      return;
-  }
-    try {
-        const response = await fetch(`${config.apiBaseUrl}/borrarasignacion/${currentAssignedID}`, {
-            method: 'POST', // Asegúrate de que coincida con el método esperado por tu API
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            Alert.alert("Éxito", "Rutina desasignada correctamente");
-            navigation.goBack();
-        } else {
-            console.error("No se pudo quitar la asignación de la rutina.");
-        }
-    } catch (error) {
-        console.error("Error al quitar la asignación de la rutina:", error);
-    }
-};
-
-  const deleteRoutine = async () => {
-    // Confirmar con el usuario antes de borrar la rutina
-    Alert.alert(
-      "Eliminar Rutina",
-      "¿Estás seguro de que quieres eliminar esta rutina?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Eliminar",
-          onPress: async () => {
-            try {
-              // Realiza la solicitud de eliminación a tu API
-              const response = await fetch(
-                `${config.apiBaseUrl}/rutina/${routineId}`,
-                {
-                  method: "DELETE", // Asume que tu API requiere un método DELETE para eliminar rutinas
-                }
-              );
-              if (response.ok) {
-                // Si la rutina se elimina correctamente, navegar hacia atrás o actualizar la lista de rutinas
-                navigation.goBack(); // Por ejemplo, volver a la pantalla anterior
-              } else {
-                console.error("No se pudo eliminar la rutina.");
-              }
-            } catch (error) {
-              console.error("Error al eliminar la rutina:", error);
-            }
-          },
-        },
-      ]
-    );
   };
 
   // Llamar a fetchRoutineDetails cuando el componente se monta o cuando routineId cambia
@@ -145,12 +73,6 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={30} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={deleteRoutine}
-          style={{ marginLeft: "auto" }}
-        >
-          <Ionicons name="trash-outline" size={30} color="red" />
         </TouchableOpacity>
       </View>
 
@@ -183,18 +105,14 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
               ? `${routineDetails.diasEntreno.length} días por semana`
               : "No hay datos suficientes"}
           </Text>
-          {isAssigned ? (
-          <>
-            <Text style={styles.assignedDates}>Asignada del {assignedDates}</Text>
-            <TouchableOpacity style={styles.buttonRemove} onPress={removeAssignment}>
-              <Text style={styles.buttonText}>Quitar asignación</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("AsignarRutinas", { ID_Rutina: routineId })}>
-            <Text style={styles.buttonText}>Asignar rutina</Text>
+          <TouchableOpacity style={styles.button}>
+            <Text
+              style={styles.buttonText}
+              onPress={addRoutineToMyRoutines}
+            >
+              Agregar a mis rutinas
+            </Text>
           </TouchableOpacity>
-        )}
 
           <View style={styles.trainingSection}>
             <Text style={styles.sectionTitle}>Entrenamientos</Text>
@@ -220,14 +138,14 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={styles.button}
             onPress={() =>
-              navigation.navigate("EditarRutina", {
+              navigation.navigate("EditarRutinaView", {
                 isEditing: true,
                 routineDetails: routineDetails,
                 onReturn: fetchRoutineDetails,
               })
             }
           >
-            <Text style={styles.buttonText}>Modificar Rutina</Text>
+            <Text style={styles.buttonText}>Visualizar Rutina</Text>
           </TouchableOpacity>
         </>
       ) : (
@@ -273,13 +191,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  buttonRemove: {
-    backgroundColor: "#C0392B",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 20,
-  },
   buttonText: {
     color: "white",
     fontSize: 16,
@@ -307,11 +218,7 @@ const styles = StyleSheet.create({
   trainingActivities: {
     fontSize: 16,
   },
-  assignedDates: {
-    fontSize: 18,
-    marginBottom: 25,
-    textAlign: "center",
-  }
+  // ... Agrega cualquier otro estilo que necesites aquí
 });
 
-export default RoutineDetailsScreen;
+export default RoutineDetailsViewScreen;
