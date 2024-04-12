@@ -1,10 +1,10 @@
 {
-  "hostType": "lan",
+  "hostType": "tunnel",
   "lanType": "ip",
   "dev": true,
   "minify": false,
-  "urlRandomness": null,
+  "urlRandomness": "gn-pwr",
   "https": false,
-  "scheme": null,
+  "scheme": "com.anonymous.FitHub",
   "devClient": false
 }

@@ -180,13 +180,20 @@ router.get("/allMilestonesMobile/:id/:medida/:intervalo", getIndividualMeasureme
 router.post("/rutinapersonalizada", createRutinaPersonalizada);
 
 //Advertencias
-//router.get("/allWarnings/:id", getWarnings);
+router.get("/allWarnings/:id", getWarnings);
 router.post("/allWarnings/overTraining/fourExercisesSameMuscleADay/:id/:ID_Dias_Entreno", createWarningFourExercisesSameMuscleADay);
 router.post("/allWarnings/overTraining/eightExercisesADay/:id/:ID_Dias_Entreno", createWarningEightExercisesADay );
 router.post("/allWarnings/variability/fourExercisesSameMaterialADay/:id/:ID_Dias_Entreno", createWarningFourExercisesSameMaterialADay );
 router.post("/allWarnings/intensity/threeExercisesHighIntensityADay/:id/:ID_Dias_Entreno", createWarningThreeExercisesHighIntensityADay );
 router.post("/allWarnings/overTraining/shortRestTime/:id/:ID_Dias_Entreno", createWarningLessThanAMinuteOfRestPerExercise );
 router.post("/allWarnings/weeklyCheck/:id", createWarningWeeklyCheck );
+
+
+//Logros
+router.get("/consistencyAchievements/:id", getConsistencyAchievements);
+router.get("/cardiovascularAchievements/:id", getCardiovascularTimeAchievements);
+router.get("/compuoundAchievements/:id", getCardiovascularTimeAchievements);
+
 
 
 export default router;

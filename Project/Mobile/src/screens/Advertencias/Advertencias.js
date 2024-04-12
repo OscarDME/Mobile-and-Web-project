@@ -4,23 +4,196 @@ import { Dimensions } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 const screenHeight = Dimensions.get("window").height-100;
 const screenWidth = Dimensions.get("window").width - 40;
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import config from "../../utils/conf";
+
 
 const MainMenu = ({ navigation }) => {
-  //SOLAMENTE PONGO TODOS LOS TIPOS DE ADVERTENCIAS QUE HAY, HABRA QUE MAPEAR SOBRE TODOS ESTOS
-  const [selectedCategory, setSelectedCategory] = useState("Todas"); // Nuevo estado para la categoría seleccionada
+  const [oid, setOid] = useState("");
+  const [warnings, setWarnings] = useState([]);
+  const [filteredWarnings, setFilteredWarnings] = useState([]);
+
+
+  const descripcionAdvertenciaMap = {
+    1: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        cuenta con más de 4 ejercicios de un mismo músculo en
+        <Text style={styles.emphasis}> {warning.dia}</Text>.
+        Esto no es recomendado porque puede sobrecargar el músculo.
+      </Text>
+    ),
+    2: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        cuenta con más de 12 ejercicios de un solo músculo en toda la semana.
+        Se recomienda distribuir mejor los ejercicios entre los distintos días, 
+        trabajar un mismo músculo varias veces por semana puede que no sea lo ideal
+        y podrías llegar a sobrecargarlo. Es recomendado distribuir mejor los ejercicios entre los distintos grupos musculares.
+      </Text>
+    ),
+    3: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre} </Text>, 
+        cuenta con más de 8 ejercicios en el día <Text style={styles.emphasis}> {warning.dia}</Text>.
+        Esto puede llegar a ser muy extenso y pesado para una sola sesión de entrenamiento, 
+        se recomienda distribuir mejor los ejercicios entre los distintos días.
+      </Text>
+    ),
+    4: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        tiene dos días consecutivos en los que se trabajan los mismos grupos musculares principales, 
+        esto no es recomendado ya que el músculo necesita tiempo para recuperarse.
+        Distribuya mejor los grupos musculares trabajados entre los distintos días de su entrenamiento.
+      </Text>
+    ),
+    5: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        cuenta con 5 días consecutivos de entrenamiento sin descanso entre ellos, 
+        lo recomendable es dejar al menos un día de descanso entre sesiones para que
+        el cuerpo se recupere adecuadamente.
+      </Text>
+    ),
+    6: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        tiene una duración mayor a 2 horas sin tomar en cuenta los descansos, 
+        lo recomendable es que una rutina no supere las 2 horas de duración total para evitar fatiga excesiva.
+      </Text>
+    ),
+    7: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        tiene algunos ejercicios con un descanso menor a 1 minuto en el día 
+        <Text style={styles.emphasis}> {warning.dia}</Text>, lo recomendable es tomar mas 1 minuto de descanso entre 
+        ejercicios para que el cuerpo se recupere adecuadamente y que las series sean efectivas.
+      </Text>
+    ),
+    8: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        realiza el mismo ejercicio más de 3 veces en la misma semana.
+        Es recomendable variar los ejercicios para trabajar todos los músculos de forma equilibrada.
+      </Text>
+    ),
+    9: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        entrena menos de 4 músculos en la semana, se recomienda trabajar al menos 4 grupos musculares
+         distintos para lograr un entrenamiento equilibrado.
+      </Text>
+    ),
+    10: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, 
+        utiliza el mismo material en 4 ejercicios o más en el dia 
+        <Text style={styles.emphasis}>{warning.dia}</Text> sin variarlo. Es recomendable
+        alternar los materiales utilizados durante las sesiones de entrenamiento.
+      </Text>
+    ),
+    11: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        En la rutina <Text style={styles.emphasis}>{warning.nombre}</Text>
+        hay 3 ejercicios o más los cuales tienen un nivel de dificultad alto en el día
+        <Text style={styles.emphasis}>{warning.dia}</Text>, 
+        es recomendable distribuir mejor los ejercicios de alta intensidad entre los días para evitar sobrecargar al cuerpo.
+      </Text>
+    ),
+    13: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        La rutina <Text style={styles.emphasis}>{warning.nombre}</Text>, que te asignaste para entrenar
+        tiene ejercicios los cuales interfieren con tu lesión la cual especificaste en tu perfil, 
+        se recomienda modificar la rutina eliminando o sustituyendo esos ejercicios por otros que no afecten la zona lesionada.
+      </Text>
+    ),
+    14: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        Los objetivos de entrenamiento de la rutina <Text style={styles.emphasis}>{warning.nombre}</Text>
+        no se alinean con tus objetivos de entrenamiento declarados en tu perfil.
+        ¿Estás seguro que esta rutina es la ideal para ti?
+      </Text>
+    ),
+    15: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        Al terminar tu sesión de entrenamiento <Text style={styles.emphasis}>{warning.nombre} CAMBIAR ESTO</Text>
+        nos percatamos de que duró más de lo que debería haber durado, 
+        recuerda que es importante respetar los tiempos de descanso y las repeticiones para que
+        tu entrenamiento sea efectivo y seguro.
+      </Text>
+    ),
+    16: (warning) =>(
+      <Text style={styles.achievementDescription}>
+        Al terminar tu sesión de entrenamiento <Text style={styles.emphasis}>{warning.nombre} CAMBIAR ESTO TAMBIEN</Text>,
+        nos dimos cuenta que algunos de los pesos utilizados fueron al menos 20% mayores comparados a la sesión anterior 
+        a esta, recuerda incrementar los pesos de forma gradual para evitar lesiones.
+      </Text>
+    )
+  };
+  
+
+  const categoryToTimeIdMap = {
+    "Todas": null, // null o una lista de todos los posibles IDs si necesitas filtrar explícitamente
+    "Al asignarse una rutina": 2,
+    "Al terminar un entrenamiento": 3,
+    "Al crear una rutina": 1,
+  };
+
+
+  const [selectedCategory, setSelectedCategory] = useState("Todas");
+
+  useEffect(() => {
+    AsyncStorage.getItem("userOID").then((value) => {
+      if (value) {
+        setOid(value);
+
+        fetchWarnings(value); 
+      }
+    });
+  }, []);
+  
+  useEffect(() => {
+    const updateFilteredWarnings = () => {
+      const timeId = categoryToTimeIdMap[selectedCategory];
+      const newFilteredWarnings = timeId == null ? warnings : warnings.filter(warning => warning.ID_AdvertenciaTiempo === timeId);
+  
+      setFilteredWarnings(newFilteredWarnings);
+    };
+  
+    updateFilteredWarnings();
+  }, [warnings, selectedCategory]); 
+  
+  const fetchWarnings = async (oidValue) => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/allWarnings/${oidValue}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        setWarnings(data);
+      } else {
+        throw new Error("No se pudieron obtener las advertencias");
+      }
+    } catch (error) {
+      console.error('Error al cargar advertencias:', error);
+    }
+  };
 
 
   const handleCategoryFilter = (category) => {
-    setSelectedCategory(category); // Actualiza la categoría seleccionada
-    if (category === "Todas") {
+    setSelectedCategory(category); 
+  
 
-    } else if (category === "Al asignarse una rutina") {
-
-    } else if (category === "Al terminar un entrenamiento") {
-
-    }else if (category === "Al crear una rutina") {
-
-    }
+    const timeId = categoryToTimeIdMap[category];
+    const filteredWarnings = timeId == null ? warnings : warnings.filter(warning => warning.ID_AdvertenciaTiempo === timeId);
+  
+    // Asume que tienes un estado separado para las advertencias filtradas o ajusta según sea necesario
+    setFilteredWarnings(filteredWarnings);
   };
 
 
@@ -72,89 +245,30 @@ const MainMenu = ({ navigation }) => {
           </TouchableOpacity>
   </ScrollView>
     <ScrollView style={styles.container}>
-      <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementRealize]}>
-      <AntDesign name="warning" size={24} color="#333333" />
-        <Text style={styles.achievementTitle}>Carga</Text>
-        </View>
-        <View style={styles.achievementBodyRealize}>
-        <Text style={styles.achievementDescription}>
-          En tu última sesión de entrenamiento, nos dimos cuenta que pasaste de levantar
-          <Text style={styles.emphasis}> 20kg </Text>en
-          <Text style={styles.emphasis}> press de banca </Text> 
-          a <Text style={styles.emphasis}> 269kg</Text>, en comparacion a la semana anterior.
-          Ten cuidado al aumentar cargas de una manera tan agresiva, ya que podría causar lesiones.
-          </Text>
+    {filteredWarnings.map((warning, index) => (
+    <View key={index} style={styles.item}>
+      <View style={[styles.achievementHeader, 
+          warning.ID_AdvertenciaTiempo === 1 ? styles.achievementsCreate : 
+          warning.ID_AdvertenciaTiempo === 2 ? styles.achievementsAssign : 
+          warning.ID_AdvertenciaTiempo === 3 ? styles.achievementRealize : null
+        ]}>
+        <AntDesign name="warning" size={24} color="#333333" />
+        <Text style={styles.achievementTitle}>{warning.Descripcion}</Text>
+      </View>
+      <View style={[
+          warning.ID_AdvertenciaTiempo === 1 ? styles.achievementBodyCreate : 
+          warning.ID_AdvertenciaTiempo === 2 ? styles.achievementBodyAssign : 
+          warning.ID_AdvertenciaTiempo === 3 ? styles.achievementBodyRealize : null
+        ]}>
+          {typeof descripcionAdvertenciaMap[warning.ID_DescripcionAdvertencia] === 'function' ?
+            descripcionAdvertenciaMap[warning.ID_DescripcionAdvertencia](warning) :
+            <Text style={styles.achievementDescription}>
+              {descripcionAdvertenciaMap[warning.ID_DescripcionAdvertencia]}
+            </Text>
+          }
         </View>
       </View>
-      <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementRealize]}>
-      <AntDesign name="warning" size={24} color="#333333" />
-        <Text style={styles.achievementTitle}>Sesión prolongada</Text>
-        </View>
-        <View style={styles.achievementBodyRealize}>
-        <Text style={styles.achievementDescription}>
-          En tu último entrenamiento duraste un total de <Text style={styles.emphasis}> 3 horas y 45 minutos</Text>,
-          cuando debio durar un total de 
-          <Text style={styles.emphasis}> 3 horas y 30 minutos</Text>,
-          ten en cuenta que debes respetar los tiempos de descanso y repeticiones de tu rutina.
-          </Text>
-        </View>
-      </View>
-      <View style={styles.item}>
-      <View style={[styles.achievementHeader,  styles.achievementsAssign]}>
-      <AntDesign name="warning" size={24} color="#333333" />
-        <Text style={styles.achievementTitle}>Lesión</Text>
-        </View>
-        <View style={styles.achievementBodyAssign}>
-        <Text style={styles.achievementDescription}>
-          La rutina <Text style={styles.emphasis}> KFC </Text>
-          que tienes asignada, puede dañarte el 
-           <Text style={styles.emphasis}> hombro </Text>
-           ten cuidado al realizar el entrenamiento.
-          </Text>
-        </View>
-      </View>
-      <View style={styles.item}>
-      <View style={[styles.achievementHeader,  styles.achievementsAssign]}>
-      <AntDesign name="warning" size={24} color="#333333" />
-        <Text style={styles.achievementTitle}>Objetivo</Text>
-        </View>
-        <View style={styles.achievementBodyAssign}>
-        <Text style={styles.achievementDescription}>
-          La rutina <Text style={styles.emphasis}> me voy a desmayar </Text>
-          puede que no se alinee con tu objetivo de entrenamiento.
-          </Text>
-        </View>
-      </View>
-      <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementsCreate]}>
-      <AntDesign name="warning" size={24} color="#333333" />
-        <Text style={styles.achievementTitle}>Sobreentrenamiento</Text>
-        </View>
-        <View style={styles.achievementBodyCreate}>
-          <Text style={styles.achievementDescription}>
-          La rutina<Text style={styles.emphasis}> ill go shredded or ill die</Text>,
-          tiene 
-           <Text style={styles.emphasis}> 5 días </Text>
-           consecutivos sin descanso, recuerda que debes descansar.
-          </Text>
-        </View>
-      </View>
-      <View style={styles.item}>
-      <View style={[styles.achievementHeader, styles.achievementsCreate]}>
-      <AntDesign name="warning" size={24} color="#333333" />
-        <Text style={styles.achievementTitle}>Variabilidad</Text>
-        </View>
-        <View style={styles.achievementBodyCreate}>
-          <Text style={styles.achievementDescription}>
-          La rutina<Text style={styles.emphasis}> patas de canguro </Text>
-          cuenta con demasiados ejercicios de 
-           <Text style={styles.emphasis}> pierna</Text>.
-           ¿Estas realizando el ejercicio correcto?
-          </Text>
-        </View>
-      </View>
+    ))}
     </ScrollView>
     </>
   )

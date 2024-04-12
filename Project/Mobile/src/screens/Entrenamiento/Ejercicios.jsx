@@ -93,6 +93,7 @@ const WorkoutScreen = ({route, navigation}) => {
       setCurrentSetIndex(currentSetIndex + 1);
     } else {
       // Finaliza el entrenamiento
+      //agregar advertencias al momento de terminar una rutina
       navigation.goBack();
     }
   };
