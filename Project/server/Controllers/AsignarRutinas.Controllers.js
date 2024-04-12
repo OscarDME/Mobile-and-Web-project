@@ -1,7 +1,7 @@
 import { getConnection } from "../Database/connection.js";
 import { sql } from "../Database/connection.js";
 import { querys } from "../Database/querys.js";
-
+import cron from "node-cron";
 
   export const createCompleteRutinaForClient = async (req, res) => {
     const { ID_Usuario, ID_Movil, routineName, days, fechaInicio, fechaFin } = req.body;
@@ -293,7 +293,7 @@ import { querys } from "../Database/querys.js";
 
       const diasEntrenoResult = await pool
         .request()
-        .input("ID_Rutina", sql.Int, rutinaId)
+        .input("ID_Rutina", sql.Int, ID_Rutina)
         .input("ID_Dia", sql.Int, ID_Dia)
         .query("SELECT ID_Dias_Entreno FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina AND ID_Dia = @ID_Dia");
 
@@ -367,12 +367,140 @@ import { querys } from "../Database/querys.js";
                 INNER JOIN 
                     UsuarioMovil UM ON RA.ID_UsuarioMovil = UM.ID_UsuarioMovil
                 WHERE 
-                    UM.ID_UsuarioMovil = @ID_UsuarioMovil;
+                    UM.ID_UsuarioMovil = @ID_UsuarioMovil
+                    AND RA.fecha_eliminacion IS NULL; 
             `);
-
         res.json(result.recordset);
     } catch (error) {
         console.error("Error al obtener las rutinas asignadas:", error.message);
         res.status(500).json({ error: "Error interno del servidor" });
     }
+};
+
+export const assignRoutine = async (req, res) => {
+  const { ID_Usuario, ID_Rutina, fechaInicio, fechaFin } = req.body;
+
+  try {
+      const pool = await getConnection();
+
+      const mobileUserResult = await pool
+      .request()
+      .input("ID_Usuario", sql.VarChar, ID_Usuario)
+      .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+
+      const ID_UsuarioMovil = mobileUserResult.recordset[0].ID_UsuarioMovil;
+
+      const fechaAsignacion = new Date().toISOString();
+
+      // Insertar la asignación de la rutina
+      const asignarRutinaResult = await pool
+      .request()
+      .input("fecha_asignacion", sql.DateTime, fechaAsignacion)
+      .input("fecha_eliminacion", sql.DateTime, null)
+      .input("fecha_inicio", sql.DateTime, fechaInicio)
+      .input("fecha_fin", sql.DateTime, fechaFin)
+      .input("ID_Rutina", sql.Int, ID_Rutina)
+      .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil)
+      .input("ID_Usuario_WEB", sql.VarChar, null)
+      .query(querys.createAsignarRutinas + "; SELECT SCOPE_IDENTITY() AS ID_Rutina_Asignada;");
+
+        // Asegúrate de acceder correctamente al ID_Rutina_Asignada devuelto por la consulta
+        const ID_Rutina_Asignada = asignarRutinaResult.recordset[0].ID_Rutina_Asignada;
+
+        console.log("ID_Rutina_Asignada:", ID_Rutina_Asignada);
+
+        let currentDate = new Date(fechaInicio);
+        const endDate = new Date(fechaFin);
+    
+        while (currentDate <= endDate) {
+          // Obtener el ID_Dia basado en el día de la semana de currentDate
+          const dayOfWeek = currentDate.getDay(); // Domingo = 0, Lunes = 1, ..., Sábado = 6
+          const ID_Dia = dayOfWeek + 1; // Ajustar según cómo estén definidos tus ID_Dia
+    
+          const diasEntrenoResult = await pool
+            .request()
+            .input("ID_Rutina", sql.Int, ID_Rutina)
+            .input("ID_Dia", sql.Int, ID_Dia)
+            .query("SELECT ID_Dias_Entreno FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina AND ID_Dia = @ID_Dia");
+    
+          for (const row of diasEntrenoResult.recordset) {
+            const ID_Dias_Entreno = row.ID_Dias_Entreno;
+    
+            const seriesResult = await pool
+              .request()
+              .input("ID_Dias_Entreno", sql.Int, ID_Dias_Entreno)
+              .query(`
+                SELECT CS.ID_Serie
+                FROM ConjuntoSeries CS
+                JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+                WHERE BS.ID_EjerciciosDia IN (
+                  SELECT ID_EjerciciosDia FROM EjerciciosDia WHERE ID_Dias_Entreno = @ID_Dias_Entreno
+                )
+              `);
+    
+            for (const serie of seriesResult.recordset) {
+              await pool
+                .request()
+                .input("ID_Serie", sql.Int, serie.ID_Serie)
+                .input("ID_Rutina_Asignada", sql.Int, ID_Rutina_Asignada)
+                .input("fecha", sql.Date, currentDate)
+                .input("completado", sql.Bit, 0) 
+                .query(`
+                  INSERT INTO ResultadoSeriesUsuario (ID_Serie, ID_Rutina_Asignada, fecha, completado)
+                  VALUES (@ID_Serie, @ID_Rutina_Asignada, @fecha, @completado)
+                `);
+            }
+          } 
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+
+      res.status(201).json({
+          message: "Rutina asignada correctamente",
+          ID_Rutina_Asignada: ID_Rutina_Asignada
+      });
+  } catch (error) {
+      console.error("Error al asignar la rutina:", error);
+      res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateExpiredAssignments = async () => {
+  try {
+      const pool = await getConnection();
+      const currentDate = new Date().toISOString().slice(0, 10); // Formato 'YYYY-MM-DD'
+
+      const result = await pool.request()
+          .query(`
+              UPDATE Rutina_Asignada
+              SET fecha_eliminacion = '${currentDate}'
+              WHERE fecha_fin < '${currentDate}' AND fecha_eliminacion IS NULL;
+          `);
+
+      console.log(`Rutinas actualizadas con fecha de eliminación: ${result.rowsAffected[0]}`);
+  } catch (error) {
+      console.error('Error al actualizar las asignaciones expiradas:', error);
+  }
+};
+
+cron.schedule('0 0 * * *', () => {
+  console.log('Ejecutando tarea diaria para actualizar la fecha de eliminación de rutinas asignadas.');
+  updateExpiredAssignments();
+});
+
+export const removeAssignedRoutine = async (req, res) => {
+  const  ID_Rutina_Asignada  = req.params.id;
+
+  try {
+      const pool = await getConnection();
+      const result = await pool.request()
+          .input("ID_Rutina_Asignada", sql.Int, ID_Rutina_Asignada)
+          .input("fecha_eliminacion", sql.DateTime, new Date().toISOString())
+          .query("UPDATE Rutina_Asignada SET fecha_eliminacion = @fecha_eliminacion WHERE ID_Rutina_Asignada = @ID_Rutina_Asignada");
+
+      res.json({ message: "Asignación eliminada correctamente", success: true });
+  } catch (error) {
+      console.error("Error al quitar la asignación de rutina:", error);
+      res.status(500).json({ error: error.message });
+  }
 };

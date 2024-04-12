@@ -42,7 +42,7 @@ export const querys = {
     ID_Tipo_Ejercicio = @ID_Tipo_Ejercicio, ID_Dificultad = @ID_Dificultad, ID_Equipo = @ID_Equipo, ID_Modalidad = @ID_Modalidad, ID_Lesion = @ID_Lesion WHERE ID_Ejercicio = @ID_Ejercicio`,
     updateRequest:`UPDATE Ejercicio SET ejercicio = @ejercicio, preparacion = @preparacion, ejecucion = @ejecucion, ID_Musculo = @ID_Musculo,
     ID_Tipo_Ejercicio = @ID_Tipo_Ejercicio, ID_Dificultad = @ID_Dificultad, ID_Equipo = @ID_Equipo, ID_Modalidad = @ID_Modalidad, ID_Lesion = @ID_Lesion, estado = 1 WHERE ID_Ejercicio = @ID_Ejercicio`,
-    getEjercicios: "SELECT E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, L.lesion AS Lesion FROM Ejercicio E LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo LEFT JOIN Lesion L ON E.ID_Lesion = L.ID_Lesion WHERE E.estado = 1;",
+    getEjercicios: "SELECT E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, E.ID_Modalidad, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, L.lesion AS Lesion FROM Ejercicio E LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo LEFT JOIN Lesion L ON E.ID_Lesion = L.ID_Lesion WHERE E.estado = 1;",
     getRequests: "SELECT E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, L.lesion AS Lesion FROM Ejercicio E LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo LEFT JOIN Lesion L ON E.ID_Lesion = L.ID_Lesion WHERE E.estado = 0;",
     getEjerciciosById: "SELECT * FROM Ejercicio WHERE ID_Ejercicio = @ID_Ejercicio",
     getAlternativas: "SELECT E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo FROM (SELECT TOP 3 Ejercicio.* FROM Ejercicio JOIN Musculo ON Ejercicio.ID_Musculo = Musculo.ID_Musculo WHERE Musculo.descripcion = @ID_Musculo ORDER BY NEWID()) AS E JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo",
@@ -103,6 +103,7 @@ export const querys = {
     createRutina: "INSERT INTO Rutina(publica, ID_Dificultad, ID_NivelFormaFisica, ID_Objetivo, duracion, ID_Usuario)  OUTPUT INSERTED.ID_Rutina VALUES (0, @ID_Dificultad, @ID_NivelFormaFisica, 1, @duracion, @ID_Usuario)",
     createRutinaShort: "INSERT INTO Rutina(nombre, ID_Usuario) OUTPUT INSERTED.ID_Rutina VALUES (@nombre, @ID_Usuario)",
     getRutinasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario WHERE R.ID_Usuario = @ID_Usuario",
+    getRutinasPublicasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario WHERE R.publica = 1 AND R.ID_Usuario <> @ID_Usuario",
     getRutinaByID: "SELECT * FROM Rutina WHERE ID_Rutina = @ID_Rutina",
     updateRutina: "UPDATE Rutina SET nombre = @nombre, publica = @publica WHERE ID_Rutina = @ID_Rutina",
 
@@ -113,7 +114,7 @@ export const querys = {
 
     //EjerciciosDia
     createEjerciciosDia: "INSERT INTO EjerciciosDia (ID_Dias_Entreno, ID_Ejercicio, descanso, superset)  OUTPUT INSERTED.ID_EjerciciosDia VALUES (@ID_Dias_Entreno, @ID_Ejercicio, @descanso, @superset)",
-    getEjerciciosPorDia: "SELECT e.ID_Ejercicio, e.ejercicio, DATEDIFF(SECOND, '00:00:00', CAST(ed.descanso AS TIME)) AS descanso, ed.superset, ed.ID_EjerciciosDia FROM Ejercicio AS e JOIN EjerciciosDia AS ed ON e.ID_Ejercicio = ed.ID_Ejercicio WHERE ed.ID_Dias_Entreno = @ID_Dias_Entreno;",
+    getEjerciciosPorDia: "SELECT e.ID_Ejercicio, e.ejercicio, e.ID_Modalidad, DATEDIFF(SECOND, '00:00:00', CAST(ed.descanso AS TIME)) AS descanso, ed.superset, ed.ID_EjerciciosDia FROM Ejercicio AS e JOIN EjerciciosDia AS ed ON e.ID_Ejercicio = ed.ID_Ejercicio WHERE ed.ID_Dias_Entreno = @ID_Dias_Entreno;",
 
     //BloqueSets
     createBloqueSets: "INSERT INTO BloqueSets (ID_EjerciciosDia) VALUES (@ID_EjerciciosDia)",

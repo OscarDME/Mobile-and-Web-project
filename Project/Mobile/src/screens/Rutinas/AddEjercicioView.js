@@ -7,13 +7,12 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  TouchableWithoutFeedback,
-  KeyboardAvoidingView,
+  TouchableWithoutFeedback
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Asegúrate de instalar expo-vector-icons
 import config from "../../utils/conf";
 
-const ExerciseDayScreen = ({ navigation, route }) => {
+const ExerciseDayScreenView = ({ navigation, route }) => {
   // Asumiendo que se pasa el día como un parámetro de la ruta
   const { day } = route.params.day;
   const  ID_Dia  = route.params.dayID;
@@ -42,7 +41,6 @@ const ExerciseDayScreen = ({ navigation, route }) => {
           };
         });
         setExercises(formattedExercises);
-        console.log(formattedExercises);
         setIsSaved(formattedExercises.length > 0);
       } else {
         console.log('No se encontraron ejercicios para este día');
@@ -60,13 +58,13 @@ const ExerciseDayScreen = ({ navigation, route }) => {
   
   const [exercises, setExercises] = useState([]);
 
-  const handlePressExercise = (ID_Ejercicio, ejercicio, ID_Modalidad) => {
+  const handlePressExercise = (ID_Ejercicio, ejercicio) => {
     // Encuentra el ejercicio seleccionado basado en el ID_Ejercicio
     const selectedExercise = exercises.find(exercise => exercise.ID_Ejercicio === ID_Ejercicio);
   
     if (selectedExercise) {
       // Navega a AddSetsScreen, pasando ID_EjerciciosDia del ejercicio seleccionado como parámetro
-      navigation.navigate("AddSets", { ID_EjerciciosDia: selectedExercise.ID_EjerciciosDia, ejercicio:ejercicio, ID_Modalidad: ID_Modalidad });
+      navigation.navigate("AddSetsView", { ID_EjerciciosDia: selectedExercise.ID_EjerciciosDia, ejercicio:ejercicio });
     } else {
       console.error("Ejercicio no encontrado");
     }
@@ -276,7 +274,6 @@ const ExerciseDayScreen = ({ navigation, route }) => {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
     <TouchableWithoutFeedback>
     <View style={styles.container}>
       <View style={styles.header}>
@@ -285,7 +282,6 @@ const ExerciseDayScreen = ({ navigation, route }) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{route.params.day}</Text>
         <TouchableOpacity onPress={saveExercises}>
-        <Ionicons name="save-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
       <Text style={styles.sectionTitle}>Ejercicios</Text>
@@ -295,33 +291,20 @@ const ExerciseDayScreen = ({ navigation, route }) => {
         renderItem={({ item, index }) => (
 
     <View style={styles.exerciseItem}>
-       <TouchableOpacity
-          onPress={() => handlePressExercise(item.ID_Ejercicio, item.ejercicio, item.ID_Modalidad)}
-          style={{ flex: 1 }}
-        >
-        {item.ID_Modalidad === 3? (
-        // Si `specialInput` es verdadero, muestra el input para tiempo en minutos
-        <>
-      <View style={styles.exerciseNameContainer}>
-        <Text style={styles.exerciseNameCardio}>{item.ejercicio}</Text>
-        <TouchableOpacity style={styles.icon} onPress={() => deleteExercise(item.ID_Ejercicio)}>
-        <Ionicons name="trash-outline" size={30} color="red" />
-      </TouchableOpacity>
-      </View>
-        </>
-        ) : (
-          <>
+      <TouchableOpacity
+        onPress={() => handlePressExercise(item.ID_Ejercicio, item.ejercicio)}
+        style={{ flex: 1 }}
+      >
       <View style={styles.exerciseNameContainer}>
         <Text style={styles.exerciseName}>{item.ejercicio}</Text>
         <TouchableOpacity onPress={() => deleteExercise(item.ID_Ejercicio)}>
-        <Ionicons name="trash-outline" size={30} color="red" />
       </TouchableOpacity>
       </View>
         <View style={styles.infoContainer}>
           <Text style={styles.supersetQuestion}>¿Es superset?</Text>
           <TouchableOpacity
             style={styles.checkbox}
-            onPress={() => toggleSuperset(index)}
+            // onPress={() => toggleSuperset(index)}
           >
             <Ionicons
               name={item.isSuperset ? "checkmark-circle" : "ellipse-outline"}
@@ -338,11 +321,10 @@ const ExerciseDayScreen = ({ navigation, route }) => {
             placeholder="Descanso (seg)"
             keyboardType="numeric"
             nameSuffix="seg"
+            editable={false} 
           />
           </View>
         </View>
-        </>
-        )}
       </TouchableOpacity>
     </View>
   )}
@@ -350,12 +332,9 @@ const ExerciseDayScreen = ({ navigation, route }) => {
 {
   errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>
 }
-      <TouchableOpacity style={styles.addButton} onPress={addExercise}>
-        <Text style={styles.addButtonText}>Añadir Ejercicio</Text>
-      </TouchableOpacity>
+      
     </View>
     </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
   );
 };
 
@@ -432,13 +411,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
-    marginRight: 40, // Ajusta según sea necesario
-  },
-  exerciseNameCardio: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#000",
-    marginRight: 155, // Ajusta según sea necesario
+    marginRight: 80, // Ajusta según sea necesario
   },
   exerciseDetails: {
     fontSize: 16,
@@ -463,21 +436,11 @@ const styles = StyleSheet.create({
     rowGap: 5,
     marginRight:60,
   },
-  restTimeContainerCardio:{
-    flexDirection: "collumn",
-    justifyContent: "center",
-    alignItems: "center",
-    rowGap: 5,
-    marginLeft:50,
-  },
   exerciseNameContainer:{
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     rowGap: 5,
-  },
-  icon: {
-    marginRight:-20,
   },
   infoCollumn:{
     flexDirection: "collumn",
@@ -495,4 +458,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ExerciseDayScreen;
+export default ExerciseDayScreenView;

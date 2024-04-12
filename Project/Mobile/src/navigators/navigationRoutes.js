@@ -76,6 +76,11 @@ import Formulario2 from "../screens/Perfil/Formulario2"
 import DetallesEntrenador from "../screens/Descubre/Detalles"
 import WorkoutScreen from "../screens/Entrenamiento/Ejercicios";
 import IndividualBodyMeasure from "../screens/Progreso/IndividualBodyMeasure";
+import DetallesRutinaVisualizar from "../screens/Rutinas/DetallesRutinaVisualizar";
+import EditRoutineView from "../screens/Rutinas/EditRoutineView";
+import AddEjercicioView from "../screens/Rutinas/AddEjercicioView";
+import AddSetsView from "../screens/Rutinas/AddSetsView";
+import AssignRoutineScreen from "../screens/Rutinas/AsignarRutina";
 
 import Header from "../components/Header";
 {
@@ -345,6 +350,11 @@ return (
       <StackRutinas.Screen name="Ejercicios" component={Ejercicios} />
       <StackRutinas.Screen name="Detalles" component={Detalles} />
       <StackRutinas.Screen name="AddSets" component={AddSets} />
+      <StackRutinas.Screen name="DetallesRutinaVisualizar" component={DetallesRutinaVisualizar} />
+      <StackRutinas.Screen name="EditarRutinaView" component={EditRoutineView} />
+      <StackRutinas.Screen name="AnadirEjercicioView" component={AddEjercicioView} />
+      <StackRutinas.Screen name="AddSetsView" component={AddSetsView} />
+      <StackRutinas.Screen name="AsignarRutinas" component={AssignRoutineScreen} />
     </StackRutinas.Navigator>
   );
 };

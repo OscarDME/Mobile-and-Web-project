@@ -12,20 +12,16 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import config from "../../utils/conf";
 
-const AddSetsScreen = ({ navigation, route }) => {
-  const [sets, setSets] = useState(ID_Modalidad === 3 ? [{ id: `set-${Date.now()}`, tiempo: 0, reps: null, weight: null }] : []);
+const AddSetsScreenView = ({ navigation, route }) => {
+  const [sets, setSets] = useState([]);
   const [error, setError] = useState('');
   const [datosCargados, setDatosCargados] = useState(false);
 
-
-  const ID_Modalidad = route.params.ID_Modalidad
   const { exerciseId } = route.params.ID_EjerciciosDia;
   const [bloqueSets, setBloqueSets] = useState({
     ID_EjerciciosDia: route.params.ID_EjerciciosDia, // Asume que este es el ID del ejercicio del día
-    ConjuntoSeries: [] // Aquí irán los conjuntos de series, incluyendo los dropset
+    ConjuntoSeries: [] // Aquí irán los conjuntos de series, incluyendo los dropsets
   });
-
- 
 
   useEffect(() => {
     const cargarSetsExistentes = async () => {
@@ -38,7 +34,6 @@ const AddSetsScreen = ({ navigation, route }) => {
             id: String(index + 1), // Generamos un ID representativo basado en el índice
             reps: set.repeticiones,
             weight: set.peso,
-            tiempo: set.tiempo,
             dropSet: set.subsets.length > 0, // Si tiene subsets, es un dropset
             subsets: set.subsets.map((subset, subsetIndex) => ({
               id: `D${index + 1}-${subsetIndex + 1}`, // ID representativo para el subset
@@ -70,7 +65,7 @@ const AddSetsScreen = ({ navigation, route }) => {
     const newSetId = String(sets.length + 1);
     setSets([
       ...sets,
-      { id: newSetId, reps: 0, weight: 0, tiempo:0, dropSet: false, subsets: [] },
+      { id: newSetId, reps: 0, weight: 0, dropSet: false, subsets: [] },
     ]);
   };
 
@@ -141,13 +136,7 @@ const AddSetsScreen = ({ navigation, route }) => {
     }));
   };
   
-  const convertirMinutosAHoras = (minutos) => {
-    const horas = Math.floor(minutos / 60);
-    const mins = minutos % 60;
-    // Asumiendo que el tiempo de ejercicio no superará las 24 horas, no se consideran los días
-    return `${horas.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
-  };
-    
+
 
   // Eliminar un subset específico
   const deleteSubSet = (setId, subSetId) => {
@@ -165,32 +154,23 @@ const AddSetsScreen = ({ navigation, route }) => {
   };
 
   const saveSetsToDatabase = async () => {
-    let todosTienenDatosValidos;
-
-  if (ID_Modalidad === 3) { // Para ejercicios cardiovasculares
-    // Aquí, solo necesitas verificar que el tiempo esté establecido correctamente.
-    todosTienenDatosValidos = sets.every(set => set.tiempo > 0);
-  } else { // Para ejercicios de fuerza
-    todosTienenDatosValidos = sets.every(set => 
+    const todosTienenReps = sets.every(set => 
       set.reps > 0 && 
       (set.subsets.length === 0 || set.subsets.every(subset => subset.reps > 0))
     );
-  }
 
-  if (!todosTienenDatosValidos) {
-    setError('Todos los sets deben tener los datos correctamente asignados.');
-    return; // Detiene la ejecución si no se cumplen las condiciones
-  }
+    if (!todosTienenReps) {
+      setError('Todos los sets y dropsets deben tener repeticiones asignadas.');
+      return; // Detener la ejecución si no se cumplen las condiciones
+    }
 
     // Restablecer mensaje de error si la validación es exitosa
-    setError('');    
-    const data = {
+    setError('');    const data = {
       ID_EjerciciosDia: bloqueSets.ID_EjerciciosDia,
       series: sets.map(set => ({
         ID_Series: set.id, // Asumiendo que este ID es único y generado previamente o será ignorado en el backend
         reps: set.reps,
         weight: set.weight,
-        tiempo: convertirMinutosAHoras(set.tiempo),
         dropSet: set.dropSet,
         subsets: set.subsets.map(subset => ({
           reps: subset.reps,
@@ -198,7 +178,6 @@ const AddSetsScreen = ({ navigation, route }) => {
         }))
       }))
     };
-    console.log(data);
   
     const setsExisten = sets.length > 0;
     const method = datosCargados ? 'PUT' : 'POST';
@@ -238,31 +217,13 @@ const AddSetsScreen = ({ navigation, route }) => {
         <TouchableOpacity
           onPress={saveSetsToDatabase}
         >
-          <Ionicons name="save-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
-      {ID_Modalidad === 3 ? (
-        <>
-      {sets.map((set, index) => (
-        <View style={styles.cardioContainer}>
-          <Text style={styles.ejercicioText}>Tiempo (minutos)</Text>
-          <TextInput
-                style={styles.inputn}
-                placeholder="Tiempo (min)"
-                value={String(set.tiempo)}
-                keyboardType="numeric"
-                onChangeText={(text) => updateSet(set.id, 'tiempo', text)}
-              />
-        </View>
-        ))}
-        </>
-      ):(
-        <>
+
       <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderText}>Set</Text>
         <Text style={styles.tableHeaderText}>Reps</Text>
         <Text style={styles.tableHeaderText}>Peso (kg)</Text>
-        <Text style={styles.tableHeaderText}>Acción</Text>
       </View>
 
       <FlatList
@@ -278,6 +239,7 @@ const AddSetsScreen = ({ navigation, route }) => {
                 value={String(item.reps)}
                 placeholder="Reps"
                 keyboardType="numeric"
+                editable={false} 
               />
               <TextInput
                 style={styles.inputw}
@@ -285,16 +247,14 @@ const AddSetsScreen = ({ navigation, route }) => {
                 value={String(item.weight)}
                 placeholder="Peso"
                 keyboardType="numeric"
+                editable={false} 
               />
               <TouchableOpacity
                 onPress={() => deleteSet(item.id)}
                 style={styles.deleteButton}
               >
-                <Ionicons name="trash-outline" size={24} color="red" />
               </TouchableOpacity>
-              <Text onPress={() => addSubSet(item.id)} style={styles.addDropSetText}>
-                Añadir Dropset
-              </Text>
+             
             </View>
             {item.dropSet &&
               item.subsets.map((subset, index) => (
@@ -307,6 +267,7 @@ const AddSetsScreen = ({ navigation, route }) => {
                     value={String(subset.reps)}
                     placeholder="Reps"
                     keyboardType="numeric"
+                    editable={false} 
                   />
                   <TextInput
                     style={styles.subsetInput}
@@ -316,6 +277,8 @@ const AddSetsScreen = ({ navigation, route }) => {
                     value={String(subset.weight)}
                     placeholder="Peso"
                     keyboardType="numeric"
+                    editable={false} 
+
                   />
                   <TouchableOpacity
                     onPress={() => deleteSubSet(item.id, subset.id)}
@@ -331,11 +294,6 @@ const AddSetsScreen = ({ navigation, route }) => {
       {error !== '' && (
         <Text style={styles.errorMessage}>{error}</Text>
       )}
-      <TouchableOpacity style={styles.addButton} onPress={addSet}>
-        <Text style={styles.addButtonText}>Agregar nuevo set</Text>
-      </TouchableOpacity>
-      </>
-      )}
     </View>
     </TouchableWithoutFeedback>
   );
@@ -344,10 +302,6 @@ const AddSetsScreen = ({ navigation, route }) => {
 // Añade los estilos para los nuevos componentes aquí. Asegúrate de incluir estilos para los inputs, y botones de agregar y quitar dropsets y subsets.
 
 const styles = StyleSheet.create({
-  inputn: {
-  fontSize: 16,
-  marginLeft: 70,
-  },
   container: {
     flex: 1,
     backgroundColor: "white",
@@ -374,9 +328,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   tableHeader: {
+    right:45,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    paddingHorizontal: 70,
+    marginRight: 36,
     paddingTop: 16,
   },
   tableHeaderText: {
@@ -413,20 +369,8 @@ const styles = StyleSheet.create({
   repsWeight: {
     fontSize: 16,
   },
-  cardioContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-    borderRadius: 10,
-    backgroundColor: "#f0f0f0",
-  },
-  ejercicioText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+
   input: {
-    color: "#000", // Esto asegura que el texto sea negro
     flex: 1,
     borderWidth: 0,
     borderColor: "#e0e0e0",
@@ -545,4 +489,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddSetsScreen;
+export default AddSetsScreenView;
