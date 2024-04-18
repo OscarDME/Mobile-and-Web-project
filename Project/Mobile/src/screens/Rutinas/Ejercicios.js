@@ -17,7 +17,6 @@ const ExerciseLibrary = ({ navigation, route }) => {
   const [selectedCategory, setSelectedCategory] = useState("Todos"); // Nuevo estado para la categoría seleccionada
   const [selectedMuscle, setSelectedMuscle] = useState(null);
 
-
   useEffect(() => {
     fetchExercises();
   }, []);
@@ -35,14 +34,21 @@ const ExerciseLibrary = ({ navigation, route }) => {
   };
 
   const handleCategoryFilter = (category) => {
-    setSelectedCategory(category); // Actualiza la categoría seleccionada
-    if (category === "Todos") {
-      setFilteredExercises(exercises);
-    } else if (category === "Sin equipo") {
-      const filtered = exercises.filter((exercise) => !exercise.Equipo);
-      setFilteredExercises(filtered);
-    } // No es necesario un 'else' si solo tienes estas dos categorías
-  };
+    setSelectedCategory(category);
+    switch (category) {
+        case "Todos":
+            setFilteredExercises(exercises);
+            break;
+        case "Sin equipo":
+            setFilteredExercises(exercises.filter(exercise => !exercise.Equipo));
+            break;
+        case "Cardiovasculares":
+            setFilteredExercises(exercises.filter(exercise => exercise.ID_Modalidad === 3));
+            break;
+        default:
+            setFilteredExercises(exercises);
+    }
+};
 
   const handleSearch = (query) => {
     if (!query.trim()) {
@@ -59,17 +65,17 @@ const ExerciseLibrary = ({ navigation, route }) => {
     let filtered = exercises;
 
     if (selectedCategory === "Sin equipo") {
-      filtered = filtered.filter((exercise) => !exercise.Equipo);
+        filtered = filtered.filter((exercise) => !exercise.Equipo);
     }
 
     if (muscle !== "Todos") {
-      filtered = filtered.filter((exercise) =>
-        exercise.Musculo.includes(muscle)
-      );
+        filtered = filtered.filter((exercise) => {
+            return exercise.Musculo && exercise.Musculo.includes(muscle);
+        });
     }
 
     setFilteredExercises(filtered);
-  };
+};
 
   const navigateToDetailScreen = (exercise) => {
     navigation.navigate("Detalles", { exercise });
@@ -98,30 +104,40 @@ const ExerciseLibrary = ({ navigation, route }) => {
       </View>
       <SearchBar onSearch={handleSearch} />
       <View style={styles.categoryContainer}>
-        <ScrollView
-          horizontal
-          style={styles.scrollContainer}
-          showsHorizontalScrollIndicator={false}
-        >
-          <TouchableOpacity
-            onPress={() => handleCategoryFilter("Todos")}
-            style={[
-              styles.categoryButton,
-              selectedCategory === "Todos" ? styles.selectedButton : null,
-            ]}
-          >
-            <Text style={styles.categoryButtonText}>Todos</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleCategoryFilter("Sin equipo")}
-            style={[
-              styles.categoryButton,
-              selectedCategory === "Sin equipo" ? styles.selectedButton : null,
-            ]}
-          >
-            <Text style={styles.categoryButtonText}>Sin equipo</Text>
-          </TouchableOpacity>
-        </ScrollView>
+      <ScrollView
+  horizontal
+  style={styles.scrollContainer}
+  showsHorizontalScrollIndicator={false}
+>
+    <TouchableOpacity
+      onPress={() => handleCategoryFilter("Todos")}
+      style={[
+        styles.categoryButton,
+        selectedCategory === "Todos" ? styles.selectedButton : null,
+      ]}
+    >
+      <Text style={styles.categoryButtonText}>Todos</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => handleCategoryFilter("Sin equipo")}
+      style={[
+        styles.categoryButton,
+        selectedCategory === "Sin equipo" ? styles.selectedButton : null,
+      ]}
+    >
+      <Text style={styles.categoryButtonText}>Sin equipo</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => handleCategoryFilter("Cardiovasculares")}
+      style={[
+        styles.categoryButton,
+        selectedCategory === "Cardiovasculares" ? styles.selectedButton : null,
+      ]}
+    >
+      <Text style={styles.categoryButtonText}>Cardiovasculares</Text>
+    </TouchableOpacity>
+</ScrollView>
+
       </View>
       <View style={styles.muscleContainer}>
         <ScrollView
@@ -162,8 +178,12 @@ const ExerciseLibrary = ({ navigation, route }) => {
           >
             <View style={styles.exerciseContent}>
               <Text style={styles.exerciseTitle}>{exercise.ejercicio}</Text>
-              <Text style={styles.exerciseCategory}>{exercise.Musculo}</Text>
-            </View>            
+              <Text style={styles.exerciseCategory}>
+                {exercise.ID_Modalidad === 3
+                  ? "Cardiovascular"
+                  : exercise.Musculo}
+              </Text>
+            </View>
             <TouchableOpacity
               style={styles.addButton}
               onPress={() => {
@@ -278,8 +298,7 @@ const styles = StyleSheet.create({
   muscleButtonText: {
     fontSize: 14,
   },
-  addButton: {
-  },
+  addButton: {},
 });
 
 export default ExerciseLibrary;

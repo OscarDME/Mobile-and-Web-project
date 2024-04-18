@@ -7,6 +7,8 @@ import Comidas from "../../assets/comidas.png";
 import Biblioteca from "../../assets/biblioteca.png";
 import Advertencias from "../../assets/advertencias.png";
 import Viaje from "../../assets/viaje.png";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import config from "../utils/conf";
 const height_proportion = '-180%';
 
 const Mas = ({ onDismiss }) => {

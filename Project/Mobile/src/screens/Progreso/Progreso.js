@@ -4,11 +4,32 @@ import ProgressBodyMeasures from './ProgressBodyMeasures';
 import ProgressExercise from './ProgressExercise';
 import Achievements from './Achievements';
 import BenchMarking from './BenchMarking';
+import config from "../../utils/conf";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Progreso = ({ navigation }) => {
 
   const [selectedScreen, setSelectedScreen] = useState("ProgressBodyMeasures");
+  const [isComparisonEnabled, setIsComparisonEnabled] = useState(false);
 
+  const fetchPerformanceComparisonEnabled = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userOID");
+      const response = await fetch(`${config.apiBaseUrl}/isPerformanceComparisonEnabled/${userId}`);
+      const data = await response.json();
+      console.log(data.isEnabled);
+      return data.isEnabled;  
+    } catch (error) {
+      console.error("Failed to fetch performance comparison setting:", error);
+      return false; // En caso de error, asume que no está habilitado
+    }
+  };
+
+  useEffect(() => {
+    fetchPerformanceComparisonEnabled().then(isEnabled => {
+      setIsComparisonEnabled(isEnabled);
+    });
+  }, []);
 
   const handleScreenChange = (screen) => {
     setSelectedScreen(screen);
@@ -52,15 +73,11 @@ const Progreso = ({ navigation }) => {
           >
             <Text>Logros</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-          onPress={() => handleScreenChange("BenchMarking")}
-            style={[
-              styles.screenButton,
-              selectedScreen === "BenchMarking" ? styles.selectedButton : null,
-            ]}
-          >
-            <Text>Comparación de rendimiento</Text>
-          </TouchableOpacity>
+          {isComparisonEnabled && (
+            <TouchableOpacity onPress={() => handleScreenChange("BenchMarking")} style={[styles.screenButton, selectedScreen === "BenchMarking" ? styles.selectedButton : null]}>
+              <Text>Comparación de rendimiento</Text>
+            </TouchableOpacity>
+          )}
           </ScrollView>
           </View>
     <View style={styles.contentContainer}>

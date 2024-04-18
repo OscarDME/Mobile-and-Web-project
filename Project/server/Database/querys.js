@@ -256,26 +256,116 @@ export const querys = {
         ORDER BY 
         RSU.fecha
         `,
-    createMilestone: `INSERT INTO Medidas_Corporales (porcentaje_grasa, masa_muscular, presion_arterial, ritmo_cardiaco, cuello, pecho, hombro,bicep,antebrazo,cintura,cadera,pantorrilla,muslo,fecha,ID_UsuarioMovil, estatura, peso, IMC, foto_frente, foto_lado, foto_espalda) VALUES (@porcentaje_grasa, @masa_muscular, @presion_arterial, @ritmo_cardiaco, @cuello, @pecho, @hombro, @bicep, @antebrazo, @cintura, @cadera, @pantorrilla, @muslo, @fecha, @ID_UsuarioMovil, @estatura, @peso, @IMC, @foto_frente, @foto_lado, @foto_espalda); SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
-    updateMilestone: `UPDATE Medidas_Corporales SET porcentaje_grasa=@porcentaje_grasa, masa_muscular=@masa_muscular, presion_arterial=@presion_arterial, ritmo_cardiaco=@ritmo_cardiaco, cuello=@cuello, pecho=@pecho, hombro=@hombro, bicep=@bicep, antebrazo=@antebrazo, cintura=@cintura, cadera=@cadera, pantorrilla=@pantorrilla, muslo=@muslo, estatura=@estatura, peso=@peso, IMC=@IMC WHERE ID_MedidasCorporales = @ID_MedidasCorporales; SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
+        getMaximumAbsoluteStrengthForExercise: `
+                SELECT 
+            MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) AS Max1RM,
+            FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25) AS UserAge,
+            ISNULL(MC.peso, 70) AS LatestWeight,  -- Use 70 kg if no weight recorded
+            (MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) / ISNULL(MC.peso, 70)) AS StrengthRatio
+        FROM ResultadoSeriesUsuario RSU
+        INNER JOIN Serie S ON RSU.ID_Serie = S.ID_Serie
+        INNER JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie
+        INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+        INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+        INNER JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
+        INNER JOIN Rutina_Asignada RA ON DE.ID_Rutina = RA.ID_Rutina
+        INNER JOIN UsuarioMovil UM ON RA.ID_UsuarioMovil = UM.ID_UsuarioMovil
+        INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario
+        LEFT JOIN (
+            SELECT ID_UsuarioMovil, peso
+            FROM Medidas_Corporales MC1
+            WHERE MC1.fecha = (
+                SELECT MAX(MC2.fecha)
+                FROM Medidas_Corporales MC2
+                WHERE MC2.ID_UsuarioMovil = MC1.ID_UsuarioMovil
+            )
+        ) MC ON UM.ID_UsuarioMovil = MC.ID_UsuarioMovil
+        WHERE RA.ID_UsuarioMovil = @ID_UsuarioMovil AND ED.ID_Ejercicio = @ID_Ejercicio AND RSU.completado = 1  
+        GROUP BY ED.ID_Ejercicio, U.fecha_nacimiento, UM.ID_UsuarioMovil, MC.peso  -- Add MC.peso to the GROUP BY
+    `,
 
-    //Rutina personalizada
-    
-    getCuestionario: `SELECT 
-    ID_Cuestionario,
-    ID_UsuarioMovil,
-    -- Convertir y formatear el tiempo a HH:MM
-    SUBSTRING(CONVERT(varchar, tiempo_disponible, 108), 1, 5) AS TiempoDisponible,
-    ID_Objetivo,
-    ID_NivelFormaFisica,
-    ID_EspacioDisponible,
-    ID_Musculo
-FROM 
-    Cuestionario;
-`,
-    getUsuario:"SELECT * FROM Usuario WHERE ID_Usuario = @ID_Usuario;",
-    getPadece: `SELECT * FROM Padece WHERE ID_Cuestionario = @ID_Cuestionario;`,
-    getQuiereEntrenar: `SELECT * FROM QuiereEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
-    getDispone: `SELECT * FROM Dispone WHERE ID_Cuestionario = @ID_Cuestionario;`,
-    getPuedeEntrenar: `SELECT * FROM PuedeEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
+            getAverageStrengthByAgeGroupAndExercise: `
+            SELECT 
+                FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25 / 5) * 5 AS AgeGroup,
+                AVG(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) AS Avg1RM,
+                AVG(ISNULL(MC.peso, 70)) AS AvgWeight,
+                AVG(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) / AVG(ISNULL(MC.peso, 70)) AS StrengthRatio
+            FROM ResultadoSeriesUsuario RSU
+            INNER JOIN Serie S ON RSU.ID_Serie = S.ID_Serie
+            INNER JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie
+            INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+            INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+            INNER JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
+            INNER JOIN Rutina_Asignada RA ON DE.ID_Rutina = RA.ID_Rutina
+            INNER JOIN UsuarioMovil UM ON RA.ID_UsuarioMovil = UM.ID_UsuarioMovil
+            INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario
+            LEFT JOIN (
+                SELECT ID_UsuarioMovil, peso
+                FROM Medidas_Corporales
+                WHERE fecha = (
+                    SELECT MAX(fecha)
+                    FROM Medidas_Corporales
+                    WHERE ID_UsuarioMovil = Medidas_Corporales.ID_UsuarioMovil
+                )
+            ) MC ON UM.ID_UsuarioMovil = MC.ID_UsuarioMovil
+            WHERE U.sexo = @Sexo AND ED.ID_Ejercicio = @ID_Ejercicio AND RSU.completado = 1
+            GROUP BY FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25 / 5)`,
+        
+            getAllMaxStrengthInAgeGroup:`
+            DECLARE @UserAgeGroup INT;
+            -- Calcula el grupo de edad del usuario especificado utilizando la tabla Usuario
+            SELECT @UserAgeGroup = FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25 / 5) * 5
+            FROM Usuario U
+            INNER JOIN UsuarioMovil UM ON UM.ID_Usuario = U.ID_Usuario
+            WHERE UM.ID_UsuarioMovil = @ID_UsuarioMovil;
+            
+            -- Obtiene la fuerza absoluta máxima para todos los usuarios en el mismo grupo de edad, excepto el usuario especificado
+            SELECT 
+                U.ID_Usuario,
+                MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones)) AS MaxFuerzaAbsoluta,
+                FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25 / 5) * 5 AS AgeGroup,
+                ISNULL(MC.peso, 70) AS LatestWeight,
+                MAX(RSU.peso * (1 + 0.0333 * RSU.repeticiones) / ISNULL(MC.peso, 70)) AS MaxStrengthRatio
+            FROM ResultadoSeriesUsuario RSU
+            INNER JOIN Serie S ON RSU.ID_Serie = S.ID_Serie
+            INNER JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie
+            INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+            INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+            INNER JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
+            INNER JOIN Rutina_Asignada RA ON DE.ID_Rutina = RA.ID_Rutina
+            INNER JOIN UsuarioMovil UM ON RA.ID_UsuarioMovil = UM.ID_UsuarioMovil
+            INNER JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario
+            LEFT JOIN (
+                SELECT MC1.ID_UsuarioMovil, MAX(MC1.peso) AS peso
+                FROM Medidas_Corporales MC1
+                GROUP BY MC1.ID_UsuarioMovil
+            ) MC ON UM.ID_UsuarioMovil = MC.ID_UsuarioMovil
+            WHERE ED.ID_Ejercicio = @ID_Ejercicio 
+                AND RSU.completado = 1 
+                AND FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25 / 5) * 5 = @UserAgeGroup
+                AND UM.ID_UsuarioMovil <> @ID_UsuarioMovil
+            GROUP BY U.ID_Usuario, FLOOR(DATEDIFF(DAY, U.fecha_nacimiento, GETDATE()) / 365.25 / 5) * 5, ISNULL(MC.peso, 70)
+        `,
+        createMilestone: `INSERT INTO Medidas_Corporales (porcentaje_grasa, masa_muscular, presion_arterial, ritmo_cardiaco, cuello, pecho, hombro,bicep,antebrazo,cintura,cadera,pantorrilla,muslo,fecha,ID_UsuarioMovil, estatura, peso, IMC, foto_frente, foto_lado, foto_espalda) VALUES (@porcentaje_grasa, @masa_muscular, @presion_arterial, @ritmo_cardiaco, @cuello, @pecho, @hombro, @bicep, @antebrazo, @cintura, @cadera, @pantorrilla, @muslo, @fecha, @ID_UsuarioMovil, @estatura, @peso, @IMC, @foto_frente, @foto_lado, @foto_espalda); SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
+        updateMilestone: `UPDATE Medidas_Corporales SET porcentaje_grasa=@porcentaje_grasa, masa_muscular=@masa_muscular, presion_arterial=@presion_arterial, ritmo_cardiaco=@ritmo_cardiaco, cuello=@cuello, pecho=@pecho, hombro=@hombro, bicep=@bicep, antebrazo=@antebrazo, cintura=@cintura, cadera=@cadera, pantorrilla=@pantorrilla, muslo=@muslo, estatura=@estatura, peso=@peso, IMC=@IMC WHERE ID_MedidasCorporales = @ID_MedidasCorporales; SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,
+
+        //Rutina personalizada
+        
+        getCuestionario: `SELECT 
+        ID_Cuestionario,
+        ID_UsuarioMovil,
+        -- Convertir y formatear el tiempo a HH:MM
+        SUBSTRING(CONVERT(varchar, tiempo_disponible, 108), 1, 5) AS TiempoDisponible,
+        ID_Objetivo,
+        ID_NivelFormaFisica,
+        ID_EspacioDisponible,
+        ID_Musculo
+        FROM 
+            Cuestionario;
+        `,
+        getUsuario:"SELECT * FROM Usuario WHERE ID_Usuario = @ID_Usuario;",
+        getPadece: `SELECT * FROM Padece WHERE ID_Cuestionario = @ID_Cuestionario;`,
+        getQuiereEntrenar: `SELECT * FROM QuiereEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
+        getDispone: `SELECT * FROM Dispone WHERE ID_Cuestionario = @ID_Cuestionario;`,
+        getPuedeEntrenar: `SELECT * FROM PuedeEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
   };

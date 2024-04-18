@@ -124,6 +124,27 @@ const MainMenu = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <Text style={styles.thirdTitle}>Rutinas Sugeridas</Text>
+      <ScrollView
+        horizontal={true}
+        style={styles.rutinasContainer3}
+        showsHorizontalScrollIndicator={false}
+      >
+        {rutinasPublicas.map((rutina) => (
+          <TouchableOpacity
+            key={rutina.ID_Rutina}
+            style={styles.rutinaCard}
+            onPress={() =>
+              navigation.navigate("DetallesRutinaVisualizar", {
+                routineId: rutina.ID_Rutina,
+              })
+            }
+          >
+            <Text style={styles.rutinaNombre}>{rutina.NombreRutina}</Text>
+            <Text style={styles.rutinaAutor}>Por: {rutina.Autor}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -151,15 +172,28 @@ const styles = StyleSheet.create({
     fontSize: 24,
     flex:1,
     marginRight: 200,
+    marginBottom: 25,
+    // Ajusta el margen para alinear el texto como desees
+  },
+  thirdTitle: {
+    fontSize: 24,
+    flex:1,
+    marginRight: 180,
+    width: 200,
+    marginBottom: 25,
     // Ajusta el margen para alinear el texto como desees
   },
   rutinasContainer: {
     flexDirection: "row",
-    marginBottom: -30,
+    marginBottom: 5,
   },
   rutinasContainer2: {
     flexDirection: "row",
-    marginBottom: 220,
+    marginBottom: 5,
+  },
+  rutinasContainer3: {
+    flexDirection: "row",
+    marginBottom: 0,
   },
   rutinaCard: {
     backgroundColor: "#0790cf",

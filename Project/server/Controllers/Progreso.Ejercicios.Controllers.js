@@ -283,3 +283,105 @@ export const getWeights = async (req, res) => {
       res.status(500).send(error.message);
   }
 };
+
+export const getAverageStrengthByAgeGroup = async (req, res) => {
+    const id = req.params.id;
+    const ejercicio = req.params.ejercicio;
+  
+    try {
+      const pool = await getConnection();
+      const userResult = await pool.request()
+        .input("ID_Usuario", sql.VarChar, id)
+        .query("SELECT sexo FROM Usuario WHERE ID_Usuario = @ID_Usuario");
+  
+      if (userResult.recordset.length === 0) {
+        return res.status(404).send("No se encontró el usuario especificado.");
+      }
+  
+      const { sexo } = userResult.recordset[0];
+  
+      const avgStrengthResult = await pool.request()
+        .input("Sexo", sql.Char, sexo)
+        .input("ID_Ejercicio", sql.Int, ejercicio)
+        .query(querys.getAverageStrengthByAgeGroupAndExercise);
+
+      console.log(avgStrengthResult.recordset);
+      res.json(avgStrengthResult.recordset);
+    } catch (error) {
+      console.error("Error al obtener la fuerza absoluta promedio por rangos de edad y sexo:", error);
+      res.status(500).send(error.message);
+    }
+  };
+
+  export const getMaximumAbsoluteStrength = async (req, res) => {
+    const id = req.params.id;
+    const ejercicio = req.params.ejercicio;
+      
+    try {
+      const pool = await getConnection();
+      const userResult = await pool.request()
+        .input("ID_Usuario", sql.VarChar, id)
+        .query(`SELECT ID_UsuarioMovil, sexo, fecha_nacimiento FROM UsuarioMovil UM JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario WHERE UM.ID_Usuario = @ID_Usuario`);
+      
+      if (userResult.recordset.length === 0) {
+        return res.status(404).send("No se encontró el usuario especificado.");
+      }
+  
+      const { ID_UsuarioMovil, sexo, fecha_nacimiento } = userResult.recordset[0];
+  
+      const strengthResult = await pool.request()
+        .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
+        .input("ID_Ejercicio", sql.Int, ejercicio)
+        .query(querys.getMaximumAbsoluteStrengthForExercise);
+      
+      if (strengthResult.recordset.length === 0) {
+        return res.status(404).send("No se encontraron resultados para el ejercicio especificado.");
+      }
+  
+      console.log(strengthResult.recordset);
+      // Enviar el resultado
+      res.json({ ...strengthResult.recordset[0], sexo, fecha_nacimiento });
+    } catch (error) {
+      console.error("Error al obtener la fuerza absoluta máxima para el ejercicio:", error);
+      res.status(500).send(error.message);
+    }
+  };
+
+  export const getAllMaximumAbsoluteStrength = async (req, res) => {
+    const id = req.params.id;
+    const ejercicio = req.params.ejercicio;
+      
+    try {
+      const pool = await getConnection();
+      const userResult = await pool.request()
+        .input("ID_Usuario", sql.VarChar, id)
+        .query(`SELECT ID_UsuarioMovil, sexo, fecha_nacimiento FROM UsuarioMovil UM JOIN Usuario U ON UM.ID_Usuario = U.ID_Usuario WHERE UM.ID_Usuario = @ID_Usuario`);
+      
+      if (userResult.recordset.length === 0) {
+        return res.status(404).send("No se encontró el usuario especificado.");
+      }
+  
+      const { ID_UsuarioMovil, sexo, fecha_nacimiento } = userResult.recordset[0];
+  
+      const strengthResult = await pool.request()
+        .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
+        .input("ID_Ejercicio", sql.Int, ejercicio)
+        .query(querys.getAllMaxStrengthInAgeGroup);
+      
+      if (strengthResult.recordset.length === 0) {
+        return res.status(404).send("No se encontraron resultados para el ejercicio especificado.");
+      }
+  
+      console.log(strengthResult.recordset);
+      // Enviar el resultado
+      res.json({ ...strengthResult.recordset, sexo, fecha_nacimiento });
+    } catch (error) {
+      console.error("Error al obtener la fuerza absoluta máxima para el ejercicio:", error);
+      res.status(500).send(error.message);
+    }
+  };
+  
+  
+  
+
+

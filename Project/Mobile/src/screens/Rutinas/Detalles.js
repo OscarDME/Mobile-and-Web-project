@@ -27,19 +27,19 @@ const ExerciseDetailScreen = ({ route, navigation }) => {
 
   const musculosSecundarios = exercise.musculosSecundarios?.map(musculo => musculo.descripcion).join(", ") || "Ninguno";
 
+  const details = [
+    { label: "Tipo", value: exercise.Tipo_Ejercicio },
+    { label: "Modalidad", value: exercise.Modalidad },
+    exercise.ID_Modalidad === 3 ? null : { label: "Músculo principal", value: exercise.Musculo },
+    exercise.ID_Modalidad === 3 ? null : { label: "Músculos secundarios", value: musculosSecundarios },
+    { label: "Material", value: exercise.Equipo || "Ninguno" },
+  ].filter(detail => detail !== null);
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{exercise.ejercicio}</Text>
       <View style={styles.detailContainer}>
-        {[
-          { label: "Tipo", value: exercise.Tipo_Ejercicio },
-          { label: "Modalidad", value: exercise.Modalidad },
-          { label: "Dificultad", value: exercise.Dificultad },
-          { label: "Músculo principal", value: exercise.Musculo },
-          { label: "Músculos secundarios", value: musculosSecundarios }, // Aquí se añade la cadena de músculos secundarios
-          { label: "Material", value: exercise.Equipo || "Ninguno" },
-        ].map((item, index) => (
+      {details.map((item, index) => (
           <View key={index} style={styles.row}>
             <Text style={styles.label}>{item.label}:</Text>
             <Text style={styles.value}>{item.value}</Text>

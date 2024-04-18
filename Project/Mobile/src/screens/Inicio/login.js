@@ -68,7 +68,9 @@ const Login = () => {
 
   // Define handleCodeExchange outside of useEffect
   const handleCodeExchange = async (codeResponse) => {
+    
     console.log("Code exchange initiated..");
+    
     if (request && codeResponse?.type === "success" && discovery) {
       try {
         console.log("Checking if user exists...");
@@ -100,6 +102,10 @@ const Login = () => {
           // Aquí procedes a verificar si el usuario existe y luego navegar
           const userExistsResponse = await fetch(`${config.apiBaseUrl}/users/${oid}`, { method: "GET" });
           if (userExistsResponse.status === 200) {
+            // navigation.replace("Main", {
+            //   screen: "MainMenu",
+            //   params: { token: res.idToken },
+            // });
             navigation.replace("Main", {
               screen: "MainMenu",
               params: { token: res.idToken },
