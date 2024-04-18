@@ -28,6 +28,9 @@ import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndivid
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
 import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, getWarnings } from "../Controllers/Advertencias.Controller.js";
 
+import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
+
+
 //El que come callado repite
 //El que escoge no coge 
 
@@ -194,9 +197,10 @@ router.post("/allWarnings/weeklyCheck/:id", createWarningWeeklyCheck );
 
 
 //Logros
-// router.get("/consistencyAchievements/:id", getConsistencyAchievements);
-// router.get("/cardiovascularAchievements/:id", getCardiovascularTimeAchievements);
-// router.get("/compuoundAchievements/:id", getCardiovascularTimeAchievements);
+
+router.get("/consistencyAchievements/:id", getConsistencyAchievements);
+router.get("/cardiovascularAchievements/:id", getCardiovascularTimeAchievements);
+router.get("/compuoundAchievements/:id", getCompoundTimeAchievements);
 
 
 

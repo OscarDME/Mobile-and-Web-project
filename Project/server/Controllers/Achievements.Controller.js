@@ -16,7 +16,30 @@ export const getConsistencyAchievements = async (req, res) => {
     const result = await pool.request()
     .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil)
     .query(`
-
+    ;WITH SeriesPerWeek AS (
+      SELECT
+        DATEPART(ISO_WEEK, fecha) AS WeekNumber,
+        DATEPART(YEAR, fecha) AS YearNumber,
+        COUNT(*) AS TotalSeries,
+        SUM(CAST(completado AS INT)) AS CompletedSeries
+      FROM ResultadoSeriesUsuario
+      WHERE ID_Rutina_Asignada IN (
+        SELECT ID_Rutina_Asignada
+        FROM Rutina_Asignada
+        WHERE ID_UsuarioMovil = @ID_UsuarioMovil
+      )
+      GROUP BY DATEPART(ISO_WEEK, fecha), DATEPART(YEAR, fecha)
+    )
+    SELECT
+      YearNumber,
+      WeekNumber,
+      CASE 
+        WHEN TotalSeries = CompletedSeries THEN 1
+        ELSE 0
+      END AS IsWeekCompleted
+    FROM SeriesPerWeek
+    WHERE TotalSeries = CompletedSeries
+    ORDER BY YearNumber DESC, WeekNumber DESC;
     `)
 
     res.status(200).json(result.recordset);
@@ -53,20 +76,34 @@ export const getCardiovascularTimeAchievements = async (req, res) => {
           ) AS rn
         FROM ResultadoSeriesUsuario RSU
         INNER JOIN Rutina_Asignada RA ON RSU.ID_Rutina_Asignada = RA.ID_Rutina_Asignada
-        WHERE (RA.ID_UsuarioMovil = @ID_UsuarioMovil)
+        WHERE RA.ID_UsuarioMovil = @ID_UsuarioMovil
+      ),
+      SeriesWithExercise AS (
+        SELECT
+          RR.ID_ResultadoSeriesUsuario,
+          RR.ID_Serie,
+          RR.fecha,
+          RR.tiempo,
+          RR.rn,
+          E.ejercicio AS NombreEjercicio
+        FROM RankedResults RR
+        INNER JOIN ConjuntoSeries CS ON RR.ID_Serie = CS.ID_Serie
+        INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+        INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+        INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
       )
       
       SELECT
-        R1.ID_ResultadoSeriesUsuario AS UltimoID,
-        R2.ID_ResultadoSeriesUsuario AS PenultimoID,
-        R1.ID_Serie,
-        R1.fecha AS FechaUltimo,
-        R2.fecha AS FechaPenultimo,
-        R1.tiempo AS TiempoUltimo,
-        R2.tiempo AS TiempoPenultimo
-      FROM RankedResults R1
-      INNER JOIN RankedResults R2 ON R1.ID_Serie = R2.ID_Serie AND R2.rn = R1.rn + 1
-      WHERE R1.rn = 1 AND CAST(R1.tiempo AS TIME) > CAST(R2.tiempo AS TIME);
+        SWE.ID_ResultadoSeriesUsuario AS UltimoID,
+        SWE.ID_Serie,
+        SWE.fecha AS FechaUltimo,
+        SWE.tiempo AS TiempoUltimo,
+        SWE.NombreEjercicio,
+        PRIOR_SWI.Fecha AS FechaPenultimo,
+        PRIOR_SWI.Tiempo AS TiempoPenultimo
+      FROM SeriesWithExercise SWE
+      INNER JOIN SeriesWithExercise PRIOR_SWI ON SWE.ID_Serie = PRIOR_SWI.ID_Serie AND PRIOR_SWI.rn = SWE.rn + 1
+      WHERE SWE.rn = 1 AND CAST(SWE.tiempo AS TIME) > CAST(PRIOR_SWI.tiempo AS TIME);
       `)
   
       res.status(200).json(result.recordset);
@@ -106,19 +143,33 @@ export const getCardiovascularTimeAchievements = async (req, res) => {
         INNER JOIN Rutina_Asignada RA ON RSU.ID_Rutina_Asignada = RA.ID_Rutina_Asignada
         WHERE (RA.ID_UsuarioMovil = @ID_UsuarioMovil)
           AND RSU.peso IS NOT NULL
-      )
-      
+    ),
+    SeriesWithExercise AS (
       SELECT
-        R1.ID_ResultadoSeriesUsuario AS UltimoID,
-        R2.ID_ResultadoSeriesUsuario AS PenultimoID,
-        R1.ID_Serie,
-        R1.fecha AS FechaUltimo,
-        R2.fecha AS FechaPenultimo,
-        R1.peso AS PesoUltimo,
-        R2.peso AS PesoPenultimo
-      FROM RankedResults R1
-      INNER JOIN RankedResults R2 ON R1.ID_Serie = R2.ID_Serie AND R2.rn = R1.rn + 1
-      WHERE R1.rn = 1 AND (R1.peso - R2.peso) >= 5;
+        RR.ID_ResultadoSeriesUsuario,
+        RR.ID_Serie,
+        RR.fecha,
+        RR.peso,
+        RR.rn,
+        E.ejercicio AS NombreEjercicio
+      FROM RankedResults RR
+      INNER JOIN ConjuntoSeries CS ON RR.ID_Serie = CS.ID_Serie
+      INNER JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets
+      INNER JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia
+      INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+    )
+    SELECT
+      SWE.ID_ResultadoSeriesUsuario AS UltimoID,
+      SWE.ID_Serie,
+      SWE.fecha AS FechaUltimo,
+      SWE.peso AS PesoUltimo,
+      SWE.NombreEjercicio,
+      PRIOR_SWI.fecha AS FechaPenultimo,
+      PRIOR_SWI.peso AS PesoPenultimo
+    FROM SeriesWithExercise SWE
+    INNER JOIN SeriesWithExercise PRIOR_SWI ON SWE.ID_Serie = PRIOR_SWI.ID_Serie AND PRIOR_SWI.rn = SWE.rn + 1
+    WHERE SWE.rn = 1 AND (SWE.peso - PRIOR_SWI.peso) >= 5;
+    
       `)
   
       res.status(200).json(result.recordset);
