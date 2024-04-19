@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet} from "react-native";
 import { CheckBox } from "react-native-elements";
 import * as Progress from "react-native-progress";
@@ -11,6 +11,7 @@ const TrainingSchedule = ({ navigation, route }) => {
   const [preferredDays, setPreferredDays] = useState([]);
   const [checkboxChecked, setCheckboxChecked] = useState(false);
 
+  const oid = route.params.oid;
 
   const dayNumberMapping = {
     Lunes: 1,

@@ -199,7 +199,6 @@ const ProfileScreen = ({ route }) => {
         throw new Error("Respuesta de red no fue ok");
       }
   
-      // Actualiza el estado de las invitaciones pendientes
       setPendingInvitations(prevInvitations =>
         prevInvitations.filter(invitation => invitation.ID_SolicitudEntrenadorCliente !== ID_SolicitudEntrenadorCliente)
       );
@@ -240,11 +239,10 @@ const ProfileScreen = ({ route }) => {
         <Text style={styles.data}>{userData.fecha_nacimiento ? userData.fecha_nacimiento.split('T')[0] : 'Fecha no disponible'}</Text>
       </View>
 
-      {showCompleteButton && (
         <TouchableOpacity style={[styles.button, styles.completeButton]}>
-          <Text style={styles.buttonText}>Completar</Text>
+          <Text style={styles.buttonText} onPress={  navigation.navigate("Questionnaire", {screen: "TimeAndDaysForm", params: {oid: oid }}) }>Completar/Modificar Cuestionario</Text>
         </TouchableOpacity>
-      )}
+   
 
       <TouchableOpacity style={[styles.button, styles.becomeTrainerButton]} onPress={handleBecomeTrainerPress}
 >
@@ -383,7 +381,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   completeButton: {
-    backgroundColor: 'gray', // Hidden for now, so it's grayed out
+    backgroundColor: '#0790cf',
+    marginBottom: -10,
   },
   becomeTrainerButton: {
     backgroundColor: '#0790cf',

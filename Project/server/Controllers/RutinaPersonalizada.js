@@ -217,10 +217,9 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
             let ID_Modalidad;
             switch (datosCuestionarioCompleto.cuestionario.ID_EspacioDisponible) {
                 case 1: // Gimnasio
-                    ID_Modalidad = 2; // Suponemos que '2' es fuerza
+                    ID_Modalidad = 2; // fuerza
                     break;
                 case 2: // Casa
-                    // Supongamos que '1' es peso corporal y '2' es pesas
                     // Si dispone de pesas, usamos pesas, si no, peso corporal
                     ID_Modalidad = datosCuestionarioCompleto.dispone.some(item => item.ID_Material === 2) ? 2 : 1;
                     break;
@@ -301,9 +300,6 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
 
 // Esto es una función de ejemplo que tendrás que definir tú mismo
 function obtenerInfoEjercicioPorObjetivo(idObjetivo) {
-    // Aquí deberás implementar la lógica para obtener la información
-    // del ejercicio en base al objetivo. Podrías usar un switch o un
-    // objeto de mapeo como se ve en la imagen que subiste.
     switch (idObjetivo) {
         case 1: // Perder peso
             return { repeticiones: 15, descanso: 120, duracionPorRepeticion: 2, tiempoPorSerie: 150 };
@@ -365,7 +361,7 @@ export const obtenerDatosCuestionarioCompleto = async (ID_Usuario) => {
 
 
 
-// Asignar split de entrenamiento
+// Asignar split de entrenamiento automaticamente por el sistema
 function asignarRutina(diasEntrenamiento, genero, diasPuedeEntrenar) {
     let rutina = [];
 

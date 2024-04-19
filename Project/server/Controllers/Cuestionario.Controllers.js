@@ -190,3 +190,7 @@ export const createCuestionario = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const getCuestionarioData = async (req, res) => {
+    const ID_Usuario = req.params.id
+}
