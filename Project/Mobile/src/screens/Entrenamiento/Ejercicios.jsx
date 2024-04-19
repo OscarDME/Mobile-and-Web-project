@@ -4,12 +4,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Progress from 'react-native-progress';
 import { Ionicons } from '@expo/vector-icons';
 import config from "../../utils/conf";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const WorkoutScreen = ({route, navigation}) => {
 
   const { workoutSession } = route.params;
   const [currentSetIndex, setCurrentSetIndex] = useState(0); 
+  const [oid, setOid] = useState(route.params?.oid || "");
+  const [workoutSessionTime, setWorkoutSessionTime] = useState(0);
 
   const [weight, setWeight] = useState(workoutSession.session[currentSetIndex].weight.toString());
   const [reps, setReps] = useState(workoutSession.session[currentSetIndex].reps.toString());
@@ -19,6 +22,19 @@ const WorkoutScreen = ({route, navigation}) => {
     workoutSession.session[currentSetIndex].exerciseToWork.modalidad === "Cardiovascular" ? 
     workoutSession.session[currentSetIndex].time : 0
   );
+
+  useEffect(() => {
+    const fetchOID = async () => {
+      const oid = await AsyncStorage.getItem("userOID");
+      setOid(oid);
+      if (!oid) {
+        console.error("OID not found");
+        return;
+      }
+    };
+    fetchOID();
+  }, []);
+
 
   const [trainingCompleted, setTrainingCompleted] = useState(false);
   const disableSkipButton = isResting && workoutSession.session[currentSetIndex].exerciseToWork.modalidad !== "Cardiovascular";
@@ -35,7 +51,7 @@ const WorkoutScreen = ({route, navigation}) => {
     const seconds = totalSeconds % 60;
     // Asegura que minutos y segundos se muestren con dos dígitos
     return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
+  }; 
   
 
 
@@ -148,11 +164,43 @@ const WorkoutScreen = ({route, navigation}) => {
 
   useEffect(() => {
     if (trainingCompleted) {
-      // Finaliza el entrenamiento GUARDAR DATOS EN LA BASE DE DATOS AQUI
+      //Advertencias al terminar entrenamiento
+      postWarnings();
+
       navigation.goBack();
     }
   }, [trainingCompleted, navigation]);
   
+
+  const postWarnings = async () => {
+    try {
+      const response = await fetch(
+        `${config.apiBaseUrl}/allWarnings/weightAnalisis/${oid}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      const responseJson = await response.json();
+      console.log(responseJson);
+/*
+      const response2 = await fetch(
+        `${config.apiBaseUrl}/allWarnings/timeAnalisis/${oid}/${workoutSessionTime}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      const responseJson2 = await response2.json();
+      console.log(responseJson2);*/
+    } catch (error) {
+      console.error(error);
+    }
+  };
   
 
 // Asegúrate de que este useEffect esté presente en tu componente

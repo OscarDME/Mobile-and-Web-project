@@ -234,7 +234,7 @@ const ProfileScreen = ({ route }) => {
         </TouchableOpacity>
         <Text style={styles.sectionTitle}>Mis datos:</Text>
         <Text style={styles.data}>{userData.nombre} {userData.apellido}</Text>
-        <Text style={styles.data}>oscarmadriz25@gmail.com</Text>
+        <Text style={styles.data}>{userData.correo}</Text>
         <Text style={styles.data}>{userData.sexo === 'H' ? 'Hombre' : userData.sexo === 'M' ? 'Mujer' : 'No especificado'}</Text>
         <Text style={styles.data}>{userData.fecha_nacimiento ? userData.fecha_nacimiento.split('T')[0] : 'Fecha no disponible'}</Text>
       </View>

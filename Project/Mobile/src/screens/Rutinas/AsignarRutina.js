@@ -110,8 +110,16 @@ const AssignRoutineScreen = ({ navigation, route }) => {
       console.log('Rutina asignada con éxito:', data);
       navigation.navigate("Rutinas");  
     })
+
+    //warnings al asignar una rutina
+    fetch(`${config.apiBaseUrl}/allWarnings/assign/${ID_Usuario}/${ID_Rutina}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
     .catch(error => {
-      console.error('Error al asignar la rutina:', error);
+      console.error('Error al asignar la advertencia:', error);
     });
   };
 
@@ -125,8 +133,8 @@ const AssignRoutineScreen = ({ navigation, route }) => {
         style={styles.calendar}
         markingType={'period'}
         markedDates={{
-          [selectedStartDate]: { startingDay: true, color: '#00adf5', textColor: 'white' },
-          [selectedEndDate]: { endingDay: true, color: '#00adf5', textColor: 'white' },
+          [selectedStartDate]: { startingDay: true, color: '#0790cf', textColor: 'white' },
+          [selectedEndDate]: { endingDay: true, color: '#0790cf', textColor: 'white' },
         }}
       />
       {selectedStartDate && selectedEndDate && (
