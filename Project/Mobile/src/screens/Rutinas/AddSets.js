@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import config from "../../utils/conf";
 
 const AddSetsScreen = ({ navigation, route }) => {
-  const [sets, setSets] = useState(ID_Modalidad === 3 ? [{ id: `set-${Date.now()}`, tiempo: 0, reps: null, weight: null }] : []);
+  const [sets, setSets] = useState([]);
   const [error, setError] = useState('');
   const [datosCargados, setDatosCargados] = useState(false);
 
@@ -50,8 +50,10 @@ const AddSetsScreen = ({ navigation, route }) => {
           setDatosCargados(true);
         } else if (respuesta.status === 404) {
           console.log('No se encontraron sets para este ejercicio.');
-          setDatosCargados(false);
-        }
+          if (ID_Modalidad === 3) {
+            setSets([{ id: `set-${Date.now()}`, tiempo: 0, reps: null, weight: null }]);
+          }
+          setDatosCargados(false);        }
         else {
           setDatosCargados(false);
           console.error('Respuesta no exitosa:', respuesta);
@@ -192,10 +194,10 @@ const AddSetsScreen = ({ navigation, route }) => {
         weight: set.weight,
         tiempo: convertirMinutosAHoras(set.tiempo),
         dropSet: set.dropSet,
-        subsets: set.subsets.map(subset => ({
+        subsets: set.subsets ? set.subsets.map(subset => ({ 
           reps: subset.reps,
           weight: subset.weight
-        }))
+        })) : [] 
       }))
     };
     console.log(data);

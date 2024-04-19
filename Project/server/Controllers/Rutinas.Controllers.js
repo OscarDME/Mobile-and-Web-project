@@ -414,6 +414,20 @@ export const crearBloqueSetsConSeries = async (req, res) => {
   try {
     const pool = await getConnection();
 
+    // Obtiene información adicional sobre el día de entrenamiento (incluyendo tiempo de descanso)
+    const resultDiaEntreno = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia)
+      .query(
+        "SELECT ID_Ejercicio, descanso FROM EjerciciosDia WHERE ID_EjerciciosDia = @ID_EjerciciosDia;"
+      );
+
+    let tiempoTotalDia = 0;
+    let tiempoTotalFuerza = 0;
+    let tiempoTotalCardio = 0;
+    let countFuerza = 0;
+    let countCardio = 0;
+
     // Insertar el BloqueSets y obtener su ID
     const resultBloqueSets = await pool
       .request()
@@ -422,7 +436,6 @@ export const crearBloqueSetsConSeries = async (req, res) => {
         "INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);"
       );
     const ID_BloqueSets = resultBloqueSets.recordset[0].ID_BloqueSets;
-    
 
     for (const serie of series) {
       // Insertar la Serie principal
@@ -431,11 +444,31 @@ export const crearBloqueSetsConSeries = async (req, res) => {
         .input("repeticiones", sql.Int, serie.reps)
         .input("peso", sql.Int, serie.weight)
         .input("tiempo", sql.Time, serie.tiempo)
-        // Asume que 'tiempo' es el campo correcto para 'descanso'; ajusta según sea necesario
         .query(
           "INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;"
         );
       const ID_Serie = resultSerie.recordset[0].ID_Serie;
+
+      // Calcular tiempo por serie
+      let tiempoSerie = serie.reps * 2; // Cada repetición dura 2 segundos
+      if (resultDiaEntreno.recordset[0].descanso) {
+        tiempoSerie +=
+          resultDiaEntreno.recordset[0].descanso.getMinutes() * 60 +
+          resultDiaEntreno.recordset[0].descanso.getSeconds();
+      }
+      tiempoTotalDia += tiempoSerie;
+
+      // Determinar si el ejercicio es de fuerza o cardiovascular
+      const esCardio = resultDiaEntreno.recordset.some(
+        (e) => e.ID_Ejercicio === serie.ID_Ejercicio && e.ID_Modalidad === 3
+      );
+      if (esCardio) {
+        tiempoTotalCardio += tiempoSerie;
+        countCardio++;
+      } else {
+        tiempoTotalFuerza += tiempoSerie;
+        countFuerza++;
+      }
 
       // Asociar la Serie principal al BloqueSets
       await pool
@@ -454,7 +487,6 @@ export const crearBloqueSetsConSeries = async (req, res) => {
             .input("repeticiones", sql.Int, subset.reps)
             .input("peso", sql.Int, subset.weight)
             .input("ID_SeriePrincipal", sql.Int, ID_Serie)
-            // Asume que 'tiempo' es el campo correcto para 'descanso'; ajusta según sea necesario
             .query(
               "INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, @ID_SeriePrincipal); SELECT SCOPE_IDENTITY() AS ID_Serie;",
               {
@@ -474,7 +506,135 @@ export const crearBloqueSetsConSeries = async (req, res) => {
         }
       }
     }
-    res.status(200).json({ message: "Series actualizadas correctamente." });
+
+    // Guardar tiempos y promedios
+    const promedioFuerza = tiempoTotalFuerza / countFuerza;
+    const promedioCardio = tiempoTotalCardio / countCardio;
+
+    const tiempoTotalPorDia = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`
+      SELECT 
+        DE.ID_Dias_Entreno, 
+        SUM(
+          CASE 
+            WHEN E.ID_Modalidad = 3 THEN ISNULL(DATEDIFF(SECOND, '00:00:00', S.tiempo), 0)
+            ELSE S.repeticiones * 2 + ISNULL(DATEDIFF(SECOND, '00:00:00', ED.descanso), 0)
+          END
+        ) AS TiempoTotal
+      FROM 
+        Dias_Entreno DE
+        INNER JOIN EjerciciosDia ED ON DE.ID_Dias_Entreno = ED.ID_Dias_Entreno
+        INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+        INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
+        INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
+        INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
+      WHERE 
+        DE.ID_Rutina = (SELECT Dias_Entreno.ID_Rutina FROM Dias_Entreno 
+                        INNER JOIN EjerciciosDia ON Dias_Entreno.ID_Dias_Entreno = EjerciciosDia.ID_Dias_Entreno
+                        WHERE EjerciciosDia.ID_EjerciciosDia = @ID_EjerciciosDia)
+        AND (ED.descanso IS NOT NULL OR E.ID_Modalidad = 3)
+        AND S.ID_Serie IS NOT NULL 
+      GROUP BY 
+        DE.ID_Dias_Entreno;
+      `);
+
+    // Calcular el promedio de tiempo de entrenamiento por día
+    let sumaTiempoTotal = 0;
+    tiempoTotalPorDia.recordset.forEach((dia) => {
+      sumaTiempoTotal += dia.TiempoTotal;
+    });
+    const promedioTiempo = sumaTiempoTotal / tiempoTotalPorDia.recordset.length;
+
+    console.log(
+      "Tiempo total de entrenamiento por día de la rutina:",
+      tiempoTotalPorDia.recordset
+    );
+    console.log(
+      "Promedio de tiempo total de entrenamiento por día:",
+      promedioTiempo
+    );
+
+    const tiempoFormateado = convertSecondsToTimeFormat(promedioTiempo);
+
+    // Obtén el ID_Rutina usando el ID_EjerciciosDia
+    const result = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`
+    SELECT TOP 1 ID_Rutina
+    FROM Dias_Entreno
+    WHERE ID_Dias_Entreno = (
+      SELECT ID_Dias_Entreno
+      FROM EjerciciosDia
+      WHERE ID_EjerciciosDia = @ID_EjerciciosDia
+    )
+  `);
+
+    const ID_Rutina = result.recordset[0].ID_Rutina;
+
+    // Ahora actualiza la duración en la tabla Rutina
+    await pool
+      .request()
+      .input("TiempoFormateado", sql.Time, tiempoFormateado)
+      .input("ID_Rutina", sql.Int, ID_Rutina).query(`
+    UPDATE Rutina
+    SET duracion = @TiempoFormateado
+    WHERE ID_Rutina = @ID_Rutina;
+  `);
+
+    console.log("Tiempo de duración actualizado con éxito.");
+
+    const tiempoTotalPorDiaSeparado = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`SELECT 
+    DE.ID_Dias_Entreno, 
+    SUM(CASE WHEN E.ID_Modalidad = 3 THEN ISNULL(DATEDIFF(SECOND, '00:00:00', S.tiempo), 0) ELSE 0 END) AS TiempoTotalCardio,
+    SUM(CASE WHEN E.ID_Modalidad != 3 THEN S.repeticiones * 2 + ISNULL(DATEDIFF(SECOND, '00:00:00', ED.descanso), 0) ELSE 0 END) AS TiempoTotalFuerza
+  FROM 
+    Dias_Entreno DE
+    INNER JOIN EjerciciosDia ED ON DE.ID_Dias_Entreno = ED.ID_Dias_Entreno
+    INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+    INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
+    INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
+    INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
+  WHERE 
+    DE.ID_Rutina = (
+      SELECT ID_Rutina 
+      FROM Dias_Entreno 
+      WHERE ID_Dias_Entreno = (
+        SELECT TOP 1 ID_Dias_Entreno 
+        FROM EjerciciosDia 
+        WHERE ID_EjerciciosDia = @ID_EjerciciosDia
+      )
+    )
+    AND (ED.descanso IS NOT NULL OR E.ID_Modalidad = 3)
+  GROUP BY 
+    DE.ID_Dias_Entreno;`);
+
+    // Ahora tiempoTotalPorDia incluirá los totales de tiempo por modalidad
+    let sumaTiempoCardio = 0,
+      sumaTiempoFuerza = 0;
+    tiempoTotalPorDiaSeparado.recordset.forEach((dia) => {
+      sumaTiempoCardio += dia.TiempoTotalCardio;
+      sumaTiempoFuerza += dia.TiempoTotalFuerza;
+    });
+    const promedioTiempoCardio =
+      sumaTiempoCardio / tiempoTotalPorDiaSeparado.recordset.length;
+    const promedioTiempoFuerza =
+      sumaTiempoFuerza / tiempoTotalPorDiaSeparado.recordset.length;
+
+    console.log(
+      "Promedio tiempo cardiovascular:",
+      promedioTiempoCardio.toFixed(2)
+    );
+    console.log("Promedio tiempo fuerza:", promedioTiempoFuerza.toFixed(2));
+
+    res.status(200).json({
+      message: "Series actualizadas correctamente.",
+      tiempoTotalDia,
+      promedioFuerza,
+      promedioCardio,
+    });
   } catch (error) {
     console.error("Error al crear BloqueSets y Series:", error);
     res.status(500).json({ error: error.message });
@@ -486,23 +646,31 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
   try {
     const pool = await getConnection();
 
-    // Opcional: Verificar si el BloqueSets existe para el ID_EjerciciosDia dado
-    // Esto es solo para confirmar que el BloqueSets a actualizar existe.
-
-    // Primero, borrar todas las series (y subseries por cascada si tu base de datos está configurada para ello)
-    // asociadas al BloqueSets que se va a actualizar.
+    // Eliminar series existentes
     await pool.request().input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia)
       .query(`
-        DELETE Serie
-        FROM Serie
-        INNER JOIN ConjuntoSeries ON Serie.ID_Serie = ConjuntoSeries.ID_Serie
-        INNER JOIN BloqueSets ON ConjuntoSeries.ID_BloqueSets = BloqueSets.ID_BloqueSets
-        WHERE BloqueSets.ID_EjerciciosDia = @ID_EjerciciosDia;
+        DELETE FROM Serie
+        WHERE ID_Serie IN (
+            SELECT ID_Serie
+            FROM ConjuntoSeries
+            INNER JOIN BloqueSets ON ConjuntoSeries.ID_BloqueSets = BloqueSets.ID_BloqueSets
+            WHERE BloqueSets.ID_EjerciciosDia = @ID_EjerciciosDia
+        );
       `);
 
-    // Luego, insertar nuevamente las series y subseries como se hizo en la creación
+    // Obtener el tiempo de descanso de EjerciciosDia
+    const resultDescanso = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia)
+      .query(
+        "SELECT DATEDIFF(SECOND, '00:00:00', descanso) AS descansoSegundos FROM EjerciciosDia WHERE ID_EjerciciosDia = @ID_EjerciciosDia;"
+      );
+    const descansoSegundos = resultDescanso.recordset[0].descansoSegundos;
+
+    // Insertar nuevas series y calcular tiempos
+    let tiempoTotalDia = 0;
     for (const serie of series) {
-      // Insertar la Serie principal
+      // Insertar Serie principal
       const resultSerie = await pool
         .request()
         .input("repeticiones", sql.Int, serie.reps)
@@ -513,16 +681,20 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
         );
       const ID_Serie = resultSerie.recordset[0].ID_Serie;
 
-      // Asociar la Serie principal al BloqueSets nuevamente
+      // Calcular tiempo de la serie
+      let tiempoSerie = serie.reps * 2 + descansoSegundos;
+      tiempoTotalDia += tiempoSerie;
+
+      // Asociar Serie principal al BloqueSets
       await pool
         .request()
-        .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia) // Asegúrate de tener el ID_BloqueSets correcto si es necesario
+        .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia)
         .input("ID_Serie", sql.Int, ID_Serie)
         .query(
           "INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES ((SELECT ID_BloqueSets FROM BloqueSets WHERE ID_EjerciciosDia = @ID_EjerciciosDia), @ID_Serie);"
         );
 
-      // Si hay subseries (dropsets), insertarlas también
+      // Insertar subseries si existen
       if (serie.subsets && serie.subsets.length > 0) {
         for (const subset of serie.subsets) {
           const resultSubSerie = await pool
@@ -535,10 +707,10 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
             );
           const ID_SubSeries = resultSubSerie.recordset[0].ID_Serie;
 
-          // Asociar cada subserie al BloqueSets nuevamente
+          // Asociar subserie
           await pool
             .request()
-            .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia) // Asegúrate de tener el ID_BloqueSets correcto si es necesario
+            .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia)
             .input("ID_Serie", sql.Int, ID_SubSeries)
             .query(
               "INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES ((SELECT ID_BloqueSets FROM BloqueSets WHERE ID_EjerciciosDia = @ID_EjerciciosDia), @ID_Serie);"
@@ -546,68 +718,130 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
         }
       }
     }
-
-    const rutinaRelacionada = await pool
+    const tiempoTotalPorDia = await pool
       .request()
       .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`
-    SELECT Rutina.ID_Rutina
-    FROM Rutina
-    INNER JOIN Dias_Entreno ON Rutina.ID_Rutina = Dias_Entreno.ID_Rutina
-    INNER JOIN EjerciciosDia ON Dias_Entreno.ID_Dias_Entreno = EjerciciosDia.ID_Dias_Entreno
-    WHERE EjerciciosDia.ID_EjerciciosDia = @ID_EjerciciosDia;
-  `);
-    console.log("Rutina relacionada:", rutinaRelacionada.recordset);
-
-    if (rutinaRelacionada.recordset.length > 0) {
-      const ID_Rutina = rutinaRelacionada.recordset[0].ID_Rutina;
-
-      // Ahora que tienes ID_Rutina, puedes calcular la duración promedio
-      // Asegúrate de corregir la consulta para calcular la duración promedio correctamente
-      const resultadoDuracion = await pool
-        .request()
-        .input("ID_Rutina", sql.Int, ID_Rutina) // Asegúrate de que esta variable se declara correctamente aquí
-        .query(`
-    WITH DuracionPorDia AS (
-      SELECT
-          ED.ID_Dias_Entreno,
-          SUM((S.repeticiones * 2) + DATEDIFF(SECOND, '00:00:00', ED.descanso)) AS DuracionTotal
-      FROM
-          EjerciciosDia ED
-          INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
-          INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
-          INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
-      GROUP BY
-          ED.ID_Dias_Entreno
-  )
-  SELECT
-      AVG(DuracionTotal) AS PromedioDuracion
-  FROM
-      DuracionPorDia;
-    `);
-
-      console.log(
-        "Resultado de calcular duración promedio:",
-        resultadoDuracion.recordset
-      );
-      if (resultadoDuracion.recordset.length > 0) {
-        const duracionPromedio =
-          resultadoDuracion.recordset[0].PromedioDuracion;
-
-        // Actualiza la duración en la rutina
-        await pool
-          .request()
-          .input("ID_Rutina", sql.Int, ID_Rutina)
-          .input("duracion", sql.Float, duracionPromedio) // Asegúrate de que el tipo de dato sea correcto
-          .query(`
-        UPDATE Rutina
-        SET duracion = @duracion
-        WHERE ID_Rutina = @ID_Rutina;
+      SELECT 
+        DE.ID_Dias_Entreno, 
+        SUM(
+          CASE 
+            WHEN E.ID_Modalidad = 3 THEN ISNULL(DATEDIFF(SECOND, '00:00:00', S.tiempo), 0)
+            ELSE S.repeticiones * 2 + ISNULL(DATEDIFF(SECOND, '00:00:00', ED.descanso), 0)
+          END
+        ) AS TiempoTotal
+      FROM 
+        Dias_Entreno DE
+        INNER JOIN EjerciciosDia ED ON DE.ID_Dias_Entreno = ED.ID_Dias_Entreno
+        INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+        INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
+        INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
+        INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
+      WHERE 
+        DE.ID_Rutina = (SELECT Dias_Entreno.ID_Rutina FROM Dias_Entreno 
+                        INNER JOIN EjerciciosDia ON Dias_Entreno.ID_Dias_Entreno = EjerciciosDia.ID_Dias_Entreno
+                        WHERE EjerciciosDia.ID_EjerciciosDia = @ID_EjerciciosDia)
+        AND (ED.descanso IS NOT NULL OR E.ID_Modalidad = 3)
+        AND S.ID_Serie IS NOT NULL 
+      GROUP BY 
+        DE.ID_Dias_Entreno;
       `);
-      }
-    }
-    res
-      .status(200)
-      .json({ message: "BloqueSets y Series actualizados correctamente." });
+
+    // Calcular el promedio de tiempo de entrenamiento por día
+    let sumaTiempoTotal = 0;
+    tiempoTotalPorDia.recordset.forEach((dia) => {
+      sumaTiempoTotal += dia.TiempoTotal;
+    });
+    const promedioTiempo = sumaTiempoTotal / tiempoTotalPorDia.recordset.length;
+
+    console.log(
+      "Tiempo total de entrenamiento por día de la rutina:",
+      tiempoTotalPorDia.recordset
+    );
+    console.log(
+      "Promedio de tiempo total de entrenamiento por día:",
+      promedioTiempo
+    );
+
+    const tiempoFormateado = convertSecondsToTimeFormat(promedioTiempo);
+
+    // Obtén el ID_Rutina usando el ID_EjerciciosDia
+    const result = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`
+    SELECT TOP 1 ID_Rutina
+    FROM Dias_Entreno
+    WHERE ID_Dias_Entreno = (
+      SELECT ID_Dias_Entreno
+      FROM EjerciciosDia
+      WHERE ID_EjerciciosDia = @ID_EjerciciosDia
+    )
+  `);
+
+    const ID_Rutina = result.recordset[0].ID_Rutina;
+
+    // Ahora actualiza la duración en la tabla Rutina
+    await pool
+      .request()
+      .input("TiempoFormateado", sql.Time, tiempoFormateado)
+      .input("ID_Rutina", sql.Int, ID_Rutina).query(`
+    UPDATE Rutina
+    SET duracion = @TiempoFormateado
+    WHERE ID_Rutina = @ID_Rutina;
+  `);
+
+    console.log("Tiempo de duración actualizado con éxito.");
+
+    const tiempoTotalPorDiaSeparado = await pool
+      .request()
+      .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`SELECT 
+    DE.ID_Dias_Entreno, 
+    SUM(CASE WHEN E.ID_Modalidad = 3 THEN ISNULL(DATEDIFF(SECOND, '00:00:00', S.tiempo), 0) ELSE 0 END) AS TiempoTotalCardio,
+    SUM(CASE WHEN E.ID_Modalidad != 3 THEN S.repeticiones * 2 + ISNULL(DATEDIFF(SECOND, '00:00:00', ED.descanso), 0) ELSE 0 END) AS TiempoTotalFuerza
+  FROM 
+    Dias_Entreno DE
+    INNER JOIN EjerciciosDia ED ON DE.ID_Dias_Entreno = ED.ID_Dias_Entreno
+    INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+    INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
+    INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
+    INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
+  WHERE 
+    DE.ID_Rutina = (
+      SELECT ID_Rutina 
+      FROM Dias_Entreno 
+      WHERE ID_Dias_Entreno = (
+        SELECT TOP 1 ID_Dias_Entreno 
+        FROM EjerciciosDia 
+        WHERE ID_EjerciciosDia = @ID_EjerciciosDia
+      )
+    )
+    AND (ED.descanso IS NOT NULL OR E.ID_Modalidad = 3)
+  GROUP BY 
+    DE.ID_Dias_Entreno;`);
+
+    // Ahora tiempoTotalPorDia incluirá los totales de tiempo por modalidad
+    let sumaTiempoCardio = 0,
+      sumaTiempoFuerza = 0;
+    tiempoTotalPorDiaSeparado.recordset.forEach((dia) => {
+      sumaTiempoCardio += dia.TiempoTotalCardio;
+      sumaTiempoFuerza += dia.TiempoTotalFuerza;
+    });
+    const promedioTiempoCardio =
+      sumaTiempoCardio / tiempoTotalPorDiaSeparado.recordset.length;
+    const promedioTiempoFuerza =
+      sumaTiempoFuerza / tiempoTotalPorDiaSeparado.recordset.length;
+
+    console.log(
+      "Promedio tiempo cardiovascular:",
+      promedioTiempoCardio.toFixed(2)
+    );
+    console.log("Promedio tiempo fuerza:", promedioTiempoFuerza.toFixed(2));
+
+    console.log("Tiempo total:", tiempoTotalDia);
+
+    res.status(200).json({
+      message: "BloqueSets y Series actualizados correctamente.",
+      tiempoTotalDia,
+    });
   } catch (error) {
     console.error("Error al actualizar BloqueSets y Series:", error);
     res.status(500).json({ error: error.message });
@@ -681,7 +915,6 @@ export const createCompleteRutina = async (req, res) => {
 
     // Variables para calcular la dificultad y duración
 
-
     // Iterar sobre cada día para insertar ejercicios y sets
     for (const day of days) {
       // Insertar día de entrenamiento y obtener ID_Dia
@@ -691,18 +924,20 @@ export const createCompleteRutina = async (req, res) => {
         .input("ID_Dia", sql.Int, day.selectedDay)
         .query(querys.createDiasEntreno); // Asegúrate de tener esta consulta preparada en tus 'querys'
       const ID_Dia = insertDiaResult.recordset[0].ID_Dias_Entreno;
-      
 
       // Iterar sobre cada ejercicio del día
       for (const ejercicio of day.ejercicios) {
-
         const descansoEnSegundos = ejercicio.rest; // Por ejemplo, 90 segundos
         console.log(descansoEnSegundos);
 
         // Convertir segundos a un string en formato HH:MM:SS para SQL TIME
-        let horas = Math.floor(descansoEnSegundos / 3600).toString().padStart(2, '0');
-        let minutos = Math.floor((descansoEnSegundos % 3600) / 60).toString().padStart(2, '0');
-        let segundos = (descansoEnSegundos % 60).toString().padStart(2, '0');
+        let horas = Math.floor(descansoEnSegundos / 3600)
+          .toString()
+          .padStart(2, "0");
+        let minutos = Math.floor((descansoEnSegundos % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        let segundos = (descansoEnSegundos % 60).toString().padStart(2, "0");
         let descansoComoTime = `${horas}:${minutos}:${segundos}.0000000`;
         console.log(descansoComoTime);
 
@@ -711,11 +946,7 @@ export const createCompleteRutina = async (req, res) => {
         // Insertar EjercicioDia
         const insertEjercicioDiaResult = await pool
           .request()
-          .input(
-            "ID_Dias_Entreno",
-            sql.Int,
-            ID_Dia
-          )
+          .input("ID_Dias_Entreno", sql.Int, ID_Dia)
           .input("ID_Ejercicio", sql.Int, ejercicio.exerciseId)
           .input("descanso", sql.Time, descansoComoTime)
           .input("superset", sql.Bit, ejercicio.isSuperset ? 1 : 0) // Asumiendo que 'isSuperset' es un booleano
@@ -725,11 +956,11 @@ export const createCompleteRutina = async (req, res) => {
           insertEjercicioDiaResult.recordset[0].ID_EjerciciosDia;
 
         const resultBloqueSets = await pool
-        .request()
-        .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
-        .query(
-          "INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);"
-        );
+          .request()
+          .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
+          .query(
+            "INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);"
+          );
         const ID_BloqueSets = resultBloqueSets.recordset[0].ID_BloqueSets;
 
         // Iterar sobre cada set del ejercicio
@@ -737,32 +968,41 @@ export const createCompleteRutina = async (req, res) => {
 
         for (const set of ejercicio.sets) {
           let idSerieActual; // Esta variable almacenará el ID de la serie actual, ya sea un set principal o un drop set
-        
+
           if (!set.isDropSet) {
             // Insertar el set principal y obtener su ID
-            const resultSerie = await pool.request()
+            const resultSerie = await pool
+              .request()
               .input("repeticiones", sql.Int, set.reps)
               .input("peso", sql.Decimal(10, 2), set.weight) // Asumiendo que peso puede ser decimal
               .input("tiempo", sql.Time, set.time) // Asumiendo que peso puede ser decimal
               .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
-              .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;");
+              .query(
+                "INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;"
+              );
             idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
             lastSetId = idSerieActual; // Actualizar lastSetId para ser usado en drop sets
           } else {
             // Insertar el drop set y obtener su ID
-            const resultSerie = await pool.request()
+            const resultSerie = await pool
+              .request()
               .input("repeticiones", sql.Int, set.reps)
               .input("peso", sql.Decimal(10, 2), set.weight)
               .input("ID_SeriePrincipal", sql.Int, lastSetId) // Usar lastSetId para relacionar el dropset con su set principal
-              .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, @ID_SeriePrincipal); SELECT SCOPE_IDENTITY() AS ID_Serie;");
+              .query(
+                "INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, @ID_SeriePrincipal); SELECT SCOPE_IDENTITY() AS ID_Serie;"
+              );
             idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
           }
-        
+
           // Inmediatamente después de insertar la serie, insertar la relación en ConjuntoSeries
-          await pool.request()
+          await pool
+            .request()
             .input("ID_BloqueSets", sql.Int, ID_BloqueSets)
             .input("ID_Serie", sql.Int, idSerieActual) // Usar el ID de la serie actual
-            .query("INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES (@ID_BloqueSets, @ID_Serie);");
+            .query(
+              "INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES (@ID_BloqueSets, @ID_Serie);"
+            );
         }
 
         // Actualizar la dificultad del ejercicio en la base de datos
@@ -778,15 +1018,14 @@ export const createCompleteRutina = async (req, res) => {
       }
     }
 
-   
     // Calcular y actualizar la dificultad y duración promedio de la rutina
 
     const ID_Rutina = rutinaId;
 
     const resultadoDuracion = await pool
-        .request()
-        .input("ID_Rutina", sql.Int, ID_Rutina) // Asegúrate de que esta variable se declara correctamente aquí
-        .query(`
+      .request()
+      .input("ID_Rutina", sql.Int, ID_Rutina) // Asegúrate de que esta variable se declara correctamente aquí
+      .query(`
     WITH DuracionPorDia AS (
       SELECT
           ED.ID_Dias_Entreno,
@@ -805,27 +1044,26 @@ export const createCompleteRutina = async (req, res) => {
       DuracionPorDia;
     `);
 
-      console.log(
-        "Resultado de calcular duración promedio:",
-        resultadoDuracion.recordset
-      );
-      if (resultadoDuracion.recordset.length > 0) {
-        const duracionPromedio =
-          resultadoDuracion.recordset[0].PromedioDuracion;
+    console.log(
+      "Resultado de calcular duración promedio:",
+      resultadoDuracion.recordset
+    );
+    if (resultadoDuracion.recordset.length > 0) {
+      const duracionPromedio = resultadoDuracion.recordset[0].PromedioDuracion;
 
-        // Actualiza la duración en la rutina
-        await pool
-          .request()
-          .input("ID_Rutina", sql.Int, ID_Rutina)
-          .input("duracion", sql.Float, duracionPromedio) // Asegúrate de que el tipo de dato sea correcto
-          .query(`
+      // Actualiza la duración en la rutina
+      await pool
+        .request()
+        .input("ID_Rutina", sql.Int, ID_Rutina)
+        .input("duracion", sql.Float, duracionPromedio) // Asegúrate de que el tipo de dato sea correcto
+        .query(`
         UPDATE Rutina
         SET duracion = @duracion
         WHERE ID_Rutina = @ID_Rutina;
       `);
-      }
+    }
 
-      const diasEntrenoResult = await pool
+    const diasEntrenoResult = await pool
       .request()
       .input("ID_Rutina", sql.Int, ID_Rutina)
       .query(
@@ -905,49 +1143,64 @@ export const createCompleteRutina = async (req, res) => {
 export const getCompleteRutinas = async (req, res) => {
   try {
     const pool = await getConnection();
-    
+
     // Obtener todas las rutinas
     const rutinasResult = await pool.request().query(`
     SELECT R.*, D.dificultad
     FROM Rutina R
     INNER JOIN Dificultad D ON R.ID_Dificultad = D.ID_Dificultad
   `);
-  const rutinas = rutinasResult.recordset;
-    
+    const rutinas = rutinasResult.recordset;
+
     for (const rutina of rutinas) {
       // Obtener días de entrenamiento para cada rutina
-      const diasEntrenoResult = await pool.request()
-        .input('ID_Rutina', sql.Int, rutina.ID_Rutina)
-        .query('SELECT Dias_Entreno.*, Dia.dia AS NombreDia FROM Dias_Entreno JOIN Dia ON Dias_Entreno.ID_Dia = Dia.ID_Dia WHERE Dias_Entreno.ID_Rutina = @ID_Rutina;');
+      const diasEntrenoResult = await pool
+        .request()
+        .input("ID_Rutina", sql.Int, rutina.ID_Rutina)
+        .query(
+          "SELECT Dias_Entreno.*, Dia.dia AS NombreDia FROM Dias_Entreno JOIN Dia ON Dias_Entreno.ID_Dia = Dia.ID_Dia WHERE Dias_Entreno.ID_Rutina = @ID_Rutina;"
+        );
       rutina.diasEntreno = diasEntrenoResult.recordset;
 
       for (const dia of rutina.diasEntreno) {
         // Obtener ejercicios para cada día de entrenamiento
-        const ejerciciosDiaResult = await pool.request()
-          .input('ID_Dias_Entreno', sql.Int, dia.ID_Dias_Entreno)
-          .query("SELECT ED.*,E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, DATEDIFF(SECOND,'00:00:00', ED.descanso) AS DescansoEnSegundos FROM EjerciciosDia ED LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo WHERE ED.ID_Dias_Entreno = @ID_Dias_Entreno;");
+        const ejerciciosDiaResult = await pool
+          .request()
+          .input("ID_Dias_Entreno", sql.Int, dia.ID_Dias_Entreno)
+          .query(
+            "SELECT ED.*,E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, DATEDIFF(SECOND,'00:00:00', ED.descanso) AS DescansoEnSegundos FROM EjerciciosDia ED LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo WHERE ED.ID_Dias_Entreno = @ID_Dias_Entreno;"
+          );
 
         dia.ejercicios = ejerciciosDiaResult.recordset;
 
         for (const ejercicio of dia.ejercicios) {
           console.log(ejercicio.descanso);
-          const bloqueSetsResult = await pool.request()
-            .input('ID_EjerciciosDia', sql.Int, ejercicio.ID_EjerciciosDia)
-            .query('SELECT * FROM BloqueSets WHERE ID_EjerciciosDia = @ID_EjerciciosDia');
+          const bloqueSetsResult = await pool
+            .request()
+            .input("ID_EjerciciosDia", sql.Int, ejercicio.ID_EjerciciosDia)
+            .query(
+              "SELECT * FROM BloqueSets WHERE ID_EjerciciosDia = @ID_EjerciciosDia"
+            );
           ejercicio.bloqueSets = bloqueSetsResult.recordset;
 
           for (const bloqueSet of ejercicio.bloqueSets) {
             // Obtener ConjuntoSeries para cada BloqueSets
-            const conjuntoSeriesResult = await pool.request()
-              .input('ID_BloqueSets', sql.Int, bloqueSet.ID_BloqueSets)
-              .query('SELECT * FROM ConjuntoSeries WHERE ID_BloqueSets = @ID_BloqueSets');
+            const conjuntoSeriesResult = await pool
+              .request()
+              .input("ID_BloqueSets", sql.Int, bloqueSet.ID_BloqueSets)
+              .query(
+                "SELECT * FROM ConjuntoSeries WHERE ID_BloqueSets = @ID_BloqueSets"
+              );
             bloqueSet.conjuntoSeries = conjuntoSeriesResult.recordset;
 
             for (const conjuntoSerie of bloqueSet.conjuntoSeries) {
               // Finalmente, obtener las series vinculadas a cada ConjuntoSeries
-              const seriesResult = await pool.request()
-                .input('ID_Serie', sql.Int, conjuntoSerie.ID_Serie)
-                .query("SELECT ID_Serie, repeticiones, peso, FORMAT((DATEPART(HOUR, tiempo) * 60) + DATEPART(MINUTE, tiempo), '00') + ':' + FORMAT(DATEPART(SECOND, tiempo), '00') as tiempoEnMinutos, (DATEPART(HOUR, tiempo) * 3600) + (DATEPART(MINUTE, tiempo) * 60) + DATEPART(SECOND, tiempo) as tiempoEnSegundos, ID_SeriePrincipal FROM Serie WHERE ID_Serie = @ID_Serie");
+              const seriesResult = await pool
+                .request()
+                .input("ID_Serie", sql.Int, conjuntoSerie.ID_Serie)
+                .query(
+                  "SELECT ID_Serie, repeticiones, peso, FORMAT((DATEPART(HOUR, tiempo) * 60) + DATEPART(MINUTE, tiempo), '00') + ':' + FORMAT(DATEPART(SECOND, tiempo), '00') as tiempoEnMinutos, (DATEPART(HOUR, tiempo) * 3600) + (DATEPART(MINUTE, tiempo) * 60) + DATEPART(SECOND, tiempo) as tiempoEnSegundos, ID_SeriePrincipal FROM Serie WHERE ID_Serie = @ID_Serie"
+                );
 
               conjuntoSerie.series = seriesResult.recordset;
             }
@@ -969,10 +1222,10 @@ export const cloneRutinaById = async (req, res) => {
     const { ID_Rutina, ID_Usuario } = req.body;
     const pool = await getConnection();
 
-    //Obtener la rutina completa 
-    const rutinasResult = await pool.request()
-    .input(`ID_Rutina`, sql.Int, ID_Rutina)
-    .query(`
+    //Obtener la rutina completa
+    const rutinasResult = await pool
+      .request()
+      .input(`ID_Rutina`, sql.Int, ID_Rutina).query(`
     SELECT R.*, D.dificultad
     FROM Rutina R
     INNER JOIN Dificultad D ON R.ID_Dificultad = D.ID_Dificultad WHERE ID_Rutina = @ID_Rutina;
@@ -981,38 +1234,53 @@ export const cloneRutinaById = async (req, res) => {
 
     for (const rutina of rutinas) {
       // Obtener días de entrenamiento para cada rutina
-      const diasEntrenoResult = await pool.request()
-        .input('ID_Rutina', sql.Int, rutina.ID_Rutina)
-        .query('SELECT Dias_Entreno.*, Dia.dia AS NombreDia FROM Dias_Entreno JOIN Dia ON Dias_Entreno.ID_Dia = Dia.ID_Dia WHERE Dias_Entreno.ID_Rutina = @ID_Rutina;');
+      const diasEntrenoResult = await pool
+        .request()
+        .input("ID_Rutina", sql.Int, rutina.ID_Rutina)
+        .query(
+          "SELECT Dias_Entreno.*, Dia.dia AS NombreDia FROM Dias_Entreno JOIN Dia ON Dias_Entreno.ID_Dia = Dia.ID_Dia WHERE Dias_Entreno.ID_Rutina = @ID_Rutina;"
+        );
       rutina.diasEntreno = diasEntrenoResult.recordset;
 
       for (const dia of rutina.diasEntreno) {
         // Obtener ejercicios para cada día de entrenamiento
-        const ejerciciosDiaResult = await pool.request()
-          .input('ID_Dias_Entreno', sql.Int, dia.ID_Dias_Entreno)
-          .query("SELECT ED.*,E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, DATEDIFF(SECOND,'00:00:00', ED.descanso) AS DescansoEnSegundos FROM EjerciciosDia ED LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo WHERE ED.ID_Dias_Entreno = @ID_Dias_Entreno;");
+        const ejerciciosDiaResult = await pool
+          .request()
+          .input("ID_Dias_Entreno", sql.Int, dia.ID_Dias_Entreno)
+          .query(
+            "SELECT ED.*,E.ID_Ejercicio, E.ejecucion, E.ejercicio, E.preparacion, D.dificultad AS Dificultad, M.modalidad AS Modalidad, Mu.descripcion AS Musculo, TE.descripcion AS Tipo_Ejercicio, EQ.equipo AS Equipo, DATEDIFF(SECOND,'00:00:00', ED.descanso) AS DescansoEnSegundos FROM EjerciciosDia ED LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Modalidad M ON E.ID_Modalidad = M.ID_Modalidad LEFT JOIN Musculo Mu ON E.ID_Musculo = Mu.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo WHERE ED.ID_Dias_Entreno = @ID_Dias_Entreno;"
+          );
 
         dia.ejercicios = ejerciciosDiaResult.recordset;
 
         for (const ejercicio of dia.ejercicios) {
           console.log(ejercicio.descanso);
-          const bloqueSetsResult = await pool.request()
-            .input('ID_EjerciciosDia', sql.Int, ejercicio.ID_EjerciciosDia)
-            .query('SELECT * FROM BloqueSets WHERE ID_EjerciciosDia = @ID_EjerciciosDia');
+          const bloqueSetsResult = await pool
+            .request()
+            .input("ID_EjerciciosDia", sql.Int, ejercicio.ID_EjerciciosDia)
+            .query(
+              "SELECT * FROM BloqueSets WHERE ID_EjerciciosDia = @ID_EjerciciosDia"
+            );
           ejercicio.bloqueSets = bloqueSetsResult.recordset;
 
           for (const bloqueSet of ejercicio.bloqueSets) {
             // Obtener ConjuntoSeries para cada BloqueSets
-            const conjuntoSeriesResult = await pool.request()
-              .input('ID_BloqueSets', sql.Int, bloqueSet.ID_BloqueSets)
-              .query('SELECT * FROM ConjuntoSeries WHERE ID_BloqueSets = @ID_BloqueSets');
+            const conjuntoSeriesResult = await pool
+              .request()
+              .input("ID_BloqueSets", sql.Int, bloqueSet.ID_BloqueSets)
+              .query(
+                "SELECT * FROM ConjuntoSeries WHERE ID_BloqueSets = @ID_BloqueSets"
+              );
             bloqueSet.conjuntoSeries = conjuntoSeriesResult.recordset;
 
             for (const conjuntoSerie of bloqueSet.conjuntoSeries) {
               // Finalmente, obtener las series vinculadas a cada ConjuntoSeries
-              const seriesResult = await pool.request()
-                .input('ID_Serie', sql.Int, conjuntoSerie.ID_Serie)
-                .query("SELECT ID_Serie, repeticiones, peso, FORMAT((DATEPART(HOUR, tiempo) * 60) + DATEPART(MINUTE, tiempo), '00') + ':' + FORMAT(DATEPART(SECOND, tiempo), '00') as tiempoEnMinutos, (DATEPART(HOUR, tiempo) * 3600) + (DATEPART(MINUTE, tiempo) * 60) + DATEPART(SECOND, tiempo) as tiempoEnSegundos, ID_SeriePrincipal FROM Serie WHERE ID_Serie = @ID_Serie");
+              const seriesResult = await pool
+                .request()
+                .input("ID_Serie", sql.Int, conjuntoSerie.ID_Serie)
+                .query(
+                  "SELECT ID_Serie, repeticiones, peso, FORMAT((DATEPART(HOUR, tiempo) * 60) + DATEPART(MINUTE, tiempo), '00') + ':' + FORMAT(DATEPART(SECOND, tiempo), '00') as tiempoEnMinutos, (DATEPART(HOUR, tiempo) * 3600) + (DATEPART(MINUTE, tiempo) * 60) + DATEPART(SECOND, tiempo) as tiempoEnSegundos, ID_SeriePrincipal FROM Serie WHERE ID_Serie = @ID_Serie"
+                );
 
               conjuntoSerie.series = seriesResult.recordset;
             }
@@ -1024,16 +1292,19 @@ export const cloneRutinaById = async (req, res) => {
     console.log(customStringify(rutina));
 
     //Crear el nombre de rutina asignada :)
-    const nombreUsuario = await pool.request()
-    .input(`ID_Usuario`, sql.VarChar, ID_Usuario)
-    .query(`SELECT nombre_usuario FROM Usuario WHERE ID_Usuario = @ID_Usuario`)
+    const nombreUsuario = await pool
+      .request()
+      .input(`ID_Usuario`, sql.VarChar, ID_Usuario)
+      .query(
+        `SELECT nombre_usuario FROM Usuario WHERE ID_Usuario = @ID_Usuario`
+      );
 
     const nombreRutina = `Copia de ${rutina.nombre} de ${nombreUsuario.recordset[0].nombre_usuario}`;
     console.log(nombreRutina);
 
     //Clonar la rutina
     const days = rutina.diasEntreno;
-    
+
     const insertRutinaResult = await pool
       .request()
       .input("nombre", sql.NVarChar, nombreRutina)
@@ -1042,7 +1313,6 @@ export const cloneRutinaById = async (req, res) => {
     const rutinaId = insertRutinaResult.recordset[0].ID_Rutina;
 
     // Variables para calcular la dificultad y duración
-
 
     // Iterar sobre cada día para insertar ejercicios y sets
     for (const day of days) {
@@ -1053,18 +1323,20 @@ export const cloneRutinaById = async (req, res) => {
         .input("ID_Dia", sql.Int, day.ID_Dia)
         .query(querys.createDiasEntreno); // Asegúrate de tener esta consulta preparada en tus 'querys'
       const ID_Dia = insertDiaResult.recordset[0].ID_Dias_Entreno;
-      
 
       // Iterar sobre cada ejercicio del día
       for (const ejercicio of day.ejercicios) {
-
         const descansoEnSegundos = ejercicio.DescansoEnSegundos; // Por ejemplo, 90 segundos
         console.log(descansoEnSegundos);
 
         // Convertir segundos a un string en formato HH:MM:SS para SQL TIME
-        let horas = Math.floor(descansoEnSegundos / 3600).toString().padStart(2, '0');
-        let minutos = Math.floor((descansoEnSegundos % 3600) / 60).toString().padStart(2, '0');
-        let segundos = (descansoEnSegundos % 60).toString().padStart(2, '0');
+        let horas = Math.floor(descansoEnSegundos / 3600)
+          .toString()
+          .padStart(2, "0");
+        let minutos = Math.floor((descansoEnSegundos % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        let segundos = (descansoEnSegundos % 60).toString().padStart(2, "0");
         let descansoComoTime = `${horas}:${minutos}:${segundos}.0000000`;
         console.log(descansoComoTime);
 
@@ -1072,11 +1344,7 @@ export const cloneRutinaById = async (req, res) => {
         // Insertar EjercicioDia
         const insertEjercicioDiaResult = await pool
           .request()
-          .input(
-            "ID_Dias_Entreno",
-            sql.Int,
-            ID_Dia
-          )
+          .input("ID_Dias_Entreno", sql.Int, ID_Dia)
           .input("ID_Ejercicio", sql.Int, ejercicio.ID_Ejercicio[0])
           .input("descanso", sql.Time, descansoComoTime)
           .input("superset", sql.Bit, ejercicio.superset ? 1 : 0) // Asumiendo que 'isSuperset' es un booleano
@@ -1086,79 +1354,94 @@ export const cloneRutinaById = async (req, res) => {
           insertEjercicioDiaResult.recordset[0].ID_EjerciciosDia;
 
         const resultBloqueSets = await pool
-        .request()
-        .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
-        .query(
-          "INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);"
-        );
+          .request()
+          .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
+          .query(
+            "INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);"
+          );
         const ID_BloqueSets = resultBloqueSets.recordset[0].ID_BloqueSets;
 
         // Iterar sobre cada set del ejercicio
         let lastSetId = null;
-    for (const bloqueSet of ejercicio.bloqueSets) {
-      for (const conjuntoSerie of bloqueSet.conjuntoSeries) {
-        for (const set of conjuntoSerie.series) {
-          let idSerieActual; // Esta variable almacenará el ID de la serie actual, ya sea un set principal o un drop set
-        
-          if (!set.isDropSet) {
-            let descansoEnSegundos = ejercicio.tiempoEnSegundos; // Por ejemplo, 90 segundos
-            console.log(descansoEnSegundos);
+        for (const bloqueSet of ejercicio.bloqueSets) {
+          for (const conjuntoSerie of bloqueSet.conjuntoSeries) {
+            for (const set of conjuntoSerie.series) {
+              let idSerieActual; // Esta variable almacenará el ID de la serie actual, ya sea un set principal o un drop set
 
-            // Convertir segundos a un string en formato HH:MM:SS para SQL TIME
-            let horas = Math.floor(descansoEnSegundos / 3600).toString().padStart(2, '0');
-            let minutos = Math.floor((descansoEnSegundos % 3600) / 60).toString().padStart(2, '0');
-            let segundos = (descansoEnSegundos % 60).toString().padStart(2, '0');
-            let tiempoComoTime = `${horas}:${minutos}:${segundos}.0000000`;
-            console.log(descansoComoTime);
-            // Insertar el set principal y obtener su ID
-            const resultSerie = await pool.request()
-              .input("repeticiones", sql.Int, set.repeticiones)
-              .input("peso", sql.Decimal(10, 2), set.peso) // Asumiendo que peso puede ser decimal
-              .input("tiempo", sql.Time, set.tiempoComoTime) // Asumiendo que peso puede ser decimal
-              .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
-              .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;");
-            idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
-            lastSetId = idSerieActual; // Actualizar lastSetId para ser usado en drop sets
-          } else {
-            // Insertar el drop set y obtener su ID
-            const resultSerie = await pool.request()
-              .input("repeticiones", sql.Int, set.repeticiones)
-              .input("peso", sql.Decimal(10, 2), set.peso)
-              .input("ID_SeriePrincipal", sql.Int, ID_SeriePrincipal) // Usar lastSetId para relacionar el dropset con su set principal
-              .query("INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, @ID_SeriePrincipal); SELECT SCOPE_IDENTITY() AS ID_Serie;");
-            idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
+              if (!set.isDropSet) {
+                let descansoEnSegundos = ejercicio.tiempoEnSegundos; // Por ejemplo, 90 segundos
+                console.log(descansoEnSegundos);
+
+                // Convertir segundos a un string en formato HH:MM:SS para SQL TIME
+                let horas = Math.floor(descansoEnSegundos / 3600)
+                  .toString()
+                  .padStart(2, "0");
+                let minutos = Math.floor((descansoEnSegundos % 3600) / 60)
+                  .toString()
+                  .padStart(2, "0");
+                let segundos = (descansoEnSegundos % 60)
+                  .toString()
+                  .padStart(2, "0");
+                let tiempoComoTime = `${horas}:${minutos}:${segundos}.0000000`;
+                console.log(descansoComoTime);
+                // Insertar el set principal y obtener su ID
+                const resultSerie = await pool
+                  .request()
+                  .input("repeticiones", sql.Int, set.repeticiones)
+                  .input("peso", sql.Decimal(10, 2), set.peso) // Asumiendo que peso puede ser decimal
+                  .input("tiempo", sql.Time, set.tiempoComoTime) // Asumiendo que peso puede ser decimal
+                  .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
+                  .query(
+                    "INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, @tiempo, NULL); SELECT SCOPE_IDENTITY() AS ID_Serie;"
+                  );
+                idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
+                lastSetId = idSerieActual; // Actualizar lastSetId para ser usado en drop sets
+              } else {
+                // Insertar el drop set y obtener su ID
+                const resultSerie = await pool
+                  .request()
+                  .input("repeticiones", sql.Int, set.repeticiones)
+                  .input("peso", sql.Decimal(10, 2), set.peso)
+                  .input("ID_SeriePrincipal", sql.Int, ID_SeriePrincipal) // Usar lastSetId para relacionar el dropset con su set principal
+                  .query(
+                    "INSERT INTO Serie (repeticiones, peso, tiempo, ID_SeriePrincipal) VALUES (@repeticiones, @peso, NULL, @ID_SeriePrincipal); SELECT SCOPE_IDENTITY() AS ID_Serie;"
+                  );
+                idSerieActual = resultSerie.recordset[0].ID_Serie; // Guardar el ID de la serie actual
+              }
+
+              // Inmediatamente después de insertar la serie, insertar la relación en ConjuntoSeries
+              await pool
+                .request()
+                .input("ID_BloqueSets", sql.Int, ID_BloqueSets)
+                .input("ID_Serie", sql.Int, idSerieActual) // Usar el ID de la serie actual
+                .query(
+                  "INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES (@ID_BloqueSets, @ID_Serie);"
+                );
+            }
+
+            // Actualizar la dificultad del ejercicio en la base de datos
+            // Asegúrate de tener una columna para la dificultad en tu esquema de EjercicioDia
+            // await pool
+            //   .request()
+            //   .input("ID_EjercicioDia", sql.Int, ID_EjercicioDia)
+            //   .input("Dificultad", sql.Int, dificultadEjercicio)
+            //   .query(querys.updateDificultadEjercicioDia);
+
+            // totalEjercicios += 1;
+            // totalDificultad += dificultadEjercicio;
           }
-        
-          // Inmediatamente después de insertar la serie, insertar la relación en ConjuntoSeries
-          await pool.request()
-            .input("ID_BloqueSets", sql.Int, ID_BloqueSets)
-            .input("ID_Serie", sql.Int, idSerieActual) // Usar el ID de la serie actual
-            .query("INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES (@ID_BloqueSets, @ID_Serie);");
         }
-
-        // Actualizar la dificultad del ejercicio en la base de datos
-        // Asegúrate de tener una columna para la dificultad en tu esquema de EjercicioDia
-        // await pool
-        //   .request()
-        //   .input("ID_EjercicioDia", sql.Int, ID_EjercicioDia)
-        //   .input("Dificultad", sql.Int, dificultadEjercicio)
-        //   .query(querys.updateDificultadEjercicioDia);
-
-        // totalEjercicios += 1;
-        // totalDificultad += dificultadEjercicio;
       }
     }
-  }
-}
-   
+
     // Calcular y actualizar la dificultad y duración promedio de la rutina
 
     const ID_RutinaCreada = rutinaId;
 
     const resultadoDuracion = await pool
-        .request()
-        .input("ID_Rutina", sql.Int, ID_RutinaCreada) // Asegúrate de que esta variable se declara correctamente aquí
-        .query(`
+      .request()
+      .input("ID_Rutina", sql.Int, ID_RutinaCreada) // Asegúrate de que esta variable se declara correctamente aquí
+      .query(`
     WITH DuracionPorDia AS (
       SELECT
           ED.ID_Dias_Entreno,
@@ -1177,27 +1460,26 @@ export const cloneRutinaById = async (req, res) => {
       DuracionPorDia;
     `);
 
-      console.log(
-        "Resultado de calcular duración promedio:",
-        resultadoDuracion.recordset
-      );
-      if (resultadoDuracion.recordset.length > 0) {
-        const duracionPromedio =
-          resultadoDuracion.recordset[0].PromedioDuracion;
+    console.log(
+      "Resultado de calcular duración promedio:",
+      resultadoDuracion.recordset
+    );
+    if (resultadoDuracion.recordset.length > 0) {
+      const duracionPromedio = resultadoDuracion.recordset[0].PromedioDuracion;
 
-        // Actualiza la duración en la rutina
-        await pool
-          .request()
-          .input("ID_Rutina", sql.Int, ID_RutinaCreada)
-          .input("duracion", sql.Float, duracionPromedio) // Asegúrate de que el tipo de dato sea correcto
-          .query(`
+      // Actualiza la duración en la rutina
+      await pool
+        .request()
+        .input("ID_Rutina", sql.Int, ID_RutinaCreada)
+        .input("duracion", sql.Float, duracionPromedio) // Asegúrate de que el tipo de dato sea correcto
+        .query(`
         UPDATE Rutina
         SET duracion = @duracion
         WHERE ID_Rutina = @ID_Rutina;
       `);
-      }
+    }
 
-      const diasEntrenoResult = await pool
+    const diasEntrenoResult = await pool
       .request()
       .input("ID_Rutina", sql.Int, ID_RutinaCreada)
       .query(
@@ -1264,9 +1546,11 @@ export const cloneRutinaById = async (req, res) => {
       .query(
         "UPDATE Rutina SET ID_Dificultad = @ID_Dificultad, ID_NivelFormaFisica = @ID_NivelFormaFisica WHERE ID_Rutina = @ID_Rutina"
       );
-   
 
-    res.status(201).json({ message: "Rutina clonada exitosamente.", ID_RutinaClonada: ID_Rutina });
+    res.status(201).json({
+      message: "Rutina clonada exitosamente.",
+      ID_RutinaClonada: ID_Rutina,
+    });
   } catch (error) {
     console.error("Error al clonar la rutina:", error);
     res.status(500).json({ error: error.message });
@@ -1274,26 +1558,48 @@ export const cloneRutinaById = async (req, res) => {
 };
 
 function customStringify(object, indentLevel = 0) {
-  const indent = ' '.repeat(indentLevel * 2); // 2 espacios por nivel de indentación
-  let result = '';
+  const indent = " ".repeat(indentLevel * 2); // 2 espacios por nivel de indentación
+  let result = "";
 
-  if (typeof object !== 'object' || object === null) {
+  if (typeof object !== "object" || object === null) {
     return JSON.stringify(object);
   }
 
   if (Array.isArray(object)) {
-    const arrayContent = object.map(item => customStringify(item, indentLevel + 1)).join(',\n');
+    const arrayContent = object
+      .map((item) => customStringify(item, indentLevel + 1))
+      .join(",\n");
     result += `[\n${arrayContent}\n${indent}]`;
   } else {
-    const objectContent = Object.entries(object).map(([key, value]) => {
-      const formattedValue = customStringify(value, indentLevel + 1);
-      return `${indent}  "${key}": ${formattedValue}`;
-    }).join(',\n');
+    const objectContent = Object.entries(object)
+      .map(([key, value]) => {
+        const formattedValue = customStringify(value, indentLevel + 1);
+        return `${indent}  "${key}": ${formattedValue}`;
+      })
+      .join(",\n");
     result += `{\n${objectContent}\n${indent}}`;
   }
 
   return result;
 }
+
+function convertSecondsToTimeFormat(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  // Formatea cada componente para asegurar que siempre tenga dos dígitos
+  const formattedHours = hours.toString().padStart(2, "0");
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = seconds.toString().padStart(2, "0");
+
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+// Uso de la función para convertir un promedio de tiempo dado en segundos
+const promedioTiempo = 3661; // Ejemplo: 3661 segundos
+const tiempoFormateado = convertSecondsToTimeFormat(promedioTiempo);
+console.log("Tiempo formateado:", tiempoFormateado);
 
 //Calculos de rutina en EjerciciosDia:
 //Nivel de la rutina: 𝑉𝑎𝑙𝑜𝑟𝑁𝑖𝑣𝑒𝑙=𝐶𝑎𝑛𝑡𝐹𝑎𝑐𝑖𝑙𝑒𝑠∗0+𝐶𝑎𝑛𝑡𝐼𝑛𝑡𝑒𝑟𝑚𝑒𝑑𝑖𝑜𝑠∗0.5 +𝐶𝑎𝑛𝑡𝐷𝑖𝑓𝑖𝑐𝑖𝑙𝑒𝑠∗1/𝑇𝑜𝑡𝑎𝑙𝐸𝑗𝑒𝑟𝑐𝑖𝑐𝑖𝑜𝑠

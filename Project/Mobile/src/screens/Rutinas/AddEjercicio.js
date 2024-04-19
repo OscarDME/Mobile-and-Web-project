@@ -39,6 +39,7 @@ const ExerciseDayScreen = ({ navigation, route }) => {
             ...ejercicio,
             restTime: ejercicio.descanso.toString(),
             isSuperset: ejercicio.superset,
+            isLoaded: true,
           };
         });
         setExercises(formattedExercises);
@@ -64,11 +65,12 @@ const ExerciseDayScreen = ({ navigation, route }) => {
     // Encuentra el ejercicio seleccionado basado en el ID_Ejercicio
     const selectedExercise = exercises.find(exercise => exercise.ID_Ejercicio === ID_Ejercicio);
   
-    if (selectedExercise) {
-      // Navega a AddSetsScreen, pasando ID_EjerciciosDia del ejercicio seleccionado como parámetro
-      navigation.navigate("AddSets", { ID_EjerciciosDia: selectedExercise.ID_EjerciciosDia, ejercicio:ejercicio, ID_Modalidad: ID_Modalidad });
+    if (selectedExercise && selectedExercise.isLoaded) {
+      // Si el ejercicio está cargado, navega a AddSetsScreen
+      navigation.navigate("AddSets", { ID_EjerciciosDia: selectedExercise.ID_EjerciciosDia, ejercicio: ejercicio, ID_Modalidad: ID_Modalidad });
     } else {
-      console.error("Ejercicio no encontrado");
+      // Si el ejercicio no está cargado o no está guardado, muestra un mensaje de error
+      alert("Este ejercicio aún no está disponible para configurar sets. Por favor, guarde los cambios primero.");
     }
   };
   
@@ -86,7 +88,7 @@ const ExerciseDayScreen = ({ navigation, route }) => {
     }    // Incluye las nuevas propiedades isSuperset y restTime
     setExercises([
       ...exercises,
-      { ...exerciseToAdd, isSuperset: false, restTime: "0" },
+      { ...exerciseToAdd, isSuperset: false, restTime: "0", isLoaded: false },
     ]);
   };
 
@@ -124,7 +126,9 @@ const ExerciseDayScreen = ({ navigation, route }) => {
       return; // Detiene la ejecución de la función aquí
     }
 
-  const allExercisesHaveRestTime = exercises.every(exercise => exercise.restTime && exercise.restTime.trim() !== '0');
+    const allExercisesHaveRestTime = exercises.every(exercise => 
+      exercise.ID_Modalidad === 3 || (exercise.restTime && exercise.restTime.trim() !== '0')
+    );
 
   if (!allExercisesHaveRestTime) {
     setErrorMessage('Por favor, agrega un tiempo de descanso a todos los ejercicios.');

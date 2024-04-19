@@ -343,8 +343,10 @@ const ProgressExercise = ({ navigation }) => {
       const confidenceUpper = meanRM + 1.96 * standardDeviation;
 
       // Actualizar el estado para reflejar estos cálculos
-      const labels = historical1RMData.map((data) => data.fecha);
-      const data = historical1RMData.map(
+      const labels = historical1RMData.map((data, index) => {
+        return index % Math.ceil(historical1RMData.length / 4) === 0 ? data.fecha : '';
+      });
+        const data = historical1RMData.map(
         (_, index) => meanRM + m * (index + 1 - meanTime)
       );
 
@@ -372,7 +374,7 @@ const ProgressExercise = ({ navigation }) => {
     } else {
       console.log("No hay suficientes datos para realizar los cálculos.");
     }
-  }, [calculationsCompleted, selectedTime]);
+  }, [calculationsCompleted, selectedTime]);  
 
   return (
     <View style={styles.container}>
@@ -462,7 +464,7 @@ const ProgressExercise = ({ navigation }) => {
                 {otherCalculationsCompleted && (
                   <>
                     <Text style={styles.sectionTitle}>
-                      Tu mejora de 1RM en
+                      Tu mejora de 1RM en{" "}
                       <Text style={styles.exercise}>
                         {selectedExercise?.value}
                       </Text>{" "}
@@ -473,26 +475,25 @@ const ProgressExercise = ({ navigation }) => {
                       </Text>
                     </Text>
                     <LineChart
-                      data={improvementChartData}
-                      width={screenWidth}
-                      height={220}
-                      chartConfig={{
-                        backgroundGradientFrom: "#EEEEEE",
-                        backgroundGradientFromOpacity: 0,
-                        backgroundGradientTo: "#EEEEEE",
-                        backgroundGradientToOpacity: 0.5,
-                        labelColor: (opacity = 1) =>
-                          `rgba(51, 51, 51, ${opacity})`,
-                        color: (opacity = 1) => `rgba(7, 144, 207, ${opacity})`,
-                        strokeWidth: 3,
-                        fillShadowGradientFrom: "rgba(7, 144, 207, 1)",
-                        fillShadowGradientTo: "rgba(255, 255, 255, 0)",
-                      }}
-                      bezier
-                      style={styles.chart}
-                      withHorizontalLines={true}
-                      withVerticalLabels={true}
-                    />
+                        data={improvementChartData}
+                        width={screenWidth}
+                        height={220}
+                        chartConfig={{
+                          backgroundGradientFrom: "#EEEEEE",
+                          backgroundGradientFromOpacity: 0,
+                          backgroundGradientTo: "#EEEEEE",
+                          backgroundGradientToOpacity: 0.5,
+                          labelColor: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
+                          color: (opacity = 1) => `rgba(7, 144, 207, ${opacity})`,
+                          strokeWidth: 3,
+                          fillShadowGradientFrom: "rgba(7, 144, 207, 1)",
+                          fillShadowGradientTo: "rgba(255, 255, 255, 0)",
+                        }}
+                        bezier
+                        style={styles.chart}
+                        withHorizontalLines={true}
+                        withVerticalLabels={true}
+                      />
                   </>
                 )}
                 <Text style={styles.sectionTitle}>

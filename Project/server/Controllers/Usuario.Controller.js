@@ -264,3 +264,31 @@ export const getMobileUserTypeByID = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' }); // Manejo de error de servidor
   }
 };
+
+export const checkPerformanceComparisonEnabled = async (req, res) => {
+  const id = req.params.oid;  // Asume que el OID del usuario se pasa como parámetro en la URL
+
+  try {
+    const pool = await getConnection();
+
+    // Realiza la consulta para obtener la configuración de comparación de rendimiento
+    const result = await pool.request()
+      .input('ID_Usuario', sql.VarChar, id)  // Asegúrate de que el ID de usuario está correctamente referenciado
+      .query(`
+        SELECT ComparacionRendimiento 
+        FROM UsuarioMovil 
+        WHERE ID_Usuario = @ID_Usuario
+      `);
+
+    // Verifica si se obtuvo algún resultado y responde adecuadamente
+    if (result.recordset.length > 0) {
+      const { ComparacionRendimiento } = result.recordset[0];
+      res.json({ isEnabled: ComparacionRendimiento });  // Devuelve el estado de ComparacionRendimiento como booleano
+    } else {
+      res.status(404).json({ message: "Usuario no encontrado" });
+    }
+  } catch (error) {
+    console.error('Error al verificar la configuración de comparación de rendimiento:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -8,7 +8,8 @@ import {
     getUserById, updateComparacionRendimiento,
     updateViajeGimnasio,
 getAllMobileUsersInfo,
-getMobileUserTypeByID
+getMobileUserTypeByID,
+checkPerformanceComparisonEnabled
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
@@ -22,11 +23,12 @@ import { createCompleteRutinaForClient, getAssignedRoutines, assignRoutine, remo
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
-import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights } from "../Controllers/Progreso.Ejercicios.Controllers.js";
+import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights, getAverageStrengthByAgeGroup, getMaximumAbsoluteStrength, getAllMaximumAbsoluteStrength } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
 import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, createWarningWeightAnalisis, createWarningsWhenAssigning, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
+
 
 //El que come callado repite
 //El que escoge no coge 
@@ -43,6 +45,7 @@ router.put('/Rendimiento/:id', updateComparacionRendimiento);
 router.put('/ViajeGimnasio/:id', updateViajeGimnasio);
 router.get("/mobileuser", getAllMobileUsersInfo);
 router.get("/userType/:oid", getMobileUserTypeByID);
+router.get("/isPerformanceComparisonEnabled/:oid", checkPerformanceComparisonEnabled);
 
 //Solicitudes
 router.post("/solicitud", createTrainerClientRequest);
@@ -167,7 +170,9 @@ router.get("/HistoricalRM/:id/:ejercicio", getHistorical1RMForExercise);
 router.get("/HistoricalRMAbsoluta/:id/:ejercicio/:fecha", getHistorical1RMForTime);
 router.get("/HistoricalRMs/:id/:ejercicio/:fecha", get1RMForTime);
 router.get("/Weights/:id/:ejercicio/:fecha", getWeights);
-
+router.get("/AgeGroup/:id/:ejercicio", getAverageStrengthByAgeGroup);
+router.get("/Max/:id/:ejercicio", getMaximumAbsoluteStrength);
+router.get("/All/:id/:ejercicio", getAllMaximumAbsoluteStrength);
 
 //Hitos de progreso o medidas corporales
 router.post("/createMilestone", createMilestone);
@@ -193,6 +198,7 @@ router.post("/allWarnings/assign/:id/:ID_Rutina", createWarningsWhenAssigning );
 
 
 //Logros
+
 router.get("/consistencyAchievements/:id", getConsistencyAchievements);
 router.get("/cardiovascularAchievements/:id", getCardiovascularTimeAchievements);
 router.get("/compuoundAchievements/:id", getCompoundTimeAchievements);
