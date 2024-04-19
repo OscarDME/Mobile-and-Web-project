@@ -100,7 +100,6 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
 
   export const createWarningTwoHoursNoRestADay = async (req, res) => {
     try {
-      const { ID_Ejercicios } = req.body;
       const ID_Rutina = req.params.id; 
       const ID_Dias_Entreno = req.params.ID_Dias_Entreno;
   
@@ -128,7 +127,17 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
         .request()
         .input("ID_Dias_Entreno", sql.Int, ID_Dias_Entreno) 
         .query(`
-
+        SELECT
+            CASE
+                WHEN SUM(serie.repeticiones) * 3 >= 7200 THEN 'Sí' 
+                ELSE 'No'
+            END AS 'MayorQueDosHoras'
+        FROM Dias_Entreno AS de
+        JOIN EjerciciosDia AS ed ON de.ID_Dias_Entreno = ed.ID_Dias_Entreno
+        JOIN BloqueSets AS bs ON ed.ID_EjerciciosDia = bs.ID_EjerciciosDia
+        JOIN ConjuntoSeries AS cs ON bs.ID_BloqueSets = cs.ID_BloqueSets
+        JOIN Serie AS serie ON cs.ID_Serie = serie.ID_Serie
+        WHERE de.ID_Dias_Entreno = @ID_Dias_Entreno; 
         `);
 
       if (result.recordset.length > 0 ) {
@@ -722,7 +731,76 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
           }
         
           return res.status(200).json({
-            warning: "Se agregaron las advertencias al crear una rutina correctamente.",
+            warning: "Se agregaron las advertencias al terminar un entrenamiento correctamente.",
+            details: result.recordset
+          });
+        } else {
+          return res.status(200).json({ message: "No hay advertencias para agregar." });
+        }
+    } catch (error) {
+      console.error("Error al crear la advertencia:", error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+
+  export const createWarningTimeAnalisis = async (req, res) => {
+    try {
+      const oid = req.params.id; 
+  
+      const pool = await getConnection();
+  
+      // Obtén el ID del usuario para esta rutina
+      const mobileUserResult = await pool
+      .request()
+      .input("ID_Usuario", sql.VarChar, oid)
+      .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+      const ID_UsuarioMovil = mobileUserResult.recordset[0].ID_UsuarioMovil;
+  
+      // Elimina las advertencias actuales para este usuario y tiempo, para que solamente aparezcan aquellas con una antiguedad de una semana
+      await pool
+        .request()
+        .input("ID_Usuario", sql.VarChar, oid)
+        .input("ID_AdvertenciaTiempo", sql.Int, 3)
+        .query(`
+        DELETE FROM Advertencia 
+        WHERE ID_Usuario = @ID_Usuario 
+        AND ID_AdvertenciaTiempo = @ID_AdvertenciaTiempo 
+        AND DATEDIFF(day, FechaUltimo, GETDATE()) > 7
+      `);
+      // Compara la sesión actual con la ultima sesión de entrenamiento para buscar el criterio para agregar la advertencia
+      const result = await pool
+        .request()
+        .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil) 
+        .query(`     
+        `);
+
+        if (result.recordset.length > 0) {
+          for (let i = 0; i < result.recordset.length; i++) {
+            const item = result.recordset[i];
+            try {
+              const addingWarningResult = await pool.request()
+                .input("ID_Usuario", sql.VarChar, ID_Usuario)
+                .input("ID_DescripcionAdvertencia", sql.Int, 15) 
+                .input("ID_AdvertenciaTiempo", sql.Int, 3)
+                .input("NombreEjercicio", sql.VarChar, item.NombreEjercicio)
+                .input("FechaUltimo", sql.DateTime, item.FechaUltimo)
+                .input("AumentoPeso", sql.Int, item.PesoUltimo - item.PesoPenultimo)
+                .input("PorcentajeAumento", sql.Int, (item.PesoUltimo - item.PesoPenultimo) / item.PesoPenultimo)
+                .query(`
+                  INSERT INTO Advertencia
+                  (ID_Usuario, ID_DescripcionAdvertencia, ID_AdvertenciaTiempo, NombreEjercicio, FechaUltimo, AumentoPeso, PorcentajeAumento)
+                  VALUES 
+                  (@ID_Usuario, @ID_DescripcionAdvertencia, @ID_AdvertenciaTiempo, @NombreEjercicio, @FechaUltimo, @AumentoPeso, @PorcentajeAumento)
+                `);
+              console.log("Advertencia agregada:", addingWarningResult);
+            } catch (error) {
+              console.error("Error al insertar advertencia para", item.NombreEjercicio, ":", error);
+            }
+          }
+        
+          return res.status(200).json({
+            warning: "Se agregaron las advertencias al terminar un entrenamiento correctamente.",
             details: result.recordset
           });
         } else {
@@ -735,7 +813,6 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
   };
 
 //Advertencias al asignar una rutina
-
 export const createWarningsWhenAssigning = async (req, res) => {
   try {
     const oid = req.params.id; 

@@ -100,7 +100,7 @@ const EditRoutineScreen = ({ navigation, route }) => {
     });
     setWorkouts(updatedWorkouts);
   };
-
+  
   const handlePressAddExercise = (index) => {
     // Verifica si el índice es válido y si el día y ID_Dias_Entreno están definidos.
     if (index < workouts.length && workouts[index].dayIndex !== undefined && workouts[index].ID_Dias_Entreno) {

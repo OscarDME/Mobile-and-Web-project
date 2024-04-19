@@ -26,7 +26,7 @@ import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenami
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights, getAverageStrengthByAgeGroup, getMaximumAbsoluteStrength, getAllMaximumAbsoluteStrength } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
-import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, createWarningWeightAnalisis, createWarningsWhenAssigning, getWarnings } from "../Controllers/Advertencias.Controller.js";
+import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningTimeAnalisis, createWarningTwoHoursNoRestADay, createWarningWeeklyCheck, createWarningWeightAnalisis, createWarningsWhenAssigning, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
 
 
@@ -194,7 +194,9 @@ router.post("/allWarnings/intensity/threeExercisesHighIntensityADay/:id/:ID_Dias
 router.post("/allWarnings/overTraining/shortRestTime/:id/:ID_Dias_Entreno", createWarningLessThanAMinuteOfRestPerExercise );
 router.post("/allWarnings/weeklyCheck/:id", createWarningWeeklyCheck );
 router.post("/allWarnings/weightAnalisis/:id", createWarningWeightAnalisis );
+router.post("/allWarnings/timeAnalisis/:id", createWarningTimeAnalisis );
 router.post("/allWarnings/assign/:id/:ID_Rutina", createWarningsWhenAssigning );
+router.post("/allWarnings/overTraining/longsession/:id/:ID_Dias_Entreno", createWarningTwoHoursNoRestADay );
 
 
 //Logros

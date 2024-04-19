@@ -241,7 +241,7 @@ const ExerciseDayScreen = ({ navigation, route }) => {
               const jsonResponseWarning4 = await responseWarning4.json();
               console.log("Warning 4 procesado con exito:", jsonResponseWarning4);
             } else {
-              throw new Error("No se pudo asignar la advertencia al 3 ejercicio");
+              throw new Error("No se pudo asignar la advertencia al 4 ejercicio");
             }
         
         //Cuando Una rutina excede un tiempo de dos horas sin tomar en cuenta los descansos
