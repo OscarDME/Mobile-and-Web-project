@@ -13,7 +13,7 @@ import config from "../../utils/conf";
 const MainMenu = ({ navigation }) => {
   const [rutinas, setRutinas] = useState([]);
   const [rutinasPublicas, setRutinasPublicas] = useState([]);
-
+  const [rutinasSugeridas, setRutinasSugeridas] = useState([]);
 
   const fetchRutinas = async () => {
     console.log("Cargando rutinas");
@@ -58,6 +58,26 @@ const MainMenu = ({ navigation }) => {
     }
   };
 
+  const fetchRutinasSugeridas = async () => {
+    console.log("Cargando rutinas sugeridas");
+    try {
+        const oid = await AsyncStorage.getItem("userOID");
+        if (oid) {
+            const response = await fetch(`${config.apiBaseUrl}/rutinassugeridas/${oid}`);
+            if (response.ok) {
+                const rutinasSugeridasObtenidas = await response.json();
+                console.log(rutinasSugeridasObtenidas);
+                setRutinasSugeridas(rutinasSugeridasObtenidas); // Usa el mismo estado si quieres reemplazar las publicas con sugeridas
+            } else {
+                console.error("Error al obtener las rutinas sugeridas");
+            }
+        }
+    } catch (error) {
+        console.error("Error al cargar las rutinas sugeridas:", error);
+    }
+};
+
+
   // Datos de ejemplo para las rutinas
   useEffect(() => {
     fetchRutinasPublicas();
@@ -67,6 +87,7 @@ const MainMenu = ({ navigation }) => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchRutinas();
+      fetchRutinasSugeridas(); 
     });
   
     return unsubscribe;
@@ -130,7 +151,7 @@ const MainMenu = ({ navigation }) => {
         style={styles.rutinasContainer3}
         showsHorizontalScrollIndicator={false}
       >
-        {rutinasPublicas.map((rutina) => (
+        {rutinasSugeridas.map((rutina) => (
           <TouchableOpacity
             key={rutina.ID_Rutina}
             style={styles.rutinaCard}

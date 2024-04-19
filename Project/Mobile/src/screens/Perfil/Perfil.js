@@ -240,7 +240,7 @@ const ProfileScreen = ({ route }) => {
       </View>
 
         <TouchableOpacity style={[styles.button, styles.completeButton]}>
-          <Text style={styles.buttonText} onPress={  navigation.navigate("Questionnaire", {screen: "TimeAndDaysForm", params: {oid: oid }}) }>Completar/Modificar Cuestionario</Text>
+          <Text style={styles.buttonText}>Completar/Modificar Cuestionario</Text>
         </TouchableOpacity>
    
 

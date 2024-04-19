@@ -27,8 +27,9 @@ import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
 import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, getWarnings } from "../Controllers/Advertencias.Controller.js";
-
 import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
+import { getRutinasSugeridas } from "../Controllers/RutinasSugeridas.js";
+
 
 
 //El que come callado repite
@@ -129,6 +130,7 @@ router.delete("/rutina/:id", deleteRutina);
 router.post("/rutinacompleta", createCompleteRutina);
 router.get("/rutinacompleta", getCompleteRutinas);
 router.post("/clonarrutina", cloneRutinaById);
+router.get("/rutinassugeridas/:id", getRutinasSugeridas);
 
 //Asignar rutinas
 router.post("/rutinaasignar", createCompleteRutinaForClient);
@@ -197,7 +199,6 @@ router.post("/allWarnings/weeklyCheck/:id", createWarningWeeklyCheck );
 
 
 //Logros
-
 router.get("/consistencyAchievements/:id", getConsistencyAchievements);
 router.get("/cardiovascularAchievements/:id", getCardiovascularTimeAchievements);
 router.get("/compuoundAchievements/:id", getCompoundTimeAchievements);

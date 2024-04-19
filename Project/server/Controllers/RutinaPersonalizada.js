@@ -75,7 +75,10 @@ export const createRutinaPersonalizada = async (req, res) => {
     
         // Iterar sobre cada ejercicio del día
         for (const ejercicio of dia.musculos) {
-            const descansoEnSegundos = ejercicio.tiempo * 60; // Convertir minutos a segundos
+            let descansoEnSegundos = ejercicio.ejercicios && ejercicio.ejercicios.length > 0
+            ? ejercicio.ejercicios[0].Series[0].Descanso // Tomar el descanso del primer ejercicio
+            : 120;            
+             
             let horas = Math.floor(descansoEnSegundos / 3600).toString().padStart(2, '0');
             let minutos = Math.floor((descansoEnSegundos % 3600) / 60).toString().padStart(2, '0');
             let segundos = (descansoEnSegundos % 60).toString().padStart(2, '0');
