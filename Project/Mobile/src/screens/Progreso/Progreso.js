@@ -1,17 +1,58 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect,useCallback} from 'react';
 import { View, Text, Button, ScrollView, TouchableOpacity, StyleSheet, ViewBase } from 'react-native';
 import ProgressBodyMeasures from './ProgressBodyMeasures';
 import ProgressExercise from './ProgressExercise';
 import Achievements from './Achievements';
 import BenchMarking from './BenchMarking';
+import { useFocusEffect } from '@react-navigation/native';
 
-const Progreso = ({ navigation }) => {
+
+const Progreso = ({ route, navigation }) => {
 
   const [selectedScreen, setSelectedScreen] = useState("ProgressBodyMeasures");
 
-
   const handleScreenChange = (screen) => {
+    console.log("Changing screen to:", screen);
     setSelectedScreen(screen);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("Params on Progreso (focus):", route.params);
+      if (route.params?.screen) {
+        console.log("Setting selected screen to:", route.params.screen);
+        setSelectedScreen(route.params.screen);
+      } else {
+        console.log("No screen param provided, defaulting to ProgressBodyMeasures");
+        setSelectedScreen("ProgressExercise");
+      }
+    }, [route.params])
+  );
+  
+  
+  useEffect(() => {
+    console.log("Selected Screen:", selectedScreen);
+  }, [selectedScreen]);
+
+  useEffect(() => {
+    console.log("Hola primero");
+    console.log("Params on Progreso:", route.params);
+  },[]);
+
+
+  const renderSelectedScreen = () => {
+    switch (selectedScreen) {
+      case "ProgressBodyMeasures":
+        return <ProgressBodyMeasures navigation={navigation} />;
+      case "ProgressExercise":
+        return <ProgressExercise navigation={navigation} />;
+      case "Achievements":
+        return <Achievements navigation={navigation} />;
+      case "BenchMarking":
+        return <BenchMarking navigation={navigation} />;
+      default:
+        return null;  
+    }
   };
 
   return (
@@ -64,16 +105,7 @@ const Progreso = ({ navigation }) => {
           </ScrollView>
           </View>
     <View style={styles.contentContainer}>
-        {selectedScreen === "ProgressBodyMeasures" ? (
-          <ProgressBodyMeasures navigation={navigation}/>
-        ) : (
-          selectedScreen === "Achievements" ? (
-          <Achievements navigation={navigation}/>
-        ) : ( selectedScreen === "BenchMarking" ? (
-          <BenchMarking navigation={navigation}/>
-        ):
-          <ProgressExercise navigation={navigation}/>
-        ))}
+    {renderSelectedScreen()}
     </View>
     </>
   );

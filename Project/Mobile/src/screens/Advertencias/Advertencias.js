@@ -8,10 +8,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../../utils/conf";
 
 
-const MainMenu = ({ navigation }) => {
+const Warnings = ({ navigation }) => {
   const [oid, setOid] = useState("");
   const [warnings, setWarnings] = useState([]);
   const [filteredWarnings, setFilteredWarnings] = useState([]);
+  const [shouldFetch, setShouldFetch] = useState(true);
 
 
   const descripcionAdvertenciaMap = {
@@ -147,6 +148,7 @@ const MainMenu = ({ navigation }) => {
     AsyncStorage.getItem("userOID").then((value) => {
       if (value) {
         setOid(value);
+        console.log("Entrra a advertencias User OID: " + value);
 
         fetchWarnings(value); 
       }
@@ -184,6 +186,13 @@ const MainMenu = ({ navigation }) => {
     }
   };
 
+  useEffect(() => {
+    if (oid && shouldFetch) {
+      fetchWarnings(oid);
+      setShouldFetch(false);
+    }
+  });
+
 
   const handleCategoryFilter = (category) => {
     setSelectedCategory(category); 
@@ -191,9 +200,25 @@ const MainMenu = ({ navigation }) => {
 
     const timeId = categoryToTimeIdMap[category];
     const filteredWarnings = timeId == null ? warnings : warnings.filter(warning => warning.ID_AdvertenciaTiempo === timeId);
-  
-    // Asume que tienes un estado separado para las advertencias filtradas o ajusta según sea necesario
     setFilteredWarnings(filteredWarnings);
+  };
+
+
+  const handleNavigate = (warning) => {
+    switch(warning.ID_AdvertenciaTiempo) {
+      case 1: // Al crear una rutina
+      navigation.navigate('DetallesRutina', { routineId: warning.ID_Rutina });
+        break;
+      case 2: // Al asignarse una rutina
+        navigation.navigate('DetallesRutina', { routineId: warning.ID_Rutina });
+        break;
+      case 3: // Al terminar un entrenamiento
+        console.log("Navigating with:", { screen: 'ProgressExercise' });
+        navigation.navigate('Progreso', { screen: 'ProgressExercise' });
+        break;
+      default:
+        console.log('No navigation handler for this warning');
+    }
   };
 
 
@@ -246,7 +271,8 @@ const MainMenu = ({ navigation }) => {
   </ScrollView>
     <ScrollView style={styles.container}>
     {filteredWarnings.map((warning, index) => (
-    <View key={index} style={styles.item}>
+      <TouchableOpacity  onPress={() => handleNavigate(warning)} key={index}>
+    <View  style={styles.item}>
       <View style={[styles.achievementHeader, 
           warning.ID_AdvertenciaTiempo === 1 ? styles.achievementsCreate : 
           warning.ID_AdvertenciaTiempo === 2 ? styles.achievementsAssign : 
@@ -268,13 +294,14 @@ const MainMenu = ({ navigation }) => {
           }
         </View>
       </View>
+      </TouchableOpacity>
     ))}
     </ScrollView>
     </>
   )
 };
 
-export default MainMenu;
+export default Warnings;
 
 
 const styles = StyleSheet.create({

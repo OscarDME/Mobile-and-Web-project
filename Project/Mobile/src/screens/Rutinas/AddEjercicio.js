@@ -226,6 +226,19 @@ const ExerciseDayScreen = ({ navigation, route }) => {
             throw new Error("No se pudo asignar la advertencia al 3 ejercicio");
           }
 
+          //Una rutina excede un tiempo de dos horas sin tomar en cuenta los descansos
+          const responseWarning4 = await fetch(`${config.apiBaseUrl}/allWarnings/overTraining/longsession/${route.params.ID_Rutina}/${route.params.dayID}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            }
+          });
+          if (responseWarning4.ok) {
+              const jsonResponseWarning4 = await responseWarning4.json();
+              console.log("Warning 4 procesado con exito:", jsonResponseWarning4);
+            } else {
+              throw new Error("No se pudo asignar la advertencia al 3 ejercicio");
+            }
         
         //Cuando Una rutina excede un tiempo de dos horas sin tomar en cuenta los descansos
 

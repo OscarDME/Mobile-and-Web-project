@@ -148,11 +148,31 @@ const WorkoutScreen = ({route, navigation}) => {
 
   useEffect(() => {
     if (trainingCompleted) {
-      // Finaliza el entrenamiento GUARDAR DATOS EN LA BASE DE DATOS AQUI
+      //Advertencias al terminar entrenamiento
+      postWarnings();
+
       navigation.goBack();
     }
   }, [trainingCompleted, navigation]);
   
+
+  const postWarnings = async () => {
+    try {
+      const response = await fetch(
+        `${config.apiBaseUrl}/allWarnings/weightAnalisis/${oid}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      const responseJson = await response.json();
+      console.log(responseJson);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   
 
 // Asegúrate de que este useEffect esté presente en tu componente
