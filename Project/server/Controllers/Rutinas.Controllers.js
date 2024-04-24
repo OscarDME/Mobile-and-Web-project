@@ -555,7 +555,6 @@ export const crearBloqueSetsConSeries = async (req, res) => {
       promedioTiempo
     );
 
-    const tiempoFormateado = convertSecondsToTimeFormat(promedioTiempo);
 
     // Obtén el ID_Rutina usando el ID_EjerciciosDia
     const result = await pool
@@ -575,7 +574,7 @@ export const crearBloqueSetsConSeries = async (req, res) => {
     // Ahora actualiza la duración en la tabla Rutina
     await pool
       .request()
-      .input("TiempoFormateado", sql.Time, tiempoFormateado)
+      .input("TiempoFormateado", sql.Int, promedioTiempo)
       .input("ID_Rutina", sql.Int, ID_Rutina).query(`
     UPDATE Rutina
     SET duracion = @TiempoFormateado
@@ -628,6 +627,31 @@ export const crearBloqueSetsConSeries = async (req, res) => {
       promedioTiempoCardio.toFixed(2)
     );
     console.log("Promedio tiempo fuerza:", promedioTiempoFuerza.toFixed(2));
+
+    const tiempoTotal = promedioTiempoCardio + promedioTiempoFuerza;
+    const porcentajeTiempoFuerza = (promedioTiempoFuerza / tiempoTotal) * 100;
+
+    let ID_Objetivo;
+    if (porcentajeTiempoFuerza < 55) {
+        ID_Objetivo = 1; // Perder peso
+    } else if (porcentajeTiempoFuerza >= 55 && porcentajeTiempoFuerza <= 75) {
+        ID_Objetivo = 3; // Mantenimiento
+    } else if (porcentajeTiempoFuerza > 75) {
+        ID_Objetivo = 2; // Ganar masa muscular
+    }
+
+    // Actualiza el ID_Objetivo en la tabla Rutina
+    await pool
+      .request()
+      .input("ID_Objetivo", sql.Int, ID_Objetivo)
+      .input("ID_Rutina", sql.Int, ID_Rutina)
+      .query(`
+        UPDATE Rutina
+        SET ID_Objetivo = @ID_Objetivo
+        WHERE ID_Rutina = @ID_Rutina;
+      `);
+
+    console.log("Objetivo de la rutina actualizado con éxito.");
 
     res.status(200).json({
       message: "Series actualizadas correctamente.",
@@ -762,7 +786,6 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
       promedioTiempo
     );
 
-    const tiempoFormateado = convertSecondsToTimeFormat(promedioTiempo);
 
     // Obtén el ID_Rutina usando el ID_EjerciciosDia
     const result = await pool
@@ -782,7 +805,7 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
     // Ahora actualiza la duración en la tabla Rutina
     await pool
       .request()
-      .input("TiempoFormateado", sql.Time, tiempoFormateado)
+      .input("TiempoFormateado", sql.Int, promedioTiempo)
       .input("ID_Rutina", sql.Int, ID_Rutina).query(`
     UPDATE Rutina
     SET duracion = @TiempoFormateado
@@ -837,6 +860,31 @@ export const actualizarBloqueSetsConSeries = async (req, res) => {
     console.log("Promedio tiempo fuerza:", promedioTiempoFuerza.toFixed(2));
 
     console.log("Tiempo total:", tiempoTotalDia);
+
+    const tiempoTotal = promedioTiempoCardio + promedioTiempoFuerza;
+    const porcentajeTiempoFuerza = (promedioTiempoFuerza / tiempoTotal) * 100;
+
+    let ID_Objetivo;
+    if (porcentajeTiempoFuerza < 55) {
+        ID_Objetivo = 1; // Perder peso
+    } else if (porcentajeTiempoFuerza >= 55 && porcentajeTiempoFuerza <= 75) {
+        ID_Objetivo = 3; // Mantenimiento
+    } else if (porcentajeTiempoFuerza > 75) {
+        ID_Objetivo = 2; // Ganar masa muscular
+    }
+
+    // Actualiza el ID_Objetivo en la tabla Rutina
+    await pool
+      .request()
+      .input("ID_Objetivo", sql.Int, ID_Objetivo)
+      .input("ID_Rutina", sql.Int, ID_Rutina)
+      .query(`
+        UPDATE Rutina
+        SET ID_Objetivo = @ID_Objetivo
+        WHERE ID_Rutina = @ID_Rutina;
+      `);
+
+    console.log("Objetivo de la rutina actualizado con éxito.");
 
     res.status(200).json({
       message: "BloqueSets y Series actualizados correctamente.",
@@ -1586,7 +1634,7 @@ function customStringify(object, indentLevel = 0) {
 function convertSecondsToTimeFormat(totalSeconds) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
+  const seconds = Math.round(totalSeconds % 60); // Redondea los segundos
 
   // Formatea cada componente para asegurar que siempre tenga dos dígitos
   const formattedHours = hours.toString().padStart(2, "0");
@@ -1596,10 +1644,8 @@ function convertSecondsToTimeFormat(totalSeconds) {
   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
 
-// Uso de la función para convertir un promedio de tiempo dado en segundos
-const promedioTiempo = 3661; // Ejemplo: 3661 segundos
-const tiempoFormateado = convertSecondsToTimeFormat(promedioTiempo);
-console.log("Tiempo formateado:", tiempoFormateado);
+
+
 
 //Calculos de rutina en EjerciciosDia:
 //Nivel de la rutina: 𝑉𝑎𝑙𝑜𝑟𝑁𝑖𝑣𝑒𝑙=𝐶𝑎𝑛𝑡𝐹𝑎𝑐𝑖𝑙𝑒𝑠∗0+𝐶𝑎𝑛𝑡𝐼𝑛𝑡𝑒𝑟𝑚𝑒𝑑𝑖𝑜𝑠∗0.5 +𝐶𝑎𝑛𝑡𝐷𝑖𝑓𝑖𝑐𝑖𝑙𝑒𝑠∗1/𝑇𝑜𝑡𝑎𝑙𝐸𝑗𝑒𝑟𝑐𝑖𝑐𝑖𝑜𝑠
