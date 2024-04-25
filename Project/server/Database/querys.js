@@ -354,18 +354,25 @@ export const querys = {
         getCuestionario: `SELECT 
         ID_Cuestionario,
         ID_UsuarioMovil,
-        -- Convertir y formatear el tiempo a HH:MM
         SUBSTRING(CONVERT(varchar, tiempo_disponible, 108), 1, 5) AS TiempoDisponible,
         ID_Objetivo,
         ID_NivelFormaFisica,
         ID_EspacioDisponible,
         ID_Musculo
         FROM 
-            Cuestionario;
+            Cuestionario
+        WHERE ID_UsuarioMovil = @ID_UsuarioMovil;
         `,
         getUsuario:"SELECT * FROM Usuario WHERE ID_Usuario = @ID_Usuario;",
         getPadece: `SELECT * FROM Padece WHERE ID_Cuestionario = @ID_Cuestionario;`,
         getQuiereEntrenar: `SELECT * FROM QuiereEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
-        getDispone: `SELECT * FROM Dispone WHERE ID_Cuestionario = @ID_Cuestionario;`,
+        getDispone: `SELECT d.*, e.equipo AS NombreEquipo FROM Dispone d JOIN Equipo e ON d.ID_Equipo = e.ID_Equipo WHERE d.ID_Cuestionario = @ID_Cuestionario;`,
         getPuedeEntrenar: `SELECT * FROM PuedeEntrenar WHERE ID_Cuestionario = @ID_Cuestionario;`,
+        checkCuestionario: "SELECT ID_Cuestionario FROM Cuestionario WHERE ID_UsuarioMovil = @ID_UsuarioMovil",
+
+        deleteQuiereEntrenar: "DELETE FROM QuiereEntrenar WHERE ID_Cuestionario = @ID_Cuestionario",
+        deletePuedeEntrenar: "DELETE FROM PuedeEntrenar WHERE ID_Cuestionario = @ID_Cuestionario",
+        deletePadece: "DELETE FROM Padece WHERE ID_Cuestionario = @ID_Cuestionario",
+        deleteDispone: "DELETE FROM Dispone WHERE ID_Cuestionario = @ID_Cuestionario",
+        deleteCuestionario: "DELETE FROM Cuestionario WHERE ID_Cuestionario = @ID_Cuestionario",
   };

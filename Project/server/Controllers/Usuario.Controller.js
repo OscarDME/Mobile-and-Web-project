@@ -271,7 +271,7 @@ export const checkPerformanceComparisonEnabled = async (req, res) => {
   try {
     const pool = await getConnection();
 
-    // Realiza la consulta para obtener la configuración de comparación de rendimiento
+  // Realiza la consulta para obtener la configuración de comparación de rendimiento
     const result = await pool.request()
       .input('ID_Usuario', sql.VarChar, id)  // Asegúrate de que el ID de usuario está correctamente referenciado
       .query(`
@@ -292,3 +292,37 @@ export const checkPerformanceComparisonEnabled = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getWEBUserTypeByID = async (req, res) => {
+  
+  const oid = req.params.oid; 
+
+  try {
+    const pool = await getConnection();
+
+    // Consulta para obtener la información de todos los usuarios móviles y su tipo
+    const result = await pool.request()
+    .input("oid", sql.VarChar, oid) 
+    .query(`
+      SELECT 
+        u.ID_Usuario, 
+        um.ID_Tipo_WEB, 
+        t.tipo AS tipo_descripcion
+      FROM 
+        Usuario u
+      INNER JOIN Usuario_WEB um ON u.ID_Usuario = um.ID_Usuario
+      INNER JOIN Tipo_WEB t ON um.ID_Tipo_Web = t.ID_Tipo_Web
+      WHERE u.ID_Usuario = @oid
+    `);
+
+    // Verificar si se encontró información para los usuarios móviles
+    if (result.recordset.length > 0) {
+      res.json(result.recordset);
+    } else {
+      res.status(404).json({ message: "No se encontraron usuarios móviles" }); // Manejo de usuarios no encontrados
+    }
+  } catch (error) {
+    console.error('Error al obtener la información de los usuarios móviles:', error);
+    res.status(500).json({ error: 'Error interno del servidor' }); // Manejo de error de servidor
+  }
+}

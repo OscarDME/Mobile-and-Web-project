@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import {Picker} from "@react-native-picker/picker";
 import ModalDropdown from 'react-native-modal-dropdown';
 import { CheckBox } from "react-native-elements";
 import * as Progress from "react-native-progress";
 import { AntDesign } from '@expo/vector-icons'; 
+import config from "../../utils/conf";
 
 const TrainingGoalsScreen = ({ navigation, route }) => {
   const [errorMessage, setErrorMessage] = useState("");
@@ -38,6 +39,40 @@ const TrainingGoalsScreen = ({ navigation, route }) => {
     { label: 'Glúteo', value: 8 },
     { label: 'Pantorilla', value: 9 },
   ];
+
+  const loadCuestionarioData = async () => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/cues/${route.params.oid}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+
+      if (data) {
+        // Establecer el objetivo de entrenamiento usando el ID del objetivo y convertirlo a string para la lógica de selección del botón
+        console.log("ID_Objetivo", data.cuestionario.ID_Objetivo);
+        setTrainingGoal(data.cuestionario.ID_Objetivo);
+
+        // Inicializar las áreas de lesión
+        const injuryIds = data.padece.map(lesion => lesion.ID_Lesion);
+        setInjuryAreas(injuryIds);
+
+        // Establecer la parte del cuerpo enfocada
+        console.log("ID_Musculo", data.cuestionario.ID_Musculo);
+        setFocusedBodyPart(data.cuestionario.ID_Musculo);
+      }
+    } catch (error) {
+      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
+      console.error(error);
+    }
+};
+
+// Añade useEffect para cargar los datos cuando el componente se monta
+useEffect(() => {
+  loadCuestionarioData();
+}, []);
+
+  
 
   const handleFocusedBodyPartSelection = (part) => {
     setFocusedBodyPart(part);
@@ -173,7 +208,7 @@ const TrainingGoalsScreen = ({ navigation, route }) => {
         onSelect={(index, value) =>
         handleFocusedBodyPartSelection(muscleData[index].value)
         }
-        defaultValue="Seleccionar parte del cuerpo"
+        defaultValue={muscleData.find(muscle => muscle.value === focusedBodyPart)?.label || "Seleccionar parte del cuerpo"}
         style={styles.dropdown}
         textStyle={styles.dropdownText}
         dropdownStyle={styles.dropdownMenu}  

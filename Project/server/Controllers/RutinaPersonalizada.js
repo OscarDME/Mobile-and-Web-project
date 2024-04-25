@@ -214,6 +214,7 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
     for (const musculo of dia.musculos) {
         let tiempoRestanteMusculo = musculo.tiempo * 60; 
         console.log("Tiempo total músculo:", tiempoRestanteMusculo);
+        musculo.ejercicios = musculo.ejercicios || [];
 
         while (tiempoRestanteMusculo > 0) {
             console.log("Tiempo restante músculo:", tiempoRestanteMusculo);

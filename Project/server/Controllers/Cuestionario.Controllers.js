@@ -48,9 +48,34 @@ export const createCuestionario = async (req, res) => {
       userMovilResult.recordset[0].ID_UsuarioMovil
     );
 
+
     // Verificar si se obtuvo el ID_Usuario de UsuarioMovil
     if (userMovilResult.recordset.length > 0) {
       const mobileUserID = userMovilResult.recordset[0].ID_UsuarioMovil;
+
+      const existingCuestionario = await pool.request()
+      .input("ID_UsuarioMovil", sql.Int, mobileUserID)
+      .query(querys.checkCuestionario);
+
+      if (existingCuestionario.recordset.length > 0) {
+        const cuestionarioID = existingCuestionario.recordset[0].ID_Cuestionario;
+        await pool.request()
+          .input("ID_Cuestionario", sql.Int, cuestionarioID)
+          .query(querys.deleteQuiereEntrenar);
+        await pool.request()
+          .input("ID_Cuestionario", sql.Int, cuestionarioID)
+          .query(querys.deletePuedeEntrenar);
+        await pool.request()
+          .input("ID_Cuestionario", sql.Int, cuestionarioID)
+          .query(querys.deletePadece);
+        await pool.request()
+          .input("ID_Cuestionario", sql.Int, cuestionarioID)
+          .query(querys.deleteDispone);
+        await pool.request()
+          .input("ID_Cuestionario", sql.Int, cuestionarioID)
+          .query(querys.deleteCuestionario);
+      }  
+
       console.log("ID_Usuario de UsuarioMovil:", mobileUserID);
       // Consulta SQL para obtener el ID del espacio disponible por nombre
       console.log("Consultando espacio disponible por nombre:");
@@ -192,5 +217,63 @@ export const createCuestionario = async (req, res) => {
 };
 
 export const getCuestionarioData = async (req, res) => {
-    const ID_Usuario = req.params.id
-}
+  try {
+    const ID_Usuario = req.params.id;
+    const pool = await getConnection();
+    console.log("Conexión a la base de datos establecida.");
+
+    // Primero, obtener ID_UsuarioMovil basado en ID_Usuario
+    const usuarioMovilResult = await pool.request()
+      .input("ID_Usuario", sql.VarChar, ID_Usuario)
+      .query(querys.getMobileUser);  // Asegúrate de que esta consulta devuelve ID_UsuarioMovil
+
+    if (usuarioMovilResult.recordset.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado." });
+    }
+
+    const ID_UsuarioMovil = usuarioMovilResult.recordset[0].ID_UsuarioMovil;
+
+    // Segundo, obtener el Cuestionario relacionado con el ID_UsuarioMovil
+    const cuestionarioResult = await pool.request()
+      .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
+      .query(querys.getCuestionario);  // Asume que esta consulta obtiene los datos del cuestionario
+
+    if (cuestionarioResult.recordset.length === 0) {
+      return res.status(404).json({ error: "Cuestionario no encontrado." });
+    }
+
+    const cuestionarioData = cuestionarioResult.recordset[0];
+
+    // Tercero, obtener información relacionada con el cuestionario
+    const puedeEntrenarResult = await pool.request()
+      .input("ID_Cuestionario", sql.Int, cuestionarioData.ID_Cuestionario)
+      .query(querys.getPuedeEntrenar);
+
+    const padeceResult = await pool.request()
+      .input("ID_Cuestionario", sql.Int, cuestionarioData.ID_Cuestionario)
+      .query(querys.getPadece);
+
+    const disponeResult = await pool.request()
+      .input("ID_Cuestionario", sql.Int, cuestionarioData.ID_Cuestionario)
+      .query(querys.getDispone);
+
+    const quiereEntrenarResult = await pool.request()
+      .input("ID_Cuestionario", sql.Int, cuestionarioData.ID_Cuestionario)
+      .query(querys.getQuiereEntrenar);
+
+      console.log(quiereEntrenarResult.recordset);
+    // Consolidar todos los datos en un solo objeto
+    return res.status(200).json({
+      cuestionario: cuestionarioData,
+      puedeEntrenar: puedeEntrenarResult.recordset,
+      padece: padeceResult.recordset,
+      dispone: disponeResult.recordset,
+      quiereEntrenar: quiereEntrenarResult.recordset
+    });
+    console.log(quiereEntrenarResult.recordset);
+
+  } catch (error) {
+    console.error("Error al obtener los datos del cuestionario:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};

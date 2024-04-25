@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCheck, faTimes, faEdit } from '@fortawesome/free-solid-svg-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import  signOut  from '../Inicio/authService';
-import Chat from '../Chat/UserChat';
-import { Rating } from 'react-native-elements'; // Importar Rating
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Switch,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { faCheck, faTimes, faEdit } from "@fortawesome/free-solid-svg-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as WebBrowser from "expo-web-browser";
+import signOut from "../Inicio/authService";
+import Chat from "../Chat/UserChat";
+import { Rating } from "react-native-elements"; // Importar Rating
 import config from "../../utils/conf";
-
 
 const ProfileScreen = ({ route }) => {
   const [performanceModule, setPerformanceModule] = useState(false);
@@ -22,31 +29,31 @@ const ProfileScreen = ({ route }) => {
   const updateCalificacion = async (clientId, calificacion) => {
     try {
       const response = await fetch(`${config.apiBaseUrl}/updatecalificacion`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           clientId: clientId,
           calificacion: calificacion,
         }),
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to update calificacion');
+        throw new Error("Failed to update calificacion");
       }
-  
+
       console.log(`Calificacion updated to ${calificacion}`);
     } catch (error) {
       console.error("Error updating calificacion:", error);
     }
   };
-  
+
   const handleRatingCompleted = async (rating) => {
     console.log("Rating is: " + rating);
     setRating(rating);
-  
-    const userOID = await AsyncStorage.getItem('userOID');
+
+    const userOID = await AsyncStorage.getItem("userOID");
     console.log("User OID: " + userOID);
     if (userOID) {
       updateCalificacion(userOID, rating);
@@ -54,32 +61,33 @@ const ProfileScreen = ({ route }) => {
       console.log("No user OID found");
     }
   };
-  
-
 
   const navigation = useNavigation();
 
   const updatePreference = async (preferenceName, value) => {
-    const userOID = await AsyncStorage.getItem('userOID');
+    const userOID = await AsyncStorage.getItem("userOID");
     if (!userOID) {
       console.log("No user OID f");
       return;
     }
 
     try {
-      const response = await fetch(`${config.apiBaseUrl}/${preferenceName}/${userOID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          preference: preferenceName,
-          value: value,
-        }),
-      });
+      const response = await fetch(
+        `${config.apiBaseUrl}/${preferenceName}/${userOID}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            preference: preferenceName,
+            value: value,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to update user preference');
+        throw new Error("Failed to update user preference");
       }
 
       console.log(`Preference ${preferenceName} updated to ${value}`);
@@ -94,12 +102,12 @@ const ProfileScreen = ({ route }) => {
 
   const togglePerformanceModule = (newValue) => {
     setPerformanceModule(newValue);
-    updatePreference('Rendimiento', newValue);
+    updatePreference("Rendimiento", newValue);
   };
 
   const toggleGymModule = (newValue) => {
     setGymModule(newValue);
-    updatePreference('ViajeGimnasio', newValue);
+    updatePreference("ViajeGimnasio", newValue);
   };
 
   useEffect(() => {
@@ -107,75 +115,85 @@ const ProfileScreen = ({ route }) => {
   }, []);
 
   const fetchUserData = async () => {
-    const userOID = await AsyncStorage.getItem('userOID');
+    const userOID = await AsyncStorage.getItem("userOID");
     if (!userOID) {
       console.log("No user OID found");
       return;
     }
-  
+
     try {
       const response = await fetch(`${config.apiBaseUrl}/user/${userOID}`, {
-        method: 'GET',
+        method: "GET",
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to fetch user data');
+        throw new Error("Failed to fetch user data");
       }
-  
+
       const data = await response.json();
       setUserData(data);
       setPerformanceModule(data.ComparacionRendimiento);
       setGymModule(data.ViajeGimnasio);
-  
+
       // Obtener las invitaciones pendientes de solicitud de entrenador a cliente
-      const invitationsResponse = await fetch(`${config.apiBaseUrl}/pendingclient/${userOID}`, {
-        method: 'GET',
-      });
-  
+      const invitationsResponse = await fetch(
+        `${config.apiBaseUrl}/pendingclient/${userOID}`,
+        {
+          method: "GET",
+        }
+      );
+
       if (!invitationsResponse.ok) {
-        throw new Error('Failed to fetch pending invitation');
+        throw new Error("Failed to fetch pending invitation");
       }
-  
+
       const invitationsData = await invitationsResponse.json();
       setPendingInvitations(invitationsData);
-  
-      const trainerResponse = await fetch(`${config.apiBaseUrl}/trainerinfo/${userOID}`, {
-        method: 'GET',
-      });
-  
+
+      const trainerResponse = await fetch(
+        `${config.apiBaseUrl}/trainerinfo/${userOID}`,
+        {
+          method: "GET",
+        }
+      );
+
       if (trainerResponse.ok) {
         const traineData = await trainerResponse.json();
         setTrainerData(traineData);
         console.log("Trainer data:", trainerData);
       } else {
-        setTrainerData(null); 
+        setTrainerData(null);
       }
     } catch (error) {
       console.error("Error fetching user data or pending invitation:", error);
     }
   };
 
-
   const deleteTrainerClientRequest = async (ID_SolicitudEntrenadorCliente) => {
     try {
-      const response = await fetch(`${config.apiBaseUrl}/deletesolicitud/${ID_SolicitudEntrenadorCliente}`, {
-        method: 'DELETE',
-      });
-  
+      const response = await fetch(
+        `${config.apiBaseUrl}/deletesolicitud/${ID_SolicitudEntrenadorCliente}`,
+        {
+          method: "DELETE",
+        }
+      );
+
       if (!response.ok) {
         throw new Error("Respuesta de red no fue ok");
       }
-  
+
       console.log("Solicitud de entrenador a cliente eliminada correctamente");
     } catch (error) {
-      console.error("Error al eliminar la solicitud de entrenador a cliente:", error);
+      console.error(
+        "Error al eliminar la solicitud de entrenador a cliente:",
+        error
+      );
       throw error;
     }
-  };  
-
+  };
 
   const handleBecomeTrainerPress = () => {
-    navigation.navigate('Formulario1');
+    navigation.navigate("Formulario1");
   };
 
   const handleLogoutButtonPress = () => {
@@ -186,23 +204,27 @@ const ProfileScreen = ({ route }) => {
     try {
       // Llama a la función para aceptar la invitación
       const response = await fetch(`${config.apiBaseUrl}/acceptclient`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           requestId: ID_SolicitudEntrenadorCliente,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Respuesta de red no fue ok");
       }
-  
-      setPendingInvitations(prevInvitations =>
-        prevInvitations.filter(invitation => invitation.ID_SolicitudEntrenadorCliente !== ID_SolicitudEntrenadorCliente)
+
+      setPendingInvitations((prevInvitations) =>
+        prevInvitations.filter(
+          (invitation) =>
+            invitation.ID_SolicitudEntrenadorCliente !==
+            ID_SolicitudEntrenadorCliente
+        )
       );
-      
+
       console.log("Invitación aceptada exitosamente");
     } catch (error) {
       console.error("Error al aceptar la invitación:", error);
@@ -213,16 +235,22 @@ const ProfileScreen = ({ route }) => {
     try {
       // Elimina la solicitud de entrenador a cliente
       await deleteTrainerClientRequest(ID_SolicitudEntrenadorCliente);
-  
+
       // Actualiza el estado de las invitaciones pendientes
-      setPendingInvitations(prevInvitations =>
-        prevInvitations.filter(invitation => invitation.ID_SolicitudEntrenadorCliente !== ID_SolicitudEntrenadorCliente)
+      setPendingInvitations((prevInvitations) =>
+        prevInvitations.filter(
+          (invitation) =>
+            invitation.ID_SolicitudEntrenadorCliente !==
+            ID_SolicitudEntrenadorCliente
+        )
       );
     } catch (error) {
-      console.error("Error al eliminar la solicitud de entrenador a cliente:", error);
+      console.error(
+        "Error al eliminar la solicitud de entrenador a cliente:",
+        error
+      );
     }
   };
-  
 
   return (
     <ScrollView style={styles.container}>
@@ -233,39 +261,65 @@ const ProfileScreen = ({ route }) => {
           {/* <FontAwesomeIcon icon={faEdit} size={20} color="#0790cf" /> */}
         </TouchableOpacity>
         <Text style={styles.sectionTitle}>Mis datos:</Text>
-        <Text style={styles.data}>{userData.nombre} {userData.apellido}</Text>
+        <Text style={styles.data}>
+          {userData.nombre} {userData.apellido}
+        </Text>
         <Text style={styles.data}>{userData.correo}</Text>
-        <Text style={styles.data}>{userData.sexo === 'H' ? 'Hombre' : userData.sexo === 'M' ? 'Mujer' : 'No especificado'}</Text>
-        <Text style={styles.data}>{userData.fecha_nacimiento ? userData.fecha_nacimiento.split('T')[0] : 'Fecha no disponible'}</Text>
+        <Text style={styles.data}>
+          {userData.sexo === "H"
+            ? "Hombre"
+            : userData.sexo === "M"
+            ? "Mujer"
+            : "No especificado"}
+        </Text>
+        <Text style={styles.data}>
+          {userData.fecha_nacimiento
+            ? userData.fecha_nacimiento.split("T")[0]
+            : "Fecha no disponible"}
+        </Text>
       </View>
 
-        <TouchableOpacity style={[styles.button, styles.completeButton]}>
-          <Text style={styles.buttonText}>Completar/Modificar Cuestionario</Text>
-        </TouchableOpacity>
-   
+      <TouchableOpacity style={[styles.button, styles.completeButton]} onPress={() => {
+  AsyncStorage.getItem('userOID').then(userOID => {
+    if (userOID) {
+      navigation.navigate('Questionnaire', { screen: 'TimeAndDaysForm', params: { oid: userOID } });
+    } else {
+      console.log("No user OID found");
+    }
+  });
+}}>
+  <Text style={styles.buttonText}>Completar/Modificar Cuestionario</Text>
+</TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.becomeTrainerButton]} onPress={handleBecomeTrainerPress}
->
-        <Text style={styles.buttonText}>Convertirse en Entrenador/Nutricionista</Text>
+
+      <TouchableOpacity
+        style={[styles.button, styles.becomeTrainerButton]}
+        onPress={handleBecomeTrainerPress}
+      >
+        <Text style={styles.buttonText}>
+          Convertirse en Entrenador/Nutricionista
+        </Text>
       </TouchableOpacity>
-
 
       {trainerData.length > 0 ? (
         trainerData.map((trainer, index) => (
           <View key={index} style={styles.card}>
-          <Text style={styles.sectionTitle}>Datos del Entrenador/Nutricionista:</Text>
+            <Text style={styles.sectionTitle}>
+              Datos del Entrenador/Nutricionista:
+            </Text>
             <Text style={styles.data}>
-             {trainer.nombre_entrenador} {trainer.apellido_entrenador} ({trainer.tipo_usuario_web})
+              {trainer.nombre_entrenador} {trainer.apellido_entrenador} (
+              {trainer.tipo_usuario_web})
             </Text>
             <View style={styles.ratingContainer}>
-          <Rating
-            imageSize={30}
-            startingValue={trainer.calificacion_cliente} // Usar la calificación del entrenador/nutricionista
-            ratingColor="#f1c40f" // Cambia el color de las estrellas
-            onFinishRating={handleRatingCompleted}
-            style={{ marginTop: 15 }} // Espaciado vertical desde el nombre
-          />
-        </View>
+              <Rating
+                imageSize={30}
+                startingValue={trainer.calificacion_cliente} // Usar la calificación del entrenador/nutricionista
+                ratingColor="#f1c40f" // Cambia el color de las estrellas
+                onFinishRating={handleRatingCompleted}
+                style={{ marginTop: 15 }} // Espaciado vertical desde el nombre
+              />
+            </View>
           </View>
         ))
       ) : (
@@ -273,22 +327,36 @@ const ProfileScreen = ({ route }) => {
       )}
 
       <View style={styles.card}>
-  <Text style={styles.sectionTitle}>Invitaciones:</Text>
-  {pendingInvitations.map((invitation, index) => (
-    <View style={styles.invitationContainer} key={index}>
-      <Text style={styles.data}>{invitation.nombre_usuario_web} {invitation.apellido_usuario_web} ({invitation.tipo_usuario_web})</Text>
-      <View style={styles.iconRow}>
-        <TouchableOpacity onPress={() => handleAcceptInvitation(invitation.ID_SolicitudEntrenadorCliente)}>
-          <FontAwesomeIcon icon={faCheck} size={24} color="#0790cf" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleRejectInvitation(invitation.ID_SolicitudEntrenadorCliente)}>
-          <FontAwesomeIcon icon={faTimes} size={24} color="#cf0709" />
-        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Invitaciones:</Text>
+        {pendingInvitations.map((invitation, index) => (
+          <View style={styles.invitationContainer} key={index}>
+            <Text style={styles.data}>
+              {invitation.nombre_usuario_web} {invitation.apellido_usuario_web}{" "}
+              ({invitation.tipo_usuario_web})
+            </Text>
+            <View style={styles.iconRow}>
+              <TouchableOpacity
+                onPress={() =>
+                  handleAcceptInvitation(
+                    invitation.ID_SolicitudEntrenadorCliente
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faCheck} size={24} color="#0790cf" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  handleRejectInvitation(
+                    invitation.ID_SolicitudEntrenadorCliente
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faTimes} size={24} color="#cf0709" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
       </View>
-    </View>
-  ))}
-</View>
-
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Preferencias:</Text>
@@ -301,14 +369,14 @@ const ProfileScreen = ({ route }) => {
         </View>
         <View style={styles.preference}>
           <Text style={styles.data}>Módulo de viaje a tu gimnasio</Text>
-          <Switch
-            value={gymModule}
-            onValueChange={toggleGymModule}
-          />
+          <Switch value={gymModule} onValueChange={toggleGymModule} />
         </View>
       </View>
 
-      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogoutButtonPress}>
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogoutButtonPress}
+      >
         <Text style={styles.buttonText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -318,18 +386,18 @@ const ProfileScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     padding: 20,
-    marginLeft:20,
-    backgroundColor: 'transparent',
-    textAlign: 'left',
+    marginLeft: 20,
+    backgroundColor: "transparent",
+    textAlign: "left",
   },
   card: {
-    backgroundColor: '#f6f6f6',
+    backgroundColor: "#f6f6f6",
     borderRadius: 8,
     padding: 20,
     margin: 20,
@@ -337,14 +405,14 @@ const styles = StyleSheet.create({
     elevation: 1,
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { height: 0, width: 0 },
   },
-  data:{
+  data: {
     fontSize: 18,
   },
   editIcon: {
-    position: 'absolute',
+    position: "absolute",
     top: 20,
     right: 30,
     padding: 8,
@@ -353,47 +421,47 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   invitationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   iconRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     width: 60,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   preference: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#0790cf',
+    backgroundColor: "#0790cf",
     padding: 15,
     margin: 20,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   completeButton: {
-    backgroundColor: '#0790cf',
+    backgroundColor: "#0790cf",
     marginBottom: -10,
   },
   becomeTrainerButton: {
-    backgroundColor: '#0790cf',
+    backgroundColor: "#0790cf",
   },
   logoutButton: {
-    backgroundColor: '#cf0709',
+    backgroundColor: "#cf0709",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   // ... más estilos ...
 });

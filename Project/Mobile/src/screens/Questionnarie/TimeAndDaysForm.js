@@ -4,6 +4,7 @@ import { CheckBox } from "react-native-elements";
 import * as Progress from "react-native-progress";
 import { AntDesign } from '@expo/vector-icons'; 
 import TimePicker from "../../components/TimePicker"; 
+import config from "../../utils/conf";
 
 const TrainingSchedule = ({ navigation, route }) => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -22,6 +23,33 @@ const TrainingSchedule = ({ navigation, route }) => {
     Sábado: 6,
     Domingo: 7,
   };
+
+  useEffect(() => {
+    loadCuestionarioData();
+  }, []);
+
+  const loadCuestionarioData = async () => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/cues/${oid}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+      if (data) {
+        const trainingTime = data.cuestionario.TiempoDisponible;
+        // Asegúrate de que el tiempo está en el formato correcto
+        const formattedTrainingTime = trainingTime.includes(':') ? trainingTime + ":00" : "01:00:00";
+        console.log("Tiempo disponible (formateado):", formattedTrainingTime);
+        setTrainingTime(formattedTrainingTime);
+        setPreferredDays(data.puedeEntrenar.map(d => d.ID_Dia) || []);
+        setCheckboxChecked(data.quiereEntrenar && data.quiereEntrenar.length > 0);
+      }
+    } catch (error) {
+      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
+      console.error(error);
+    }
+  };
+
 
   const handleTrainingTimeChange = ({ hours, minutes }) => {
     setTrainingTime(
