@@ -30,6 +30,7 @@ import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js
 // import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningTimeAnalisis, createWarningTwoHoursNoRestADay, createWarningWeeklyCheck, createWarningWeightAnalisis, createWarningsWhenAssigning, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
+import { getJourney, updateJourney } from "../Controllers/Viaje.Controller.js";
 import { getRutinasSugeridas } from "../Controllers/RutinasSugeridas.js";
 
 //El que come callado repite
@@ -209,7 +210,9 @@ router.get("/consistencyAchievements/:id", getConsistencyAchievements);
 router.get("/cardiovascularAchievements/:id", getCardiovascularTimeAchievements);
 router.get("/compuoundAchievements/:id", getCompoundTimeAchievements);
 
-
+//Viaje a gimnasio
+router.get("/viaje/:id", getJourney )
+router.put('/viaje/update/:id', updateJourney)
 
 export default router;
 

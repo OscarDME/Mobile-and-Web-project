@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Asegúrate de instalar expo-vector-icons
+import { Ionicons } from "@expo/vector-icons"; 
 import config from "../../utils/conf";
 
 const ExerciseDayScreen = ({ navigation, route }) => {
