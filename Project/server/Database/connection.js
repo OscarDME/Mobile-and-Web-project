@@ -12,7 +12,7 @@ const config = {
   // connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubBD;Trusted_Connection=yes;TrustServerCertificate=yes"}
 
 
-  connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FithubDB2;Trusted_Connection=yes;TrustServerCertificate=yes"}
+  //connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FithubDB2;Trusted_Connection=yes;TrustServerCertificate=yes"}
 
   //connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubDB2;Trusted_Connection=yes;TrustServerCertificate=yes"}
 
@@ -20,7 +20,7 @@ const config = {
 
 // //Bruno:
   //  const config = {
-  // connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=DESKTOP-BT83CK8\\SQLEXPRESS01;Database=FithubBD;Trusted_Connection=yes;TrustServerCertificate=yes"}
+   connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=DESKTOP-BT83CK8\\SQLEXPRESS01;Database=FithubBD;Trusted_Connection=yes;TrustServerCertificate=yes"}
   // }
 
 // const config = {
