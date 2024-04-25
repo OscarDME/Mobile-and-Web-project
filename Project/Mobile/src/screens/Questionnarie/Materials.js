@@ -41,6 +41,34 @@ const MaterialSelectionScreen = ({ navigation, route }) => {
     }
   };
 
+  const loadCuestionarioData = async () => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/cues/${route.params.oid}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.status}`);
+      }
+      const data = await response.json();
+  
+      if (data && data.dispone) {
+        console.log("Datos cargados:", data.dispone);
+        const selectedEquipmentsNames = data.dispone.map(item => item.NombreEquipo); // Assuming 'equipo' is the name field from API
+        console.log("Equipos seleccionados (nombres):", selectedEquipmentsNames);
+        setSelectedMaterials(selectedEquipmentsNames);
+      }
+    } catch (error) {
+      console.error("Error al cargar los datos del cuestionario:", error);
+      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
+    }
+  };
+  
+
+
+
+useEffect(() => {
+    loadCuestionarioData();
+}, []);
+
+
   const toggleMaterialSelection = (material) => {
     const isSelected = selectedMaterials.includes(material);
     const updatedMaterials = isSelected

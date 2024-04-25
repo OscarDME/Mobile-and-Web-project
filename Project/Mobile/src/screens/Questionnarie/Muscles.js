@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import * as Progress from "react-native-progress";
 import { AntDesign } from '@expo/vector-icons'; 
 import TimePicker from "../../components/TimePicker"; 
+import config from "../../utils/conf";
 
 const dayNames = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
@@ -41,6 +42,39 @@ const TrainingMusclesSelection = ({ navigation, route }) => {
       return updatedMuscles;
     });
   };
+
+  
+  useEffect(() => {
+    loadCuestionarioData();
+  }, []);
+
+  const loadCuestionarioData = async () => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/cues/${oid}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+      if (data && data.quiereEntrenar) {
+        const initialMuscles = data.quiereEntrenar.reduce((acc, item) => {
+          // Si el día aún no existe en el acumulador, inicializarlo con un arreglo vacío
+          if (!acc[item.ID_Dia]) {
+            acc[item.ID_Dia] = [];
+          }
+          // Agregar el ID_Musculo al arreglo del día correspondiente
+          acc[item.ID_Dia].push(item.ID_Musculo);
+          return acc;
+        }, {});
+  
+        // Establecer el estado de selectedMuscles con el mapa inicializado
+        setSelectedMuscles(initialMuscles);
+      }
+    } catch (error) {
+      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
+      console.error(error);
+    }
+  };
+  
 
   const renderDayContainer = (day) => (
     <View key={day} style={styles.dayContainer}>

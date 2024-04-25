@@ -54,6 +54,37 @@ const PhysicAndSpace = ({ navigation, route }) => {
       console.error("Error saving data", error);
     }
   };
+
+  const loadCuestionarioData = async () => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/cues/${route.params.oid}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+
+      if (data) {
+        // Configura el nivel de condición física
+        setFitnessLevel(data.cuestionario.ID_NivelFormaFisica);
+
+        // Configura el espacio disponible
+        const espacioDisponible = {
+          1: "Gimnasio",
+          2: "Casa",
+          3: "Calistenia"
+        };
+        setTrainingLocation(espacioDisponible[data.cuestionario.ID_EspacioDisponible]);
+      }
+    } catch (error) {
+      console.error("Error al cargar los datos del cuestionario:", error);
+      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
+    }
+};
+
+// Añade useEffect para cargar los datos cuando el componente se monta
+useEffect(() => {
+  loadCuestionarioData();
+}, []);
   
 
   useEffect(() => {

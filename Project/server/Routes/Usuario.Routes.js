@@ -9,11 +9,12 @@ import {
     updateViajeGimnasio,
 getAllMobileUsersInfo,
 getMobileUserTypeByID,
-checkPerformanceComparisonEnabled
+checkPerformanceComparisonEnabled,
+getWEBUserTypeByID
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
-import { createCuestionario } from "../Controllers/Cuestionario.Controllers.js";
+import { createCuestionario, getCuestionarioData } from "../Controllers/Cuestionario.Controllers.js";
 import { createEjercicio, getExercises, getEjercicioById, updateEjercicio, getAlternativeExercises, requestEjercicio, getRequests, updateEstadoEjercicio, deleteEjercicio, updateRequest } from "../Controllers/EjerciciosControllers.js";
 import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, createAlimentoRequest, getAllAlimentosWithMacronutrientesRequest, updateEstadoAlimento, deleteAlimento, updateAndAcceptAlimento} from "../Controllers/Alimento.Controllers.js";
 import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta } from "../Controllers/Recetas.Controllers.js";
@@ -26,12 +27,11 @@ import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenami
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights, getAverageStrengthByAgeGroup, getMaximumAbsoluteStrength, getAllMaximumAbsoluteStrength } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
+import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningTimeAnalisis, createWarningTwoHoursNoRestADay, createWarningWeeklyCheck, createWarningWeightAnalisis, createWarningsWhenAssigning, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
 import { getJourney, getNotifications, updateJourney } from "../Controllers/Viaje.Controller.js";
 import { getRutinasSugeridas } from "../Controllers/RutinasSugeridas.js";
-
-
 
 //El que come callado repite
 //El que escoge no coge 
@@ -49,6 +49,7 @@ router.put('/ViajeGimnasio/:id', updateViajeGimnasio);
 router.get("/mobileuser", getAllMobileUsersInfo);
 router.get("/userType/:oid", getMobileUserTypeByID);
 router.get("/isPerformanceComparisonEnabled/:oid", checkPerformanceComparisonEnabled);
+router.get("/webType/:oid", getWEBUserTypeByID);
 
 //Solicitudes
 router.post("/solicitud", createTrainerClientRequest);
@@ -81,6 +82,7 @@ router.get("/materials", getMaterials);
 
 //Cuestionario
 router.post("/cues", createCuestionario);
+router.get("/cues/:id", getCuestionarioData);
 
 //Ejercicios
 router.post("/ejercicios", createEjercicio);

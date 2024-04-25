@@ -90,6 +90,37 @@ export default function Progress_Excercises() {
   }, [selectedExercise]);
 
   useEffect(() => {
+    const fetchWeights = async () => {
+      if (selectedExercise) {
+        // Obtén el ID del usuario de alguna manera, aquí estamos utilizando MSAL
+        const ID_Usuario = activeAccount.idTokenClaims.oid;
+        const ID_Ejercicio = selectedExercise.value;
+        const escala = 'seisMeses'; // Predefinido a seis meses como requerido
+  
+        try {
+          const url = `${config.apiBaseUrl}/HistoricalRMs/${ID_Usuario}/${ID_Ejercicio}/${escala}`;
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error('La solicitud a la API falló');
+          }
+          const data = await response.json();
+  
+          // Asignar los datos recibidos al estado para actualizar el gráfico
+          const newChartData = { ...chartData };
+          newChartData.labels = data.map(entry => entry.fecha);
+          // Asumiendo que el dataset[0] es para 'Peso levantado'
+          newChartData.datasets[1].data = data.map(entry => entry.RM);
+          setChartData(newChartData);
+        } catch (error) {
+          console.error('Error al obtener los pesos máximos:', error);
+        }
+      }
+    };
+  
+    fetchWeights();
+  }, [selectedExercise]);
+
+  useEffect(() => {
     if (selectedExercise) {
       const ID_Usuario = activeAccount.idTokenClaims.oid;
       const ID_Ejercicio = selectedExercise.value;
@@ -104,56 +135,46 @@ export default function Progress_Excercises() {
           }
           const rmData = await response.json();
   
-          // Continuamos con la lógica de cálculo como la tenías
-          let L = rmData[0]?.Max1RM ?? 0;
-          let T = (rmData[1]?.Max1RM - L) ?? 0;
-          const alpha = 0.9;
-          const beta = 0.6;
+          // Calcular las predicciones como antes
+          let L = rmData[0]?.Max1RM ?? 0; // Nivel inicial
+          let T = (rmData[1]?.Max1RM - L) ?? 0; // Tendencia inicial
+          const alpha = 0.9; // Factor de suavizado para el nivel
+          const beta = 0.6; // Factor de suavizado para la tendencia
   
-          // Suponiendo que el array rmData está ordenado por fecha
-          rmData.forEach((dataPoint, index) => {
-            if (index > 0) {
-              const actual = dataPoint.Max1RM;
+          rmData.forEach((_, index) => {
+            if (index >= 1) {
+              const actual = rmData[index].Max1RM;
               let Lt = L;
               L = alpha * actual + (1 - alpha) * (Lt + T);
               T = beta * (L - Lt) + (1 - beta) * T;
             }
           });
   
-          // Generar las predicciones para los próximos 3 meses, empezando desde el mes siguiente al último registro
-          const lastRMDate = new Date(rmData[rmData.length - 1].fecha);
-          lastRMDate.setMonth(lastRMDate.getMonth() + 1); // Mueve al mes siguiente
+          // Suponiendo que quieres predecir los siguientes 3 meses
+          const predictions = Array.from({ length: 3 }, (_, i) => L + (i + 1) * T);
+          console.log(predictions);
   
-          // Ajusta el primer punto de las predicciones un mes después del último registro
-          lastRMDate.setMonth(lastRMDate.getMonth() + 1);
+          // Generar etiquetas para los próximos tres meses
+          const lastDate = new Date(rmData[rmData.length - 1]?.fecha);
+          const predictionLabels = Array.from({ length: 3 }, (_, i) => {
+            const futureDate = new Date(lastDate.setMonth(lastDate.getMonth() + 1));
+            return `${futureDate.getFullYear()}-${futureDate.getMonth() + 1}`;
+          });
   
-          const predictions = [];
-          for (let i = 0; i < 3; i++) {
-            predictions.push(L + T * (i + 1));
-          }
-  
-          // Generar las etiquetas (fechas) para las predicciones
-          const predictionLabels = [];
-          for (let i = 0; i < 3; i++) {
-            const newDate = new Date(lastRMDate);
-            newDate.setMonth(newDate.getMonth() + i);
-            predictionLabels.push(`${newDate.getFullYear()}-${('0' + (newDate.getMonth() + 1)).slice(-2)}`);
-          }
-  
-          // Actualiza el gráfico con las predicciones
-          setChartData(prevChartData => ({
-            ...prevChartData,
-            labels: [...prevChartData.labels, ...predictionLabels],
-            datasets: prevChartData.datasets.map((dataset, index) => {
-              if (index === 2) { 
-                return {
-                  ...dataset,
-                  data: [...dataset.data, ...predictions],
-                };
-              }
-              return dataset;
-            }),
-          }));
+          setChartData(prevChartData => {
+            const updatedLabels = [...prevChartData.labels, ...predictionLabels];
+            return {
+              ...prevChartData,
+              labels: updatedLabels,
+              datasets: [
+                ...prevChartData.datasets.slice(0, 2), // Mantener los primeros 2 datasets como están
+                {
+                  ...prevChartData.datasets[2], // Actualizar el tercer dataset con las predicciones
+                  data: [...Array(prevChartData.labels.length - 1).fill(null), ...predictions] // Rellenar con null hasta las predicciones
+                }
+              ]
+            };
+          });
         } catch (error) {
           console.error("Error fetching historical RM data:", error);
         }
@@ -162,8 +183,6 @@ export default function Progress_Excercises() {
       fetchHistoricalRMData();
     }
   }, [selectedExercise]);
-  
-
   
 //   useEffect(() => {
 //     const documentStyle = getComputedStyle(document.documentElement);

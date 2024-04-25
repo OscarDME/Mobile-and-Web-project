@@ -13,8 +13,9 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../../utils/conf";
 
-const TrainingScreen = ({ navigation }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+const TrainingScreen = ({ navigation, route }) => {
+  
+  const [selectedDate, setSelectedDate] = useState(route.params?.selectedDate ? new Date(route.params.selectedDate) : new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [workoutSession, setWorkoutSession] = useState([]);
   const [nextTrainingDate, setNextTrainingDate] = useState(null);

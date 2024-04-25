@@ -4,13 +4,12 @@ const signOut = async (navigation) => {
   try {
     await AsyncStorage.clear();
     console.log("AsyncStorage cleared successfully");
-
     navigation.replace('Home');
-    
   } catch (error) {
     console.error("Error clearing AsyncStorage:", error);
   }
 };
+
 
 export default signOut;
   
