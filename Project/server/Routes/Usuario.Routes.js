@@ -27,11 +27,11 @@ import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenami
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights, getAverageStrengthByAgeGroup, getMaximumAbsoluteStrength, getAllMaximumAbsoluteStrength } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
-import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningWeeklyCheck, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { createWarningEightExercisesADay, createWarningFourExercisesSameMaterialADay, createWarningFourExercisesSameMuscleADay, createWarningLessThanAMinuteOfRestPerExercise, createWarningThreeExercisesHighIntensityADay, createWarningTimeAnalisis, createWarningTwoHoursNoRestADay, createWarningWeeklyCheck, createWarningWeightAnalisis, createWarningsWhenAssigning, getWarnings } from "../Controllers/Advertencias.Controller.js";
 import { getCardiovascularTimeAchievements, getCompoundTimeAchievements, getConsistencyAchievements } from "../Controllers/Achievements.Controller.js";
 import { getJourney, getNotifications, updateJourney } from "../Controllers/Viaje.Controller.js";
 import { getRutinasSugeridas } from "../Controllers/RutinasSugeridas.js";
+import { getTrainersInfo } from "../Controllers/Chat.Controllers.js";
 
 //El que come callado repite
 //El que escoge no coge 
@@ -214,6 +214,9 @@ router.get("/compuoundAchievements/:id", getCompoundTimeAchievements);
 router.get("/viaje/:id", getJourney )
 router.put('/viaje/update/:id', updateJourney)
 router.get('/viajeNotificaciones/:id', getNotifications)
+
+//Chat
+router.get("/getChatInfo/:Entrenador/:Cliente", getTrainersInfo);
 
 export default router;
 

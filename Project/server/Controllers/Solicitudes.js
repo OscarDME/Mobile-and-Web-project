@@ -413,6 +413,7 @@ export const getAllTrainersInfo = async (req, res) => {
         const trainersResult = await pool.request().query(`
             SELECT 
                 UW.ID_Usuario_WEB, 
+                UW.ID_Usuario,
                 U.nombre, 
                 U.apellido, 
                 UW.foto_perfil, 

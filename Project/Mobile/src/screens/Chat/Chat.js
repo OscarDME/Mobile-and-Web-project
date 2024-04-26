@@ -8,10 +8,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../../FirebaseConfig"; 
+import config from "../../utils/conf";
+
+
 const Chat = ({ navigation }) => {
   const [conversaciones, setConversaciones] = useState([]);
+  const [userInfo, setUserInfo] = useState({});
 
   useEffect(() => {
     const fetchConversaciones = async () => {
@@ -20,12 +24,33 @@ const Chat = ({ navigation }) => {
         const conversacionesRef = collection(FIRESTORE_DB, 'conversaciones');
         const q = query(conversacionesRef, where('participantes', 'array-contains', oid));
   
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          const fetchedConversaciones = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+        const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+          let fetchedConversaciones = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Filtrar el oid del usuario actual para obtener el OID del otro participante
+            const otroParticipanteOID = data.participantes.filter(participanteOID => participanteOID !== oid);
+            return {
+              id: doc.id,
+              otroParticipanteOID: otroParticipanteOID[0], // Asumiendo que siempre hay dos participantes
+              ...data,
+            };
+          });
+          // Ordenar las conversaciones por 'modificadoEn' de forma descendente
+          fetchedConversaciones.sort((a, b) => b.modificadoEn.toDate() - a.modificadoEn.toDate());
+          const userInfoTemp = {};
+          for (const conversacion of fetchedConversaciones) {
+            console.log("Intentando obtener info del usuario", conversacion.otroParticipanteOID, oid);
+            const userResponse = await fetch(`${config.apiBaseUrl}/getChatInfo/${conversacion.otroParticipanteOID}/${oid}`);
+            const userData = await userResponse.json();
+            const user = userData.recordset[0];
+            console.log("Obtenido info del usuario", userData);
+            userInfoTemp[conversacion.otroParticipanteOID] = user;
+          }
+  
+          // Set states after all data is fetched
           setConversaciones(fetchedConversaciones);
+          setUserInfo(userInfoTemp);
+          
         }, (error) => {
           console.error('Error al obtener conversaciones:', error);
         });
@@ -33,10 +58,43 @@ const Chat = ({ navigation }) => {
         // Retorna la función de limpieza que cancela la suscripción
         return () => unsubscribe();
       }
+
+
     };
   
     fetchConversaciones();
-  }, []); 
+  }, []);
+
+  const getUserInfo = async (entrenadorId) => {
+    const userID = await AsyncStorage.getItem('userOID');
+    if (!userID) throw new Error("El ID de usuario no está disponible");
+
+    try {
+      // Obtener el ID del usuario actual del almacenamiento
+      const response = await fetch(`${config.apiBaseUrl}/getChatInfo/${entrenadorId}/${userID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+    } catch (error) {
+      console.error('Error al crear la solicitud:', error);
+    }
+  };
+  
+
+  const eliminarConversacion = async (conversacionId) => {
+    try {
+      await deleteDoc(doc(FIRESTORE_DB, 'conversaciones', conversacionId));
+      console.log(`Conversación ${conversacionId} eliminada con éxito`);
+    } catch (error) {
+      console.error('Error al eliminar conversación:', error);
+    }
+  };
+
+
+  
 
   return (
     <View style={styles.container}>
@@ -47,19 +105,44 @@ const Chat = ({ navigation }) => {
         style={styles.conversacionesContainer}
         showsVerticalScrollIndicator={false}
       >
-        {conversaciones.map((conversacion) => (
-          <TouchableOpacity
-            key={conversacion.id}
-            style={styles.conversacionCard}
-            onPress={() =>
-              navigation.navigate("UserChat", {
-                conversacion: conversacion,
-              })
-            }
-          >
-            <Text style={styles.conversacionNombre}>Conversación ID: {conversacion.id}</Text>
-          </TouchableOpacity>
-        ))}
+        {conversaciones.map((conversacion) => {
+          // Access user info from state
+          const user = userInfo[conversacion.otroParticipanteOID] || {};
+
+          return (
+            <TouchableOpacity
+              key={conversacion.id}
+              style={styles.conversacionCard}
+              onPress={() =>
+                navigation.navigate("UserChat", {
+                  conversacion: conversacion,
+                })
+              }
+            >
+              <View style={styles.conversationInfo}>
+                <Text style={styles.conversacionNombre}>
+                  {user.nombre ? 
+                  (
+                    `${user.tipo_usuario_web} ${user.nombre}`
+                  ) : "Cargando..."}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.eliminarBtn}
+                onPress={() => eliminarConversacion(conversacion.id)}
+              >
+              {user.EsCliente !== "sí" && (
+                      <TouchableOpacity
+                        style={styles.eliminarBtn}
+                        onPress={() => eliminarConversacion(conversacion.id)}
+                      >
+                        <Ionicons name="trash-bin" size={32} color="#E53E3E" />
+                      </TouchableOpacity>
+                    )}
+              </TouchableOpacity>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -82,17 +165,28 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   conversacionCard: {
-    backgroundColor: "#07c", // Ajusta el color según tu preferencia
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#CCCCCC",
     borderRadius: 10,
     marginBottom: 16,
     padding: 20,
   },
   conversacionNombre: {
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+    color: "#333333",
   },
-  // Agrega más estilos aquí según sea necesario
+  eliminarBtn: {
+    justifyContent: "center",
+  },
+  emph: {
+    fontWeight: "bold",
+    color: "#333333",
+  }
 });
 
 export default Chat;

@@ -4,6 +4,9 @@ import { Rating } from 'react-native-elements';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from "../../utils/conf";
+import { FIRESTORE_DB } from "../../../FirebaseConfig"; 
+import { collection, setDoc, doc, serverTimestamp } from "firebase/firestore";
+
 
 const TrainerDetailsScreen = ({ route }) => {
   const { trainer } = route.params;
@@ -58,6 +61,9 @@ const TrainerDetailsScreen = ({ route }) => {
       // Mostrar alerta de éxito o error según la respuesta
       if (response.ok) {
         Alert.alert("Solicitud Creada", "Tu solicitud ha sido creada con éxito.");
+        console.log("Id user:", userID);
+        console.log("Id trainer:", trainer.ID_Usuario);
+        await createConversation(userID, trainer.ID_Usuario);
       } else {
         Alert.alert("Error", data.message || "No se pudo crear la solicitud.");
       }
@@ -67,6 +73,23 @@ const TrainerDetailsScreen = ({ route }) => {
     }
   };
 
+
+  const createConversation = async (senderId, receiverId) => {
+    try {
+      const newConversationRef = doc(collection(FIRESTORE_DB, 'conversaciones'));
+      console.log("Sender ID:", senderId, "Receiver ID:", receiverId);
+
+      await setDoc(newConversationRef, {
+        participantes: [senderId, receiverId],
+        creadoEn: serverTimestamp(), 
+        modificadoEn: serverTimestamp() 
+      });
+      console.log(`Conversación creada con éxito con ID: ${newConversationRef.id}`);
+    } catch (error) {
+      console.error('Error al crear conversación:', error);
+      Alert.alert("Error", "Ha ocurrido un error al crear la conversación.");
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>

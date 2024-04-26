@@ -14,7 +14,7 @@
   width: 50%;
   height: 80vh;
   justify-content: center;
-  row-gap: 50px;
+  row-gap: 40px;
 }
 .body-dropdown-container{
   row-gap: 10px;
@@ -59,7 +59,7 @@
   list-style: none !important;
   width: 100% !important;
   padding: 0;
-  height: 90vh !important;
+  height: 80vh !important;
   overflow-x: hidden;
   overflow-y: scroll !important;
   margin-bottom: 0;
@@ -92,4 +92,9 @@
 .images-container2{
   align-self: center;
   padding-bottom: 40px;
+}
+
+.body-measure-header{
+  display: flex;
+  flex-direction: row !important;
 }
