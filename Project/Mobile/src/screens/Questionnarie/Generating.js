@@ -23,13 +23,14 @@ const GeneratingScreen = ({ route, navigation }) => {
 
       // Aquí se llama a la API para crear la rutina personalizada
       try {
-        await createPersonalizedRoutine(oid);
+        const ID_Rutina = await createPersonalizedRoutine(oid);
+        console.log("SUPER ID", ID_Rutina);
         setMessage("Rutina personalizada creada con éxito.");
         
         // Navegación después de un breve retraso para mostrar el mensaje de éxito
         setTimeout(() => {
-          navigation.navigate('Main', {screen: "MainMenu",
-          params: { oid: oid }, });
+          navigation.navigate("Asignar", { oid: oid, ID_Rutina: ID_Rutina}
+          );
         }, 2000); // Ajusta este tiempo según lo necesario
       } catch (error) {
         console.error('Error al crear la rutina personalizada:', error);
@@ -43,23 +44,30 @@ const GeneratingScreen = ({ route, navigation }) => {
     }
   }, [progress, navigation, oid]);
 
-
- const createPersonalizedRoutine = async (oid) => {
+//navigation.navigate('Main', {screen: "MainMenu",
+//params: { oid: oid }, });
+const createPersonalizedRoutine = async (oid) => {
     try {
-      const response = await fetch(`${config.apiBaseUrl}/rutinapersonalizada`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ID_Usuario: oid }),
-      });
-      const data = await response.json();
-      return data; // Retorna la respuesta del servidor, asumiendo éxito
+        const response = await fetch(`${config.apiBaseUrl}/rutinapersonalizada`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ID_Usuario: oid }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            console.log("ID RUTINAAA:", data.ID_Rutina)
+            return data.ID_Rutina; // Asegúrate de extraer el ID_Rutina de la respuesta
+        } else {
+            throw new Error("Error al crear la rutina personalizada");
+        }
     } catch (error) {
-      console.error('Error creating personalized routine:', error);
-      throw error; // Propaga el error para manejarlo en el componente
+        console.error('Error creating personalized routine:', error);
+        throw error; // Propaga el error para manejarlo en el componente
     }
-  };
+};
+
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

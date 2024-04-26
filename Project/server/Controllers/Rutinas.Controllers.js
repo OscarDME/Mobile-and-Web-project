@@ -343,6 +343,17 @@ export const updateEjerciciosDia = async (req, res) => {
     const { ID_Dia, ejercicios } = req.body;
     const pool = await getConnection();
 
+    const rutinaRes = await pool.request()
+    .input("ID_Dias_Entreno", sql.Int, ID_Dia)
+    .query("SELECT ID_Rutina FROM Dias_Entreno WHERE ID_Dias_Entreno = @ID_Dias_Entreno");
+
+    if (rutinaRes.recordset.length === 0) {
+      res.status(404).send("Día de entrenamiento no encontrado.");
+      return;
+    }
+
+    const ID_Rutina = rutinaRes.recordset[0].ID_Rutina;
+
     // Obtener todos los ejercicios actuales para este día, incluyendo su ID_EjercicioDia
     const ejerciciosActualesRes = await pool
       .request()
@@ -400,6 +411,74 @@ export const updateEjerciciosDia = async (req, res) => {
           "UPDATE EjerciciosDia SET descanso = @descanso, superset = @superset WHERE ID_EjerciciosDia = @ID_EjerciciosDia"
         );
     }
+
+    const diasEntrenoResult = await pool
+      .request()
+      .input("ID_Rutina", sql.Int, ID_Rutina)
+      .query(
+        "SELECT ID_Dias_Entreno FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina"
+      );
+
+    const idsDiasEntreno = diasEntrenoResult.recordset.map(
+      (row) => row.ID_Dias_Entreno
+    );
+
+    const inClause = idsDiasEntreno.join(",");
+
+    // Ejecuta la consulta con la cláusula IN construida dinámicamente
+    const resultadoDificultadQuery = `
+      SELECT E.ID_Dificultad, COUNT(*) AS Cantidad
+      FROM Ejercicio E
+      JOIN EjerciciosDia ED ON E.ID_Ejercicio = ED.ID_Ejercicio
+      WHERE ED.ID_Dias_Entreno IN (${inClause})
+      GROUP BY E.ID_Dificultad
+    `;
+
+    const resultadoDificultad = await pool
+      .request()
+      .query(resultadoDificultadQuery);
+    console.log("No llegue aqui");
+
+    let valorNivel = 0;
+    let totalEjercicios = 0;
+    resultadoDificultad.recordset.forEach((row) => {
+      totalEjercicios += row.Cantidad;
+      if (row.ID_Dificultad === 1) {
+        // Suponiendo que 1 es fácil, 2 intermedio, 3 difícil
+        valorNivel += row.Cantidad * 0;
+      } else if (row.ID_Dificultad === 2) {
+        valorNivel += row.Cantidad * 0.5;
+      } else if (row.ID_Dificultad === 3) {
+        valorNivel += row.Cantidad * 1;
+      }
+    });
+    valorNivel /= totalEjercicios;
+
+    // Asignar ID_Dificultad basado en valorNivel
+    let ID_Dificultad;
+    let ID_NivelFormaFisica;
+    if (valorNivel < 0.33) {
+      ID_Dificultad = 1; // Fácil
+      ID_NivelFormaFisica = 3;
+    } else if (valorNivel < 0.66) {
+      ID_Dificultad = 2; // Intermedio
+      ID_NivelFormaFisica = 2;
+    } else {
+      ID_Dificultad = 3; // Difícil
+      ID_NivelFormaFisica = 1;
+    }
+
+    console.log("Nivel: ", valorNivel);
+    console.log("ID_Dificultad: ", ID_Dificultad);
+
+    await pool
+      .request()
+      .input("ID_Rutina", sql.Int, ID_Rutina)
+      .input("ID_Dificultad", sql.Int, ID_Dificultad)
+      .input("ID_NivelFormaFisica", sql.Int, ID_NivelFormaFisica)
+      .query(
+        "UPDATE Rutina SET ID_Dificultad = @ID_Dificultad, ID_NivelFormaFisica = @ID_NivelFormaFisica WHERE ID_Rutina = @ID_Rutina"
+      );
 
     res.status(200).json({ message: "Ejercicios actualizados correctamente." });
   } catch (error) {

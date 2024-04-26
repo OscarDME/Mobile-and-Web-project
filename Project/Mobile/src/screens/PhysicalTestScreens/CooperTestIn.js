@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
 import * as Progress from "react-native-progress";
 import { AntDesign } from "@expo/vector-icons"; // Asegúrate de tener instalado '@expo/vector-icons'
 
@@ -24,10 +24,23 @@ const CooperInput = ({ navigation, route }) => {
       const numericValue = parseInt(pushUpCount, 10);
       setPushUpCount(String(numericValue));
     };
-  const handleContinue = () => {    
-    const count = parseInt(pushUpCount, 10) || 0;
-    navigation.navigate('UserInfo', { pushUpCount: route.params.pushUpCount, SitUpCount: route.params.SitUpCount, walkingDistance: count});
-  };
+
+    const handleContinue = () => {
+      const count = parseInt(pushUpCount, 10);
+    
+      if (count == null) { // Verifica si el conteo es nulo
+        Alert.alert("Error", "El valor no puede ser nulo.");
+      } else if (count > 50) { // Verifica si el conteo excede 50 kilómetros
+        Alert.alert("Límite Excedido", "No puedes registrar más de 50 kilómetros.");
+      } else {
+        navigation.navigate('UserInfo', {
+          pushUpCount: route.params.pushUpCount, 
+          SitUpCount: route.params.SitUpCount, 
+          walkingDistance: count
+        });
+      }
+    };
+    
 
 
   const [timer, setTimer] = useState(12*60); // Tiempo en segundos

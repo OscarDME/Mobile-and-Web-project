@@ -20,7 +20,7 @@ const MainMenu = ({ navigation }) => {
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
-        const response = await fetch(`${config.apiBaseUrl}/alltrainers`); // Sustituye 'yourApiEndpoint' por tu endpoint real
+        const response = await fetch(`${config.apiBaseUrl}/alltrainers`); 
         if (!response.ok) {
           throw new Error('Network response not ok');
         }
@@ -38,11 +38,13 @@ const MainMenu = ({ navigation }) => {
   }, []);
 
   const TrainerCard = ({ trainer }) => {
-    const defaultRating = trainer.promedio_calificacion === "Sin calificaciones" ? 5 : trainer.promedio_calificacion;
+  const defaultRating = trainer.promedio_calificacion === "Sin calificaciones" ? 0 : parseFloat(trainer.promedio_calificacion);
+  console.log("default rating:", defaultRating);
+  const showRating = trainer.promedio_calificacion !== "Sin calificaciones";
 
-    // Agrega esta función
+    // Agrega esta funció
     const navigateToDetails = () => {
-      navigation.navigate('DetallesEntre', { trainer }); // Asegúrate de que 'Detalles' es el nombre correcto de la ruta en tu Stack Navigator
+      navigation.navigate('DetallesEntre', { trainer }); // Asegúrate de que 'Detalles' es el nombre correcto de la ruta en tu Stack Navig
     };
 
     return (

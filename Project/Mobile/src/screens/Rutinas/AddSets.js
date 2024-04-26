@@ -37,7 +37,7 @@ const AddSetsScreen = ({ navigation, route }) => {
           const setsInicializados = datos.map((set, index) => ({
             id: String(index + 1), // Generamos un ID representativo basado en el índice
             reps: set.repeticiones,
-            weight: set.peso,
+            weight: set.peso !== null ? set.peso : 0,  // Asegura que el peso no sea null
             tiempo: set.tiempo,
             dropSet: set.subsets.length > 0, // Si tiene subsets, es un dropset
             subsets: set.subsets.map((subset, subsetIndex) => ({

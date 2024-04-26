@@ -97,7 +97,6 @@ const TrainingSchedule = ({ navigation, route }) => {
     }
 
     if (checkboxChecked) {
-      // Si el checkbox está seleccionado, navega a una pantalla
       navigation.navigate("Muscles", {
         oid: route.params.oid,
         trainingTime: trainingTime,

@@ -81,6 +81,8 @@ import EditRoutineView from "../screens/Rutinas/EditRoutineView";
 import AddEjercicioView from "../screens/Rutinas/AddEjercicioView";
 import AddSetsView from "../screens/Rutinas/AddSetsView";
 import AssignRoutineScreen from "../screens/Rutinas/AsignarRutina";
+import AssignRoutine from "../screens/Questionnarie/AsignarRutina2";
+import Calentamiento from "../screens/PhysicalTestScreens/Calentamiento"
 
 import Header from "../components/Header";
 {
@@ -455,6 +457,8 @@ const QuestionnaireStack = () => {
         component={Generating}
         options={{ animationEnabled: true }}
       />
+      <StackValidation.Screen name="Asignar" component={AssignRoutine} />
+
     </StackQuestionnaire.Navigator>
   );
 };
@@ -476,6 +480,7 @@ const TestsStack = () => {
       <StackValidation.Screen name="Cooper" component={Cooper} />
       <StackValidation.Screen name="RockportIn" component={RockportInput} />
       <StackValidation.Screen name="CooperIn" component={CooperInput} />
+      <StackValidation.Screen name="Calentamiento" component={Calentamiento} />
       <StackValidation.Screen name="Cardiac" component={Cardiac} />
       <StackValidation.Screen name="UserInfo" component={UserInfo} />
       <StackValidation.Screen name="Congratulations" component={CongratulationsScreen} />

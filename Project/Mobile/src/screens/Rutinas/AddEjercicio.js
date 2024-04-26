@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; 
+import { FontAwesome } from "@expo/vector-icons";
 import config from "../../utils/conf";
 
 const ExerciseDayScreen = ({ navigation, route }) => {
@@ -58,6 +59,34 @@ const ExerciseDayScreen = ({ navigation, route }) => {
     const [horas, minutos, segundos] = descanso.split(':').map(parseFloat);
     return horas * 3600 + minutos * 60 + segundos;
   };
+
+  const handleShuffleExercise = async (ID_Ejercicio, ID_Musculo) => {
+    // Primero, eliminar el ejercicio actual
+    setExercises(prevExercises => {
+      const updatedExercises = prevExercises.filter(exercise => exercise.ID_Ejercicio !== ID_Ejercicio);
+      return updatedExercises;
+    });
+  
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/alternativas/${ID_Musculo}`);
+      if (response.ok) {
+        const newExercises = await response.json();
+        // Asegúrate de que el nuevo ejercicio no está ya en la lista
+        setExercises(prevExercises => {
+          const alreadyExists = prevExercises.some(exercise => exercise.ID_Ejercicio === newExercises[0].ID_Ejercicio);
+          if (!alreadyExists) {
+            return [...prevExercises, { ...newExercises[0], isSuperset: false, restTime: "0", isLoaded: false }];
+          }
+          return prevExercises;
+        });
+      } else {
+        console.error('Error al obtener ejercicios alternativos');
+      }
+    } catch (error) {
+      console.error('Error al cargar ejercicios alternativos:', error);
+    }
+  };
+  
   
   const [exercises, setExercises] = useState([]);
 
@@ -154,7 +183,7 @@ const ExerciseDayScreen = ({ navigation, route }) => {
       let url;
       let method;
   
-      // Verificar si los ejercicios ya han sido guardados
+      // Verificar si los ejercicios ya han sido guardado
       if (isSaved) {
         // Si ya están guardados, usar URL y método para actualizar
         url = `${config.apiBaseUrl}/rutinaejercicios`; // Ejemplo de URL de actualización
@@ -330,6 +359,9 @@ const ExerciseDayScreen = ({ navigation, route }) => {
           <>
       <View style={styles.exerciseNameContainer}>
         <Text style={styles.exerciseName}>{item.ejercicio}</Text>
+        <TouchableOpacity onPress={() => handleShuffleExercise(item.ID_Ejercicio, item.Musculo)}>
+          <FontAwesome name="random" size={24} color="black" />
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => deleteExercise(item.ID_Ejercicio)}>
         <Ionicons name="trash-outline" size={30} color="red" />
       </TouchableOpacity>
@@ -509,7 +541,13 @@ const styles = StyleSheet.create({
     width: 35,
     borderBottomColor: "#CCCCCC",
     marginLeft:40,
-  }
+  },
+  iconsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: 60, // Ajusta según sea necesario
+  },
 });
 
 export default ExerciseDayScreen;

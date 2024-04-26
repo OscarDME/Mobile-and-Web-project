@@ -24,7 +24,7 @@ const Calendario = ({ navigation, route }) => {
         return;
       }
 
-      // Fetch diet events
+      // Fetch diet event
       const dietResponse = await fetch(`${config.apiBaseUrl}/dieta/${oid}`);
       const dietData = await dietResponse.json();
       setDietEvents(dietData);
@@ -39,13 +39,13 @@ const Calendario = ({ navigation, route }) => {
       const appointmentData = await appointmentResponse.json();
       setAppointmentEvents(appointmentData);
     } catch (error) {
-      console.error('Error fetching event data:', error);
+      console.log('Error fetching event data:', error);
     }
   };
 
   const transformEventDates = (events, color, eventType, singleDay = false) => {
     if (!Array.isArray(events)) {
-      console.error('Expected events to be an array, got:', events);
+      console.log('Expected events to be an array, got:', events);
       return {}; // Return empty object or handle as needed
     }
     const markedDates = {};

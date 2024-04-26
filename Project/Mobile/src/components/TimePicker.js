@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 const TimePicker = ({ onChange }) => {
   const [hours, setHours] = useState(1);
@@ -9,6 +9,8 @@ const TimePicker = ({ onChange }) => {
     if (newHours >= 1 && newHours <= 2) {
       setHours(newHours);
       onChange({ hours: newHours, minutes });
+    } else {
+      Alert.alert("Límite de horas", "Solo puedes seleccionar menos de tres horas.");
     }
   };
 
@@ -16,8 +18,11 @@ const TimePicker = ({ onChange }) => {
     if (newMinutes >= 0 && newMinutes <= 59) {
       setMinutes(newMinutes);
       onChange({ hours, minutes: newMinutes });
+    } else {
+      Alert.alert("Límite de minutos", "Los minutos deben estar entre 0 y 59.");
     }
   };
+
 
   return (
     <View style={styles.container}>

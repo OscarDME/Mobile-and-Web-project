@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import * as Progress from "react-native-progress";
 import { AntDesign } from '@expo/vector-icons'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,7 +14,51 @@ const PhysicAndSpace = ({ navigation, route }) => {
   const [injuryAreas, setInjuryAreas] = useState(route.params?.injuryAreas || []);
   const [focusedBodyPart, setFocusedBodyPart] = useState(route.params?.focusedBodyPart || "");
   const [errorMessage, setErrorMessage] = useState("");
+  const [weeksToChangeRoutine, setWeeksToChangeRoutine] = useState('4');
 
+  const validateWeeks = (value) => {
+    const numericValue = parseInt(value, 10);
+    if (numericValue < 4 || numericValue > 52) {
+      Alert.alert("Error", "El número de semanas debe ser entre 4 y 52.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleIncrementWeeks = () => {
+    const newWeeks = parseInt(weeksToChangeRoutine, 10) + 1;
+    if (validateWeeks(newWeeks)) {
+      setWeeksToChangeRoutine(String(newWeeks));
+    }
+  };
+
+  const handleDecrementWeeks = () => {
+    const currentWeeks = parseInt(weeksToChangeRoutine, 10);
+    const newWeeks = currentWeeks - 1;
+    if (newWeeks < 4) {
+        Alert.alert("Error", "El número de semanas no puede ser menor que 4.");
+    } else {
+        setWeeksToChangeRoutine(String(newWeeks));
+    }
+};
+
+
+  const handleChangeWeeksText = (text) => {
+    if (text) {
+      setWeeksToChangeRoutine(text.replace(/[^0-9]/g, ''));
+    } else {
+      setWeeksToChangeRoutine('4');
+    }
+  };
+
+  const handleEndEditing = () => {
+    if (validateWeeks(weeksToChangeRoutine)) {
+      const numericValue = Math.max(4, Math.min(parseInt(weeksToChangeRoutine, 10), 52));
+      setWeeksToChangeRoutine(String(numericValue));
+    } else {
+      setWeeksToChangeRoutine('4'); // Restablece al valor mínimo si la validación falla
+    }
+  };
 
   console.log(
     "Datos pasados:",
@@ -177,6 +221,7 @@ useEffect(() => {
           focusedBodyPart: focusedBodyPart,
           fitnessLevel: fitnessLevel,
           trainingLocation: trainingLocation,
+          semanas: weeksToChangeRoutine,
           selectedMaterials: selectedMaterials,
           onMaterialSelection: toggleMaterialSelection,
           onContinue: handleContinue,    
@@ -202,6 +247,7 @@ useEffect(() => {
             injuryAreas: injuryAreas,
             focusedBodyPart: focusedBodyPart,
             fitnessLevel: fitnessLevel,
+            semanas: weeksToChangeRoutine,
             trainingLocation: trainingLocation,
             selectedMaterials: selectedMaterials,
           }),
@@ -251,7 +297,7 @@ useEffect(() => {
     setSelectedMaterials(updatedMaterials);
   };
   return (
-<View style={{ flex: 1,
+<ScrollView style={{ flex: 1,
     paddingTop: 20,
     paddingHorizontal: 20, }}>
       <View style={styles.progress}>
@@ -327,6 +373,16 @@ useEffect(() => {
         <Text style={{fontSize: 20, color: trainingLocation === "Calistenia" ? "white" : "black" }}>Calistenia</Text>
       </TouchableOpacity>
     </View>
+    <Text style={styles.indicaciones}>¿Cada cuántas semanas deseas cambiar la rutina?</Text>
+      <View style={styles.selectorContainer}>
+        <TouchableOpacity onPress={handleDecrementWeeks} style={styles.selectorButton}>
+          <AntDesign name="minus" size={34} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.countText}>{weeksToChangeRoutine}</Text> 
+        <TouchableOpacity onPress={handleIncrementWeeks} style={styles.selectorButton}>
+          <AntDesign name="plus" size={34} color="black" />
+        </TouchableOpacity>
+      </View>
     {trainingLocation === "Casa" && availableMaterials && (
       <View style={{ marginTop: 20 }}>
         {/* <Text>Materiales disponibles:</Text> */}
@@ -350,13 +406,12 @@ useEffect(() => {
             </TouchableOpacity>
           ))}
         </View> */}
-        
       </View>
     )}
     {errorMessage !== "" && (
   <Text style={styles.errorText}>{errorMessage}</Text>
 )}
-  </View>
+  </ScrollView>
   );
 };
 
@@ -394,6 +449,27 @@ const styles = {
     textAlign: 'center',
     marginBottom: 20,
   },  
+  selectorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    marginBottom: 120,
+  },
+  selectorButton: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    width: 55,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countText: {
+    marginHorizontal: 20,
+    fontSize: 24,
+    textAlign: 'center',
+    padding: 10,
+  },
 };
 
 export default PhysicAndSpace;

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import * as Progress from "react-native-progress";
-import { AntDesign } from "@expo/vector-icons"; // Asegúrate de tener instalado '@expo/vector-icons'
+import { AntDesign } from "@expo/vector-icons"; 
 
 const TimerScreen = ({ navigation, route }) => {
   const [pushUpCount, setPushUpCount] = useState('0');
+  const [timer, setTimer] = useState(60); // Tiempo inicializado en segundos
+  const [timerRunning, setTimerRunning] = useState(false);
 
   const handleIncrement = () => {
     setPushUpCount(String(parseInt(pushUpCount, 10) + 1));
@@ -34,8 +36,7 @@ const TimerScreen = ({ navigation, route }) => {
       setPushUpCount(String(numericValue));
     };
 
-  const [timer, setTimer] = useState(60); // Tiempo en segundos
-  const [timerRunning, setTimerRunning] = useState(false);
+
 
   useEffect(() => {
     let interval;

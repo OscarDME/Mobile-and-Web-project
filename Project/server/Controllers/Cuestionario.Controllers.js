@@ -15,6 +15,7 @@ export const createCuestionario = async (req, res) => {
       focusedBodyPart,
       fitnessLevel,
       trainingLocation,
+      semanas,
       selectedMaterials,
     } = req.body;
 
@@ -101,6 +102,7 @@ export const createCuestionario = async (req, res) => {
           .input("ID_Musculo", sql.Int, focusedBodyPart)
           .input("ID_NivelFormaFisica", sql.Int, fitnessLevel)
           .input("ID_EspacioDisponible", sql.Int, spaceID)
+          .input("Semanas", sql.Int, semanas)
           .query(querys.createCuestionario);
 
         console.log("Resultado de la inserción del cuestionario:", result); // Registrar el resultado de la inserción

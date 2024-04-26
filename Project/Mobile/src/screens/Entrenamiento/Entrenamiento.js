@@ -89,7 +89,7 @@ const TrainingScreen = ({ navigation, route }) => {
           </View>
         </View>
         <ScrollView style={styles.exercisesList}>
-          {/*PONGO DOS EJEMPLOS PARA MOSTRAR EJERCICIOS DE DISTINTOS TIPOS, SOLAMENTE QUEDA HACER EL MAP YA EN EL BACKE*/}
+          {/*PONGO DOS EJEMPLOS PARA MOSTRAR EJERCICIOS DE DISTINTOS TIPOS, SOLAMENTE QUEDA HACER EL MAP YA EN EL BACK*/}
           <View style={styles.exerciseRowHeader}>
             <View style={styles.exerciseTitle}>
               <Text style={styles.exerciseHeaderText}>Ejercicio</Text>

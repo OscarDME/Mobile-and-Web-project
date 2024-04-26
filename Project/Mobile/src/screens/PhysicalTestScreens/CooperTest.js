@@ -9,11 +9,13 @@ import {
 } from "react-native";
 import * as Progress from "react-native-progress";
 import { AntDesign } from "@expo/vector-icons"; // Asegúrate de tener instalado '@expo/vector-icons'
+import {workoutSession} from './CALENTAMIENTO_DATA';
+
 
 const CooperTestScreen = ({ navigation, route }) => {
   const handleWarmUp = () => {
-    //Aqui lo vamos a mandar al calentamiento
-  };
+    navigation.navigate("Calentamiento", {workoutSession: workoutSession});
+  }
   const handleContinue = () => {
     // Navegar a la pantalla para ingresar el resultado
     navigation.navigate("CooperIn",  { pushUpCount: route.params.pushUpCount, SitUpCount: route.params.SitUpCount });
@@ -37,6 +39,7 @@ const CooperTestScreen = ({ navigation, route }) => {
         <Text style={styles.sectionTitle}>Test de Cooper</Text>
         <Text style={styles.sectionStyleTitle}>Explicación de la prueba:</Text>
         <Text style={styles.sectionStyle}>
+          Corra la mayor cantidad de distancia durante 12 minutos.
           La prueba de carrera de 12 minutos de Cooper requiere que la persona
           sometida a la prueba corra o camine lo más lejos posible en un periodo
           de 12 minutos. El objetivo de la prueba es medir la distancia máxima

@@ -258,7 +258,8 @@ export const getAlternativeExercises = async (req, res) => {
     const result = await pool.request()
       .input('ID_Musculo', sql.VarChar, ID_Musculo)
       .query(querys.getAlternativas);
-      
+    
+    console.log("Alternativas obtenidas: ", result.recordset);
     res.json(result.recordset);
   } catch (error) {
     console.error('Error al obtener ejercicios alternativos:', error);

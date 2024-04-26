@@ -56,7 +56,8 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
           setAssignedDates(`${currentRoutine.fecha_inicio} - ${currentRoutine.fecha_fin}`);
           // Suponiendo que quieres almacenar el ID_Rutina_Asignada para usarlo al remover la asignación
           setCurrentAssignedID(currentRoutine.ID_Rutina_Asignada);
-        } else {
+        }
+        else {
           setIsAssigned(false);
           setAssignedDates(null);
         }
@@ -78,15 +79,21 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
     if (!currentAssignedID) {
       Alert.alert("Error", "No se encontró el ID de asignación.");
       return;
-  }
-    try {
+    }
+    // Suponiendo que routineDetails contiene la información completa de la rutina, incluyendo el ID_Usuario_WEB
+    const assignedRoutine = assignedRoutines.find(r => r.ID_Rutina_Asignada === currentAssignedID);
+    console.log("ID ENTREADOR", assignedRoutine.ID_Usuario_WEB )
+    const assignedByTrainer = assignedRoutine && assignedRoutine.ID_Usuario_WEB != null;  
+    const proceedWithUnassignment = async () => {
+      // Función para continuar con la desasignación
+      try {
         const response = await fetch(`${config.apiBaseUrl}/borrarasignacion/${currentAssignedID}`, {
             method: 'POST', // Asegúrate de que coincida con el método esperado por tu API
             headers: {
                 'Content-Type': 'application/json',
             }
         });
-
+  
         if (response.ok) {
             const data = await response.json();
             Alert.alert("Éxito", "Rutina desasignada correctamente");
@@ -94,10 +101,31 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
         } else {
             console.error("No se pudo quitar la asignación de la rutina.");
         }
-    } catch (error) {
+      } catch (error) {
         console.error("Error al quitar la asignación de la rutina:", error);
+      }
+    };
+  
+    if (assignedByTrainer) {
+      Alert.alert(
+        "Desasignar Rutina",
+        "¿Seguro que deseas desasignar la rutina asignada por tu entrenador?",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel",
+          },
+          {
+            text: "Desasignar",
+            onPress: proceedWithUnassignment
+          },
+        ]
+      );
+    } else {
+      proceedWithUnassignment();
     }
-};
+  };
+  
 
   const deleteRoutine = async () => {
     // Confirmar con el usuario antes de borrar la rutina
@@ -177,10 +205,16 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
               : "Todavía no hay suficientes datos para calcular esto"}
           </Text>
 
-          <Text style={styles.frequency}>
+          <Text style={styles.duration}>
             {"Frecuencia: "}
             {routineDetails.diasEntreno && routineDetails.diasEntreno.length > 0
               ? `${routineDetails.diasEntreno.length} días por semana`
+              : "No hay datos suficientes"}
+          </Text>
+          <Text style={styles.frequency}>
+            {"Lugar de entrenamiento: "}
+            {routineDetails.diasEntreno && routineDetails.diasEntreno.length > 0
+              ? `Gimnasio`
               : "No hay datos suficientes"}
           </Text>
           {isAssigned ? (

@@ -21,7 +21,7 @@ export const querys = {
     getMaterialByName: "SELECT ID_Equipo FROM Equipo WHERE equipo = @nombre",
 
     //Cuestionario
-    createCuestionario: "INSERT INTO Cuestionario (ID_UsuarioMovil, tiempo_disponible, ID_Objetivo, ID_NivelFormaFisica, ID_EspacioDisponible, ID_Musculo ) OUTPUT INSERTED.ID_Cuestionario VALUES (@ID_UsuarioMovil, @tiempo_disponible, @ID_Objetivo, @ID_NivelFormaFisica, @ID_EspacioDisponible, @ID_Musculo)",
+    createCuestionario: "INSERT INTO Cuestionario (ID_UsuarioMovil, tiempo_disponible, ID_Objetivo, ID_NivelFormaFisica, ID_EspacioDisponible, ID_Musculo, Semanas ) OUTPUT INSERTED.ID_Cuestionario VALUES (@ID_UsuarioMovil, @tiempo_disponible, @ID_Objetivo, @ID_NivelFormaFisica, @ID_EspacioDisponible, @ID_Musculo, @Semanas)",
 
     //Espacio
     getSpaceByName: "SELECT ID_EspacioDisponible FROM EspacioDisponible WHERE espacio_disponible = @nombre",
@@ -102,8 +102,8 @@ export const querys = {
     //Rutinas
     createRutina: "INSERT INTO Rutina(publica, ID_Dificultad, ID_NivelFormaFisica, ID_Objetivo, duracion, ID_Usuario)  OUTPUT INSERTED.ID_Rutina VALUES (0, @ID_Dificultad, @ID_NivelFormaFisica, 1, @duracion, @ID_Usuario)",
     createRutinaShort: "INSERT INTO Rutina(nombre, ID_Usuario) OUTPUT INSERTED.ID_Rutina VALUES (@nombre, @ID_Usuario)",
-    getRutinasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario WHERE R.ID_Usuario = @ID_Usuario",
-    getRutinasPublicasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario WHERE R.publica = 1 AND R.ID_Usuario <> @ID_Usuario",
+    getRutinasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor, COUNT(DISTINCT DE.ID_Dia) AS CantidadDiasEntreno, R.duracion / 60 AS DuracionTotalMinutos FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario LEFT JOIN Dias_Entreno DE ON R.ID_Rutina = DE.ID_Rutina WHERE R.ID_Usuario = @ID_Usuario GROUP BY R.ID_Rutina, R.nombre, U.nombre_usuario, R.duracion",
+    getRutinasPublicasByUsuario: "SELECT R.ID_Rutina, R.nombre AS NombreRutina, U.nombre_usuario AS Autor, COUNT(DISTINCT DE.ID_Dia) AS CantidadDiasEntreno, R.duracion / 60 AS DuracionTotalMinutos FROM Rutina R INNER JOIN Usuario U ON R.ID_Usuario = U.ID_Usuario LEFT JOIN Dias_Entreno DE ON R.ID_Rutina = DE.ID_Rutina WHERE R.publica = 1 AND R.ID_Usuario <> @ID_Usuario GROUP BY R.ID_Rutina, R.nombre, U.nombre_usuario, R.duracion",
     getRutinaByID: "SELECT * FROM Rutina WHERE ID_Rutina = @ID_Rutina",
     updateRutina: "UPDATE Rutina SET nombre = @nombre, publica = @publica WHERE ID_Rutina = @ID_Rutina",
 
@@ -114,7 +114,26 @@ export const querys = {
 
     //EjerciciosDia
     createEjerciciosDia: "INSERT INTO EjerciciosDia (ID_Dias_Entreno, ID_Ejercicio, descanso, superset)  OUTPUT INSERTED.ID_EjerciciosDia VALUES (@ID_Dias_Entreno, @ID_Ejercicio, @descanso, @superset)",
-    getEjerciciosPorDia: "SELECT e.ID_Ejercicio, e.ejercicio, e.ID_Modalidad, DATEDIFF(SECOND, '00:00:00', CAST(ed.descanso AS TIME)) AS descanso, ed.superset, ed.ID_EjerciciosDia FROM Ejercicio AS e JOIN EjerciciosDia AS ed ON e.ID_Ejercicio = ed.ID_Ejercicio WHERE ed.ID_Dias_Entreno = @ID_Dias_Entreno;",
+    getEjerciciosPorDia: `
+SELECT 
+  e.ID_Ejercicio,
+  e.ejercicio,
+  e.ID_Modalidad,
+  e.ID_Musculo,
+  DATEDIFF(SECOND, '00:00:00', CAST(ed.descanso AS TIME)) AS descanso,
+  ed.superset,
+  ed.ID_EjerciciosDia,
+  m.descripcion AS Musculo
+FROM 
+  Ejercicio AS e
+LEFT JOIN 
+  EjerciciosDia AS ed ON e.ID_Ejercicio = ed.ID_Ejercicio
+LEFT JOIN 
+  Musculo AS m ON e.ID_Musculo = m.ID_Musculo
+WHERE 
+  ed.ID_Dias_Entreno = @ID_Dias_Entreno;
+`,
+
 
     //BloqueSets
     createBloqueSets: "INSERT INTO BloqueSets (ID_EjerciciosDia) VALUES (@ID_EjerciciosDia)",
@@ -150,7 +169,8 @@ export const querys = {
     updateCita: `UPDATE Cita SET ID_UsuarioMovil = @ID_UsuarioMovil, ID_Usuario_WEB = @ID_Usuario_WEB, fecha = @fecha, hora_inicio = @hora_inicio, hora_final = @hora_final, lugar = @lugar, detalles = @detalles, ID_EstadoCita = @ID_EstadoCita WHERE ID_Cita = @ID_Cita`,
 
     //Entrenamiento
-    getWorkoutSessionDetails: "SELECT RSU.ID_ResultadoSeriesUsuario, RSU.ID_Serie, S.repeticiones, S.peso, CASE WHEN S.tiempo = '00:00:00' THEN NULL ELSE CONVERT(varchar, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', S.tiempo), 0), 108) END AS tiempo, DATEDIFF(SECOND, '00:00:00', ED.descanso) AS descansoEnSegundos, S.ID_SeriePrincipal, E.ID_Ejercicio, E.ejercicio AS nombreEjercicio, D.dificultad AS Dificultad, ED.superset, M.descripcion AS Musculos, E.preparacion, E.ejecucion AS indicaciones, EQ.equipo AS material, TE.descripcion AS Tipo_Ejercicio, L.lesion AS Lesion, TM.modalidad AS Modalidad FROM ResultadoSeriesUsuario RSU LEFT JOIN Serie S ON RSU.ID_Serie = S.ID_Serie LEFT JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie LEFT JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets LEFT JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia LEFT JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Musculo M ON E.ID_Musculo = M.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo LEFT JOIN Lesion L ON E.ID_Lesion = L.ID_Lesion LEFT JOIN Modalidad TM ON E.ID_Modalidad = TM.ID_Modalidad WHERE RSU.fecha = @fecha AND RSU.ID_Rutina_Asignada IN (SELECT ID_Rutina_Asignada FROM Rutina_Asignada WHERE ID_UsuarioMovil = @ID_UsuarioMovil) ",    
+    getWorkoutSessionDetails: "SELECT RSU.ID_ResultadoSeriesUsuario, RSU.ID_Serie, S.repeticiones, S.peso, CASE WHEN S.tiempo = '00:00:00' THEN NULL ELSE CONVERT(varchar, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', S.tiempo), 0), 108) END AS tiempo, DATEDIFF(SECOND, '00:00:00', ED.descanso) AS descansoEnSegundos, S.ID_SeriePrincipal, E.ID_Ejercicio, E.ejercicio AS nombreEjercicio, D.dificultad AS Dificultad, ED.superset, M.descripcion AS Musculos, E.preparacion, E.ejecucion AS indicaciones, EQ.equipo AS material, TE.descripcion AS Tipo_Ejercicio, L.lesion AS Lesion, TM.modalidad AS Modalidad FROM ResultadoSeriesUsuario RSU LEFT JOIN Serie S ON RSU.ID_Serie = S.ID_Serie LEFT JOIN ConjuntoSeries CS ON S.ID_Serie = CS.ID_Serie LEFT JOIN BloqueSets BS ON CS.ID_BloqueSets = BS.ID_BloqueSets LEFT JOIN EjerciciosDia ED ON BS.ID_EjerciciosDia = ED.ID_EjerciciosDia LEFT JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno LEFT JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio LEFT JOIN Dificultad D ON E.ID_Dificultad = D.ID_Dificultad LEFT JOIN Musculo M ON E.ID_Musculo = M.ID_Musculo LEFT JOIN Tipo_Ejercicio TE ON E.ID_Tipo_Ejercicio = TE.ID_Tipo_Ejercicio LEFT JOIN Equipo EQ ON E.ID_Equipo = EQ.ID_Equipo LEFT JOIN Lesion L ON E.ID_Lesion = L.ID_Lesion LEFT JOIN Modalidad TM ON E.ID_Modalidad = TM.ID_Modalidad WHERE RSU.fecha = @fecha AND RSU.ID_Rutina_Asignada IN (SELECT ID_Rutina_Asignada FROM Rutina_Asignada WHERE ID_UsuarioMovil = @ID_UsuarioMovil AND fecha_eliminacion IS NULL)",
+   
 
     //Progreso
     createMilestone: `INSERT INTO Medidas_Corporales (porcentaje_grasa, masa_muscular, presion_arterial, ritmo_cardiaco, cuello, pecho, hombro,bicep,antebrazo,cintura,cadera,pantorrilla,muslo,fecha,ID_UsuarioMovil) VALUES (@porcentaje_grasa, @masa_muscular, @presion_arterial, @ritmo_cardiaco, @cuello, @pecho, @hombro, @bicep, @antebrazo, @cintura, @cadera, @pantorrilla, @muslo, @fecha, @ID_UsuarioMovil); SELECT SCOPE_IDENTITY() as ID_Medidas_Corporales`,

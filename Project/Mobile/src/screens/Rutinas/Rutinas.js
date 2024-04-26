@@ -8,55 +8,104 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SelectList } from "react-native-dropdown-select-list";
 import config from "../../utils/conf";
+
+const dayOptions = [
+  { key: '1', value: '1 día' },
+  { key: '2', value: '2 días' },
+  { key: '3', value: '3 días' },
+  { key: '4', value: '4 días' },
+  { key: '5', value: '5 días' },
+  { key: '6', value: '6 días' },
+  { key: '7', value: '7 días' }
+];
+
+const durationOptions = [
+  { key: '<1', value: '< 1 hora' },
+  { key: '1-2', value: '1-2 horas' },
+  { key: '2-3', value: '2-3 horas' },
+  { key: '>3', value: '> 3 horas' }
+];
+
 
 const MainMenu = ({ navigation }) => {
   const [rutinas, setRutinas] = useState([]);
   const [rutinasPublicas, setRutinasPublicas] = useState([]);
   const [rutinasSugeridas, setRutinasSugeridas] = useState([]);
+  const [selectedDayFilter, setSelectedDayFilter] = useState('');
+  const [selectedDurationFilter, setSelectedDurationFilter] = useState('');
+  const [selectedPublicDayFilter, setSelectedPublicDayFilter] = useState('');
+  const [selectedPublicDurationFilter, setSelectedPublicDurationFilter] = useState('');
 
   const fetchRutinas = async () => {
-    console.log("Cargando rutinas");
     try {
       const oid = await AsyncStorage.getItem("userOID");
-      if (oid) {
-        const response = await fetch(`${config.apiBaseUrl}/rutinas/${oid}`);
-        if (response.ok) {
-          const rutinasObtenidas = await response.json();
-          console.log(rutinasObtenidas);
-          setRutinas(rutinasObtenidas);
-        } else {
-          console.error("Error al obtener las rutina");
+      const response = await fetch(`${config.apiBaseUrl}/rutinas/${oid}`);
+      if (response.ok) {
+        let data = await response.json();
+
+        // Aplicar filtros si están establecidos
+        if (selectedDayFilter) {
+          data = data.filter(r => r.CantidadDiasEntreno === parseInt(selectedDayFilter));
         }
+        if (selectedDurationFilter) {
+          const durationMapping = {
+            '<1': [0, 59],
+            '1-2': [60, 119],
+            '2-3': [120, 179],
+            '>3': [180, Infinity]
+          };
+          const [min, max] = durationMapping[selectedDurationFilter];
+          data = data.filter(r => r.DuracionTotalMinutos >= min && r.DuracionTotalMinutos <= max);
+        }
+
+        setRutinas(data);
+      } else {
+        console.error("Error al obtener las rutinas");
       }
     } catch (error) {
       console.error("Error al cargar las rutinas:", error);
+    }
+  };
+
+  const fetchRutinasPublicas = async () => {
+    try {
+      const oid = await AsyncStorage.getItem("userOID");
+      const response = await fetch(`${config.apiBaseUrl}/rutinaspublicas/${oid}`);
+      if (response.ok) {
+        let data = await response.json();
+
+        // Aplicar filtros si están establecidos
+        if (selectedPublicDayFilter) {
+          data = data.filter(r => r.CantidadDiasEntreno === parseInt(selectedPublicDayFilter));
+        }
+        if (selectedPublicDurationFilter) {
+          const durationMapping = {
+            '<1': [0, 59],
+            '1-2': [60, 119],
+            '2-3': [120, 179],
+            '>3': [180, Infinity]
+          };
+          const [min, max] = durationMapping[selectedPublicDurationFilter];
+          data = data.filter(r => r.DuracionTotalMinutos >= min && r.DuracionTotalMinutos <= max);
+        }
+
+        setRutinasPublicas(data);
+      } else {
+        console.error("Error al obtener las rutinas públicas");
+      }
+    } catch (error) {
+      console.error("Error al cargar las rutinas públicas:", error);
     }
   };
 
   // Datos de ejemplo para las rutina
   useEffect(() => {
     fetchRutinas();
+    fetchRutinasPublicas();
+    fetchRutinasSugeridas();
   }, []);
-
-  const fetchRutinasPublicas = async () => {
-    console.log("Cargando rutinas");
-    try {
-      const oid = await AsyncStorage.getItem("userOID");
-      if (oid) {
-        const response = await fetch(`${config.apiBaseUrl}/rutinaspublicas/${oid}`);
-        if (response.ok) {
-          const rutinasObtenidas = await response.json();
-          console.log(rutinasObtenidas);
-          setRutinasPublicas(rutinasObtenidas);
-        } else {
-          console.error("Error al obtener las rutinas publicas");
-        }
-      }
-    } catch (error) {
-      console.error("Error al cargar las rutinas:", error);
-    }
-  };
 
   const fetchRutinasSugeridas = async () => {
     console.log("Cargando rutinas sugeridas");
@@ -87,11 +136,20 @@ const MainMenu = ({ navigation }) => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchRutinas();
-      fetchRutinasSugeridas(); 
+      fetchRutinasSugeridas();
+      setSelectedDayFilter('');
+      setSelectedDurationFilter('');
+      setSelectedPublicDayFilter('');
+      setSelectedPublicDurationFilter(''); 
     });
   
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    fetchRutinas();
+    fetchRutinasPublicas();
+  }, [selectedDayFilter, selectedDurationFilter, selectedPublicDayFilter, selectedPublicDurationFilter]);
 
   return (
     <View style={styles.container}>
@@ -103,6 +161,20 @@ const MainMenu = ({ navigation }) => {
           <Ionicons name="add" size={30} color="black" />
         </TouchableOpacity>
         <Text style={styles.title}>Mis Rutinas</Text>
+        <View style={styles.filters}>
+        <View style={styles.firstFilter}>
+          <SelectList
+            setSelected={setSelectedDayFilter}
+            data={dayOptions}
+            placeholder="Días"
+          />
+        </View>
+          <SelectList
+            setSelected={setSelectedDurationFilter}
+            data={durationOptions}
+            placeholder="Duración"
+          />
+        </View>
       </View>
       <ScrollView
         horizontal={true}
@@ -124,7 +196,23 @@ const MainMenu = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <View style={styles.header}>
       <Text style={styles.secondTitle}>Rutinas Públicas</Text>
+      <View style={styles.filtersPublicas}>
+        <View style={styles.firstFilter}>
+          <SelectList
+            setSelected={setSelectedPublicDayFilter}
+            data={dayOptions}
+            placeholder="Días"
+          />
+        </View>
+          <SelectList
+            setSelected={setSelectedPublicDurationFilter}
+            data={durationOptions}
+            placeholder="Duración"
+          />
+        </View>
+      </View>
       <ScrollView
         horizontal={true}
         style={styles.rutinasContainer2}
@@ -181,7 +269,7 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     justifyContent: "flex-end", // Cambia a 'flex-start' para alinear a la izquierda
     width: "100%",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -192,7 +280,7 @@ const styles = StyleSheet.create({
   secondTitle: {
     fontSize: 24,
     flex:1,
-    marginRight: 200,
+    marginRight: 80,
     marginBottom: 25,
     // Ajusta el margen para alinear el texto como desees
   },
@@ -206,11 +294,12 @@ const styles = StyleSheet.create({
   },
   rutinasContainer: {
     flexDirection: "row",
-    marginBottom: 5,
+    marginBottom: 0,
+    marginTop:10,
   },
   rutinasContainer2: {
     flexDirection: "row",
-    marginBottom: 5,
+    marginBottom: 0,
   },
   rutinasContainer3: {
     flexDirection: "row",
@@ -229,13 +318,29 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 30,
     color:"#fff",
-  
   },
   rutinaAutor: {
     fontSize: 16,
     color:"#fff",
   },
-  // Agrega más estilos aquí según sea necesario
+  filters: {
+    flexDirection: 'row',
+    width: '22%',
+    height: 40,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    position:'relative',
+  },
+  filtersPublicas: {
+    flexDirection: 'row',
+    width: '22%',
+    height: 40,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  firstFilter: {
+    marginRight: 10,
+  }
 });
 
 export default MainMenu;

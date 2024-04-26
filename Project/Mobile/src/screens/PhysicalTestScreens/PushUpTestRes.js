@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import * as Progress from "react-native-progress";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -7,32 +7,50 @@ const PushUpResultInputScreen = ({ navigation }) => {
   const [pushUpCount, setPushUpCount] = useState('0');
 
   const handleIncrement = () => {
-    setPushUpCount(String(parseInt(pushUpCount, 10) + 1));
+    const currentCount = parseInt(pushUpCount, 10);
+    if (currentCount < 200) {
+      setPushUpCount(String(currentCount + 1));
+    } else {
+      Alert.alert("Límite alcanzado", "No puedes registrar más de 200 lagartijas.");
+    }
   };
-
+  
   const handleDecrement = () => {
-    setPushUpCount(String(Math.max(parseInt(pushUpCount, 10) - 1, 0)));
+    const currentCount = parseInt(pushUpCount, 10);
+    setPushUpCount(String(Math.max(currentCount - 1, 0)));
   };
-
+  
+  
   const handleContinue = () => {
-    // Asegúrate de convertir el valor a número antes de navegar
     const count = parseInt(pushUpCount, 10) || 0;
     
-    navigation.navigate('SitUpTest', { pushUpCount: count });
-  };
+    if (count == null) {
+      Alert.alert("Error", "Por favor, introduce un número válido de lagartijas.");
+    } else {
+      navigation.navigate('SitUpTest', { pushUpCount: count });  };
+    }
 
   // Actualiza el estado solo con valores numéricos
   const handleChangeText = (text) => {
-    if (text) {
-      setPushUpCount(text.replace(/[^0-9]/g, ''));
-    } else {
-      setPushUpCount('0');
-    }
-    };
-    const handleEndEditing = () => {
-      const numericValue = parseInt(pushUpCount, 10);
+    const numericValue = parseInt(text, 10);
+    if (!isNaN(numericValue) && numericValue <= 200) {
       setPushUpCount(String(numericValue));
-    };
+    } else if (text === '') {
+      setPushUpCount('0');
+    } else {
+      Alert.alert("Límite alcanzado", "No puedes registrar más de 200 lagartijas.");
+      setPushUpCount('200');
+    }
+  };
+  
+  const handleEndEditing = () => {
+    const numericValue = parseInt(pushUpCount, 10);
+    if (!isNaN(numericValue) && numericValue <= 200) {
+      setPushUpCount(String(numericValue));
+    } else {
+      setPushUpCount('200'); // Restablece al máximo si el valor es superior al límite
+    }
+  };
     
   return (
     <View style={styles.container}>

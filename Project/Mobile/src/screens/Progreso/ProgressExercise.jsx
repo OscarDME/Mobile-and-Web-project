@@ -43,7 +43,7 @@ const ProgressExercise = ({ navigation }) => {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [oneRM, setOneRM] = useState(null);
   const [growthRate, setGrowthRate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("mes");
+  const [selectedTime, setSelectedTime] = useState("tresMeses");
   const [rms, setRms] = useState([]);
   const [historical1RMData, setHistorical1RMData] = useState([]);
   const [time1RMData, settime1RMData] = useState([]);
@@ -62,6 +62,11 @@ const ProgressExercise = ({ navigation }) => {
     labels: [],
     datasets: [{ data: [] }],
   });
+
+  useEffect(() => {
+    setDataGotten(false);
+    setCardioDataGotten(false);
+  }, [selectedExercise]);
 
   useEffect(() => {
     const fetchHistorical1RMAbsoluta = async () => {
@@ -186,6 +191,7 @@ const ProgressExercise = ({ navigation }) => {
 
   useEffect(() => {
     const fetchOneRM = async () => {
+      console.log("Ejercicio seleccionado:", selectedExercise);
       if (selectedExercise?.type != 'Cardiovascular') {
       const oid = await AsyncStorage.getItem("userOID");
       console.log("OID:", oid);
@@ -212,10 +218,13 @@ const ProgressExercise = ({ navigation }) => {
         }
       }
       }
+      else{
+        console.log("Ejercicio Cardiovascular")
+      }
     };
 
     fetchOneRM();
-  }, [selectedExercise]); // Este efecto se ejecutará cada vez que el ejercicio seleccionado cambie
+  }, [selectedExercise, selectedTime]); // Este efecto se ejecutará cada vez que el ejercicio seleccionado cambie
 
   useEffect(() => {
     // Calcular y establecer los RM basados en oneRM
@@ -343,10 +352,8 @@ const ProgressExercise = ({ navigation }) => {
       const confidenceUpper = meanRM + 1.96 * standardDeviation;
 
       // Actualizar el estado para reflejar estos cálculos
-      const labels = historical1RMData.map((data, index) => {
-        return index % Math.ceil(historical1RMData.length / 4) === 0 ? data.fecha : '';
-      });
-        const data = historical1RMData.map(
+      const labels = historical1RMData.map((data) => data.fecha);
+      const data = historical1RMData.map(
         (_, index) => meanRM + m * (index + 1 - meanTime)
       );
 
@@ -374,7 +381,7 @@ const ProgressExercise = ({ navigation }) => {
     } else {
       console.log("No hay suficientes datos para realizar los cálculos.");
     }
-  }, [calculationsCompleted, selectedTime]);  
+  }, [calculationsCompleted, selectedTime]);
 
   return (
     <View style={styles.container}>
@@ -464,7 +471,7 @@ const ProgressExercise = ({ navigation }) => {
                 {otherCalculationsCompleted && (
                   <>
                     <Text style={styles.sectionTitle}>
-                      Tu mejora de 1RM en{" "}
+                      Tu mejora de 1RM en
                       <Text style={styles.exercise}>
                         {selectedExercise?.value}
                       </Text>{" "}
@@ -475,25 +482,26 @@ const ProgressExercise = ({ navigation }) => {
                       </Text>
                     </Text>
                     <LineChart
-                        data={improvementChartData}
-                        width={screenWidth}
-                        height={220}
-                        chartConfig={{
-                          backgroundGradientFrom: "#EEEEEE",
-                          backgroundGradientFromOpacity: 0,
-                          backgroundGradientTo: "#EEEEEE",
-                          backgroundGradientToOpacity: 0.5,
-                          labelColor: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
-                          color: (opacity = 1) => `rgba(7, 144, 207, ${opacity})`,
-                          strokeWidth: 3,
-                          fillShadowGradientFrom: "rgba(7, 144, 207, 1)",
-                          fillShadowGradientTo: "rgba(255, 255, 255, 0)",
-                        }}
-                        bezier
-                        style={styles.chart}
-                        withHorizontalLines={true}
-                        withVerticalLabels={true}
-                      />
+                      data={improvementChartData}
+                      width={screenWidth}
+                      height={220}
+                      chartConfig={{
+                        backgroundGradientFrom: "#EEEEEE",
+                        backgroundGradientFromOpacity: 0,
+                        backgroundGradientTo: "#EEEEEE",
+                        backgroundGradientToOpacity: 0.5,
+                        labelColor: (opacity = 1) =>
+                          `rgba(51, 51, 51, ${opacity})`,
+                        color: (opacity = 1) => `rgba(7, 144, 207, ${opacity})`,
+                        strokeWidth: 3,
+                        fillShadowGradientFrom: "rgba(7, 144, 207, 1)",
+                        fillShadowGradientTo: "rgba(255, 255, 255, 0)",
+                      }}
+                      bezier
+                      style={styles.chart}
+                      withHorizontalLines={true}
+                      withVerticalLabels={true}
+                    />
                   </>
                 )}
                 <Text style={styles.sectionTitle}>

@@ -16,6 +16,7 @@ const MaterialSelectionScreen = ({ navigation, route }) => {
   const focusedBodyPart = route.params.focusedBodyPart;
   const trainingLocation = route.params.trainingLocation;
   const fitnessLevel = route.params.fitnessLevel;
+  const semanas = route.params.semanas;
 
   useEffect(() => {
     fetchMaterials();
@@ -99,6 +100,7 @@ useEffect(() => {
             focusedBodyPart: focusedBodyPart,
             fitnessLevel: fitnessLevel,
             trainingLocation: trainingLocation,
+            semanas: semanas,
             selectedMaterials: selectedMaterials,
             // Agrega todos los datos que deseas enviar
           }),

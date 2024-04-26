@@ -428,7 +428,7 @@ export const getAllTrainersInfo = async (req, res) => {
                 TW.tipo IN ('Entrenador', 'Nutricionista')
         `);
 
-        // Para cada entrenador/nutricionista, calcular el promedio de calificaciones de todos los usuarios de los que es cliente
+        // Para cada entrenador/nutricionista, calcular el promedio de calificaciones de todos los usuarios de los que es client
         const trainersWithRatings = await Promise.all(trainersResult.recordset.map(async (trainer) => {
             const ratingsResult = await pool.request()
                 .input('ID_Usuario_WEB', sql.Int, trainer.ID_Usuario_WEB)
@@ -441,9 +441,10 @@ export const getAllTrainersInfo = async (req, res) => {
                 `);
 
             let promedio_calificacion = ratingsResult.recordset[0].promedio_calificacion;
-            if(promedio_calificacion === null) {
-                promedio_calificacion = "Sin calificaciones";
+            if(!promedio_calificacion){
+              promedio_calificacion = 0;
             }
+            console.log(promedio_calificacion);
             
             return {
                 ...trainer,

@@ -356,7 +356,9 @@ import cron from "node-cron";
             .query(`
                 SELECT 
                     R.ID_Rutina, 
-                    RA.ID_Rutina_Asignada, 
+                    RA.ID_Rutina_Asignada,
+                    RA.ID_UsuarioMovil,
+                    RA.ID_Usuario_WEB, 
                     R.nombre AS NombreRutina, 
                     CONVERT(char(10), RA.fecha_inicio, 126) as fecha_inicio,
                     CONVERT(char(10), RA.fecha_fin, 126) as fecha_fin

@@ -9,12 +9,13 @@ import {
 } from "react-native";
 import * as Progress from "react-native-progress";
 import { AntDesign } from "@expo/vector-icons"; // Asegúrate de tener instalado '@expo/vector-icons'
+import {workoutSession} from './CALENTAMIENTO_DATA';
 
 const RockportTestScreen = ({ navigation, route }) => {
-    const handleWarmUp = () => {
-        //Aqui lo vamos a mandar al calentamiento
-    }
-
+  const handleWarmUp = () => {
+    navigation.navigate("Calentamiento", {workoutSession: workoutSession});
+  }
+  
   const handleContinue = () => {
     // Navegar a la pantalla para ingresar el resultado
     navigation.navigate("RockportIn",  { pushUpCount: route.params.pushUpCount, SitUpCount: route.params.SitUpCount });

@@ -33,11 +33,14 @@ export const createRutinaPersonalizada = async (req, res) => {
 
         //Calcular tiempo por cada musculo
         const tiempoFuerzaMinutos = distribucionTiempo.tiempoFuerzaMinutos;
-        const tiempoCardioMinutos = distribucionTiempo.tiempoCardioMinutos
+        const tiempoCardioMinutos = distribucionTiempo.tiempoCardioMinutos;
+        console.log("Musculo: ", datosCuestionarioCompleto.cuestionario.ID_Musculo);
+
+        const importanciasAjustadas = ajustarImportancias(importancias, datosCuestionarioCompleto.cuestionario.ID_Musculo);
 
         let rutinaConTiempo;
         if (datosCuestionarioCompleto.rutinaAsignada) {
-            rutinaConTiempo = calcularTiempoPorMusculo(datosCuestionarioCompleto.rutinaAsignada, tiempoFuerzaMinutos, importancias);
+            rutinaConTiempo = calcularTiempoPorMusculo(datosCuestionarioCompleto.rutinaAsignada, tiempoFuerzaMinutos, importanciasAjustadas);
         }
         imprimirRutinaConTiempo(rutinaConTiempo);
 
@@ -122,11 +125,235 @@ export const createRutinaPersonalizada = async (req, res) => {
                 }
             }
         }
+        if (dia.ejerciciosCardio && dia.ejerciciosCardio.length > 0) {
+            for (const ejercicioCardio of dia.ejerciciosCardio) {
+                const insertEjercicioDiaResult = await pool.request()
+                    .input("ID_Dias_Entreno", sql.Int, ID_Dia) // Asume que ID_Dia se ha obtenido anteriormente
+                    .input("ID_Ejercicio", sql.Int, ejercicioCardio.ID_Ejercicio)
+                    .input("descanso", sql.Time, '00:00:00') // Asume que no hay descanso para cardio continuo
+                    .input("superset", sql.Bit, 0)
+                    .query(querys.createEjerciciosDia);
+    
+                const ID_EjercicioDia = insertEjercicioDiaResult.recordset[0].ID_EjerciciosDia;
+    
+                // Suponiendo que la duración está en formato adecuado o convertirla antes de insertar
+                const resultBloqueSets = await pool.request()
+                    .input("ID_EjerciciosDia", sql.Int, ID_EjercicioDia)
+                    .query("INSERT INTO BloqueSets (ID_EjerciciosDia) OUTPUT INSERTED.ID_BloqueSets VALUES (@ID_EjerciciosDia);");
+                const ID_BloqueSets = resultBloqueSets.recordset[0].ID_BloqueSets;
+    
+                // Solo una "serie" para ejercicios cardio basado en duración
+                const resultSerie = await pool.request()
+                    .input("repeticiones", sql.Int, null) // Solo una repetición simbólica
+                    .input("peso", sql.Decimal(10, 2), null)
+                    .input("tiempo", sql.Time, ejercicioCardio.Series[0].Duracion)
+                    .query("INSERT INTO Serie (repeticiones, peso, tiempo) OUTPUT INSERTED.ID_Serie VALUES (@repeticiones, @peso, @tiempo);");
+    
+                const ID_Serie = resultSerie.recordset[0].ID_Serie;
+    
+                // Insertar ConjuntoSeries
+                await pool.request()
+                    .input("ID_BloqueSets", sql.Int, ID_BloqueSets)
+                    .input("ID_Serie", sql.Int, ID_Serie)
+                    .query("INSERT INTO ConjuntoSeries (ID_BloqueSets, ID_Serie) VALUES (@ID_BloqueSets, @ID_Serie);");
+            }
+        }
     }
+        
+    
+    const ID_RutinaCreada = ID_Rutina;
+
+    const tiempoTotalPorDia = await pool
+      .request()
+      .input("ID_Rutina", sql.Int, ID_Rutina).query(`
+      SELECT 
+        DE.ID_Dias_Entreno, 
+        SUM(
+          CASE 
+            WHEN E.ID_Modalidad = 3 THEN ISNULL(DATEDIFF(SECOND, '00:00:00', S.tiempo), 0)
+            ELSE S.repeticiones * 2 + ISNULL(DATEDIFF(SECOND, '00:00:00', ED.descanso), 0)
+          END
+        ) AS TiempoTotal
+      FROM 
+        Dias_Entreno DE
+        INNER JOIN EjerciciosDia ED ON DE.ID_Dias_Entreno = ED.ID_Dias_Entreno
+        INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+        INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
+        INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
+        INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
+      WHERE 
+        DE.ID_Rutina = @ID_Rutina
+        AND (ED.descanso IS NOT NULL OR E.ID_Modalidad = 3)
+        AND S.ID_Serie IS NOT NULL 
+      GROUP BY 
+        DE.ID_Dias_Entreno;
+      `);
+
+    // Calcular el promedio de tiempo de entrenamiento por día
+    let sumaTiempoTotal = 0;
+    tiempoTotalPorDia.recordset.forEach((dia) => {
+      sumaTiempoTotal += dia.TiempoTotal;
+    });
+    const promedioTiempo = sumaTiempoTotal / tiempoTotalPorDia.recordset.length;
+
+    console.log(
+      "Tiempo total de entrenamiento por día de la rutina:",
+      tiempoTotalPorDia.recordset
+    );
+    console.log(
+      "Promedio de tiempo total de entrenamiento por día:",
+      promedioTiempo
+    );
+
+
+    // Ahora actualiza la duración en la tabla Rutina
+    await pool
+      .request()
+      .input("TiempoFormateado", sql.Int, promedioTiempo)
+      .input("ID_Rutina", sql.Int, ID_Rutina).query(`
+    UPDATE Rutina
+    SET duracion = @TiempoFormateado
+    WHERE ID_Rutina = @ID_Rutina;
+  `);
+
+    console.log("Tiempo de duración actualizado con éxito.");
+
+    const tiempoTotalPorDiaSeparado = await pool
+      .request()
+      .input("ID_Rutina", sql.Int, ID_Rutina).query(`SELECT 
+    DE.ID_Dias_Entreno, 
+    SUM(CASE WHEN E.ID_Modalidad = 3 THEN ISNULL(DATEDIFF(SECOND, '00:00:00', S.tiempo), 0) ELSE 0 END) AS TiempoTotalCardio,
+    SUM(CASE WHEN E.ID_Modalidad != 3 THEN S.repeticiones * 2 + ISNULL(DATEDIFF(SECOND, '00:00:00', ED.descanso), 0) ELSE 0 END) AS TiempoTotalFuerza
+  FROM 
+    Dias_Entreno DE
+    INNER JOIN EjerciciosDia ED ON DE.ID_Dias_Entreno = ED.ID_Dias_Entreno
+    INNER JOIN Ejercicio E ON ED.ID_Ejercicio = E.ID_Ejercicio
+    INNER JOIN BloqueSets BS ON ED.ID_EjerciciosDia = BS.ID_EjerciciosDia
+    INNER JOIN ConjuntoSeries CS ON BS.ID_BloqueSets = CS.ID_BloqueSets
+    INNER JOIN Serie S ON CS.ID_Serie = S.ID_Serie
+  WHERE 
+    DE.ID_Rutina = @ID_Rutina
+    AND (ED.descanso IS NOT NULL OR E.ID_Modalidad = 3)
+  GROUP BY 
+    DE.ID_Dias_Entreno;`);
+
+    // Ahora tiempoTotalPorDia incluirá los totales de tiempo por modalidad
+    let sumaTiempoCardio = 0,
+      sumaTiempoFuerza = 0;
+    tiempoTotalPorDiaSeparado.recordset.forEach((dia) => {
+      sumaTiempoCardio += dia.TiempoTotalCardio;
+      sumaTiempoFuerza += dia.TiempoTotalFuerza;
+    });
+    const promedioTiempoCardio =
+      sumaTiempoCardio / tiempoTotalPorDiaSeparado.recordset.length;
+    const promedioTiempoFuerza =
+      sumaTiempoFuerza / tiempoTotalPorDiaSeparado.recordset.length;
+
+    console.log(
+      "Promedio tiempo cardiovascular:",
+      promedioTiempoCardio.toFixed(2)
+    );
+    console.log("Promedio tiempo fuerza:", promedioTiempoFuerza.toFixed(2));
+
+    const tiempoTotal = promedioTiempoCardio + promedioTiempoFuerza;
+    const porcentajeTiempoFuerza = (promedioTiempoFuerza / tiempoTotal) * 100;
+
+    let ID_Objetivo;
+    if (porcentajeTiempoFuerza < 55) {
+        ID_Objetivo = 1; // Perder peso
+    } else if (porcentajeTiempoFuerza >= 55 && porcentajeTiempoFuerza <= 75) {
+        ID_Objetivo = 3; // Mantenimiento
+    } else if (porcentajeTiempoFuerza > 75) {
+        ID_Objetivo = 2; // Ganar masa muscular
+    }
+
+    // Actualiza el ID_Objetivo en la tabla Rutina
+    await pool
+      .request()
+      .input("ID_Objetivo", sql.Int, ID_Objetivo)
+      .input("ID_Rutina", sql.Int, ID_Rutina)
+      .query(`
+        UPDATE Rutina
+        SET ID_Objetivo = @ID_Objetivo
+        WHERE ID_Rutina = @ID_Rutina;
+      `);
+
+    console.log("Objetivo de la rutina actualizado con éxito.");
+    
+    
+
+    const diasEntrenoResult = await pool
+      .request()
+      .input("ID_Rutina", sql.Int, ID_RutinaCreada)
+      .query(
+        "SELECT ID_Dias_Entreno FROM Dias_Entreno WHERE ID_Rutina = @ID_Rutina"
+      );
+
+    const idsDiasEntreno = diasEntrenoResult.recordset.map(
+      (row) => row.ID_Dias_Entreno
+    );
+
+    const inClause = idsDiasEntreno.join(",");
+
+    // Ejecuta la consulta con la cláusula IN construida dinámicamente
+    const resultadoDificultadQuery = `
+      SELECT E.ID_Dificultad, COUNT(*) AS Cantidad
+      FROM Ejercicio E
+      JOIN EjerciciosDia ED ON E.ID_Ejercicio = ED.ID_Ejercicio
+      WHERE ED.ID_Dias_Entreno IN (${inClause})
+      GROUP BY E.ID_Dificultad
+    `;
+
+    const resultadoDificultad = await pool
+      .request()
+      .query(resultadoDificultadQuery);
+    console.log("No llegue aqui");
+
+    let valorNivel = 0;
+    let totalEjercicios = 0;
+    resultadoDificultad.recordset.forEach((row) => {
+      totalEjercicios += row.Cantidad;
+      if (row.ID_Dificultad === 1) {
+        // Suponiendo que 1 es fácil, 2 intermedio, 3 difícil
+        valorNivel += row.Cantidad * 0;
+      } else if (row.ID_Dificultad === 2) {
+        valorNivel += row.Cantidad * 0.5;
+      } else if (row.ID_Dificultad === 3) {
+        valorNivel += row.Cantidad * 1;
+      }
+    });
+    valorNivel /= totalEjercicios;
+
+    // Asignar ID_Dificultad basado en valorNivel
+    let ID_Dificultad;
+    let ID_NivelFormaFisica;
+    if (valorNivel < 0.33) {
+      ID_Dificultad = 1; // Fácil
+      ID_NivelFormaFisica = 3;
+    } else if (valorNivel < 0.66) {
+      ID_Dificultad = 2; // Intermedio
+      ID_NivelFormaFisica = 2;
+    } else {
+      ID_Dificultad = 3; // Difícil
+      ID_NivelFormaFisica = 1;
+    }
+
+    console.log("Nivel: ", valorNivel);
+    console.log("ID_Dificultad: ", ID_Dificultad);
+
+    await pool
+      .request()
+      .input("ID_Rutina", sql.Int, ID_RutinaCreada)
+      .input("ID_Dificultad", sql.Int, ID_Dificultad)
+      .input("ID_NivelFormaFisica", sql.Int, ID_NivelFormaFisica)
+      .query(
+        "UPDATE Rutina SET ID_Dificultad = @ID_Dificultad, ID_NivelFormaFisica = @ID_NivelFormaFisica WHERE ID_Rutina = @ID_Rutina"
+      );
+
     
     res.json({
         mensaje: "Rutina personalizada creada con éxito.",
-        datos: datosCuestionarioCompleto
+        ID_Rutina: ID_Rutina,
     });
     } catch (error) {
         console.error("Error al crear la rutina personalizada:", error);
@@ -134,19 +361,29 @@ export const createRutinaPersonalizada = async (req, res) => {
     }
 };
 // Esta función devuelve un ID_Ejercicio al azar filtrado por las preferencias del usuario
-async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad, ID_LesionExcluir, excluirEjercicios, pool) {
+async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, modalidades, ID_LesionExcluir, excluirEjercicios, equiposDisponibles, pool) {
+    console.log("ID_Dificultad:", ID_Dificultad);
     let queryExclusion = '';
     if (excluirEjercicios.length > 0) {
         const listaExcluidos = excluirEjercicios.join(',');
         queryExclusion = `AND ID_Ejercicio NOT IN (${listaExcluidos})`;
     }
-    console.log("Parametros: ", ID_Dificultad, ID_Musculo, ID_Modalidad, ID_LesionExcluir);
+    console.log(equiposDisponibles);
+    console.log(modalidades);
+    let queryEquipo = '';
+    if (modalidades.length === 2) {
+        queryEquipo = `AND (ID_Equipo IS NULL OR ID_Equipo IN (${equiposDisponibles.join(',')}))`;
+        console.log("queryEquipo:" ,queryEquipo);
+    }
+
+    let queryModalidad = modalidades.length === 1 ? `AND ID_Modalidad = ${modalidades[0]}` : `AND ID_Modalidad IN (${modalidades.join(',')})`;
+
+
+    console.log("Parametros: ", ID_Dificultad, ID_Musculo, modalidades, ID_LesionExcluir);
     try {
-      // Ejecuta la consulta SQL para obtener un ejercicio al azar que coincida con los criterios
       const result = await pool.request()
         .input('ID_Dificultad', sql.Int, ID_Dificultad)
         .input('ID_Musculo', sql.Int, ID_Musculo)
-        .input('ID_Modalidad', sql.Int, ID_Modalidad)
         .input('ID_LesionExcluir', sql.Int, ID_LesionExcluir)
         .input('estado', sql.Bit, 1)
         .query(`
@@ -154,10 +391,11 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
             FROM Ejercicio
             WHERE ID_Dificultad <= @ID_Dificultad
             AND ID_Musculo = @ID_Musculo
-            AND ID_Modalidad = @ID_Modalidad
+            ${queryModalidad}
             AND (ID_Lesion IS NULL OR ID_Lesion != @ID_LesionExcluir)
             AND estado = @estado
             ${queryExclusion}
+            ${queryEquipo}
             ORDER BY NEWID();
         `);
 
@@ -167,14 +405,14 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
         console.log("Ejercicio aleatorio:", result.recordset[0].ID_Ejercicio);
         return result.recordset[0].ID_Ejercicio;
       } else {
-        // No se encontraron ejercicios que coincidan con los criterios
-        return null;
+        return null; // No se encontraron ejercicios que coincidan con los criterios
       }
     } catch (error) {
       console.error("Error al obtener ejercicio aleatorio:", error);
       throw error;
     }
-  }
+}
+
 
   async function obtenerEjercicioCardiovascularAleatorio(ID_Dificultad, ID_LesionExcluir, pool) {
     try {
@@ -211,6 +449,7 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
 
   async function agregarEjerciciosASeries(dia, datosCuestionarioCompleto, tiempoCardioMinutos, pool) {
     const ejerciciosSeleccionados = []; // Array para almacenar los ID_Ejercicio ya seleccionados.
+    
     for (const musculo of dia.musculos) {
         let tiempoRestanteMusculo = musculo.tiempo * 60; 
         console.log("Tiempo total músculo:", tiempoRestanteMusculo);
@@ -218,31 +457,39 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, ID_Modalidad
 
         while (tiempoRestanteMusculo > 0) {
             console.log("Tiempo restante músculo:", tiempoRestanteMusculo);
-            let ID_Modalidad;
+            let modalidades;
             switch (datosCuestionarioCompleto.cuestionario.ID_EspacioDisponible) {
                 case 1: // Gimnasio
-                    ID_Modalidad = 2; // fuerza
+                    console.log("Gimnasio");
+                    modalidades = [2]; // fuerza
                     break;
                 case 2: // Casa
-                    // Si dispone de pesas, usamos pesas, si no, peso corporal
-                    ID_Modalidad = datosCuestionarioCompleto.dispone.some(item => item.ID_Material === 2) ? 2 : 1;
+                console.log("Casa - Datos de equipos disponibles:", datosCuestionarioCompleto.dispone);
+                const tienePesas = datosCuestionarioCompleto.dispone.length > 0;  // Verifica si hay algún equipo disponible
+                console.log("Tiene pesas:", tienePesas);
+                modalidades = tienePesas ? [1, 2] : [1];
+                console.log("Modalidades seleccionadas:", modalidades);
                     break;
                 case 3: // Calistenia
-                    ID_Modalidad = 1; // Peso corporal
+                    console.log("Calistenia");
+                    modalidades = [1]; // Peso corporal
                     break;
                 default:
                     throw new Error('Espacio disponible no válido');
             }
             const lesion = datosCuestionarioCompleto.padece[0].ID_Lesion;
-            
+            const equiposDisponibles = datosCuestionarioCompleto.dispone.map(item => item.ID_Equipo); // Extrae los ID de equipo disponibles
+            console.log("Equipos disponibles:", equiposDisponibles);
+
             // Intentar obtener un ejercicio que no esté relacionado con las lesiones del usuario.
             // Suponemos que obtenerEjercicioAleatorio ya está adaptado para manejar múltiples lesiones.
             const ID_Ejercicio = await obtenerEjercicioAleatorio(
                 datosCuestionarioCompleto.cuestionario.ID_NivelFormaFisica,
                 musculo.idMusculo,
-                ID_Modalidad,
+                modalidades,
                 lesion,
                 ejerciciosSeleccionados,
+                equiposDisponibles,
                 pool
             );
 
@@ -375,7 +622,7 @@ function asignarRutina(diasEntrenamiento, genero, diasPuedeEntrenar) {
     const trenInferior = [6, 7, 8, 9]; // Cuádriceps, Femoral, Gluteo, Pantorrilla
 
     const asignacion = {
-        1: cuerpoCompleto,
+        1: [cuerpoCompleto],
         2: [cuerpoCompleto, cuerpoCompleto],
         3: [cuerpoCompleto, cuerpoCompleto, cuerpoCompleto],
         4: [trenSuperior, trenInferior, trenSuperior, trenInferior],
@@ -462,6 +709,41 @@ const importancias = {
     8: 3, // Glúteo
     9: 4, // Pantorrillas
 };
+
+//Metodo para ajustar las importancias de los musculos dependiendo del musculo preferente
+function ajustarImportancias(importancias, musculoPreferido) {
+    if (musculoPreferido && importancias.hasOwnProperty(musculoPreferido)) {
+        const nuevasImportancias = {...importancias};
+        const importanciaPreferida = nuevasImportancias[musculoPreferido];
+
+        // Aumentar la importancia de todos los músculos que tienen una importancia menor o igual a la del preferido
+        for (const musculo in nuevasImportancias) {
+            if (nuevasImportancias[musculo] <= importanciaPreferida && parseInt(musculo) !== musculoPreferido) {
+                nuevasImportancias[musculo]++;
+            }
+        }
+
+        // Asignar la importancia más baja al músculo preferido
+        nuevasImportancias[musculoPreferido] = 1;
+
+        // Asegurarse de que las importancias sean secuenciales sin saltos
+        const valoresOrdenados = Object.values(nuevasImportancias).sort((a, b) => a - b);
+        const importanciasUnicas = [...new Set(valoresOrdenados)];  // Eliminar duplicados
+
+        // Ajustar para asegurar secuencialidad
+        importanciasUnicas.forEach((valor, index) => {
+            for (const key in nuevasImportancias) {
+                if (nuevasImportancias[key] === valor) {
+                    nuevasImportancias[key] = index + 1;
+                }
+            }
+        });
+        console.log(nuevasImportancias);
+        return nuevasImportancias;
+    }
+    return importancias; // Retorna las importancias originales si no hay músculo preferido
+}
+
 
 //Funcion para calcular el tiempo asignado a cada musculo
 function calcularTiempoPorMusculo(rutinaAsignada, tiempoFuerzaMinutos, importancias) {
