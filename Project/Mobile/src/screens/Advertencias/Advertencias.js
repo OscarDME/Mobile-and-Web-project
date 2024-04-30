@@ -118,7 +118,7 @@ const Warnings = ({ navigation }) => {
     ),
     15: (warning) =>(
       <Text style={styles.achievementDescription}>
-        Al terminar tu sesión de entrenamiento <Text style={styles.emphasis}>{warning.nombre} CAMBIAR ESTO</Text>
+        Al terminar tu última sesión de entrenamiento,
         nos percatamos de que duró más de lo que debería haber durado, 
         recuerda que es importante respetar los tiempos de descanso y las repeticiones para que
         tu entrenamiento sea efectivo y seguro.
@@ -126,7 +126,7 @@ const Warnings = ({ navigation }) => {
     ),
     16: (warning) =>(
       <Text style={styles.achievementDescription}>
-        Al terminar tu sesión de entrenamiento <Text style={styles.emphasis}>{warning.nombre} CAMBIAR ESTO TAMBIEN</Text>,
+        Al terminar tu última sesión de entrenamiento,
         nos dimos cuenta que algunos de los pesos utilizados fueron al menos 20% mayores comparados a la sesión anterior 
         a esta, recuerda incrementar los pesos de forma gradual para evitar lesiones.
       </Text>
@@ -135,7 +135,7 @@ const Warnings = ({ navigation }) => {
   
 
   const categoryToTimeIdMap = {
-    "Todas": null, // null o una lista de todos los posibles IDs si necesitas filtrar explícitamente
+    "Todas": null, 
     "Al asignarse una rutina": 2,
     "Al terminar un entrenamiento": 3,
     "Al crear una rutina": 1,
