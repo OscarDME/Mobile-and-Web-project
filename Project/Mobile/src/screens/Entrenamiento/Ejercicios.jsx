@@ -33,6 +33,13 @@ const WorkoutScreen = ({route, navigation}) => {
       }
     };
     fetchOID();
+
+
+        const timerInterval = setInterval(() => {
+          setWorkoutSessionTime(prevTime => prevTime + 1);
+        }, 1000);
+    
+        return () => clearInterval(timerInterval);
   }, []);
 
 
