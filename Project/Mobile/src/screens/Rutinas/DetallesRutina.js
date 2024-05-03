@@ -10,6 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import config from "../../utils/conf";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from 'expo-notifications';
+
 
 const RoutineDetailsScreen = ({ navigation, route }) => {
   const { routineId } = route.params;
@@ -19,6 +21,53 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
   const [isAssigned, setIsAssigned] = useState(false);
   const [assignedDates, setAssignedDates] = useState(null);
 
+  async function registerForPushNotificationsAsync() {
+    let token;
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+  
+    return token;
+  }
+  
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
+
+  const scheduleNotification = async (endDate) => {
+    const endDateObj = new Date(endDate); // Asume que endDate es una cadena de fecha adecuada
+    endDateObj.setDate(endDateObj.getDate() - 1); // Configurar la notificación para un día antes
+    console.log("Programando notificación para: ", endDateObj);
+
+    const trigger = {
+      year: endDateObj.getFullYear(),
+      month: endDateObj.getMonth(), // en JavaScript, los meses comienzan desde 0
+      day: endDateObj.getDate(),
+      hour: 3, // Configurar la hora específica, por ejemplo, las 8 AM
+      minute: 6, // a las 00 minutos
+      repeats: false // Asegúrate de que no se repita
+    };
+  
+    console.log("Programando notificación para: ", trigger);
+  
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Recordatorio de Rutina",
+        body: "Tu rutina está a punto de terminar mañana. ¡Revísala y prepárate para el siguiente paso!",
+      },
+      trigger,
+    });
+  };
+  
 
   const fetchRoutineDetails = async () => {
     try {
@@ -54,7 +103,7 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
         if (currentRoutine) {
           setIsAssigned(true);
           setAssignedDates(`${currentRoutine.fecha_inicio} - ${currentRoutine.fecha_fin}`);
-          // Suponiendo que quieres almacenar el ID_Rutina_Asignada para usarlo al remover la asignación
+          scheduleNotification(currentRoutine.fecha_fin);
           setCurrentAssignedID(currentRoutine.ID_Rutina_Asignada);
         }
         else {

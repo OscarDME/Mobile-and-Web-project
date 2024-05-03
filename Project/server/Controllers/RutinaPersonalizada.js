@@ -25,11 +25,16 @@ export const createRutinaPersonalizada = async (req, res) => {
         //Calcular tiempo para ejercicios cardiovasculares y de fuerza
         const tiempoDisponible = datosCuestionarioCompleto.cuestionario.TiempoDisponible;
         const [horas, minutos] = tiempoDisponible.split(":").map(Number);
-        const tiempoTotalMinutos = horas * 60 + minutos;
+        var tiempoTotalMinutos = horas * 60 + minutos;
+
+         // RQF68: Si el tiempo es mayor a 120 minutos y el nivel de condición física es bajo (3), ajustar a 120 minutos
+         if (tiempoTotalMinutos > 120 && datosCuestionarioCompleto.cuestionario.ID_NivelFormaFisica === 3) {
+          tiempoTotalMinutos = 120;
+        }
 
         const distribucionTiempo = calcularDistribucionTiempo(datosCuestionarioCompleto.cuestionario.ID_Objetivo, tiempoTotalMinutos);
 
-        console.log("Distribución de tiempo:", distribucionTiempo);
+        console.log("Distribución de tiempo (RQF64-RQF66):", distribucionTiempo);
 
         //Calcular tiempo por cada musculo
         const tiempoFuerzaMinutos = distribucionTiempo.tiempoFuerzaMinutos;
@@ -362,24 +367,24 @@ export const createRutinaPersonalizada = async (req, res) => {
 };
 // Esta función devuelve un ID_Ejercicio al azar filtrado por las preferencias del usuario
 async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, modalidades, ID_LesionExcluir, excluirEjercicios, equiposDisponibles, pool) {
-    console.log("ID_Dificultad:", ID_Dificultad);
+    // console.log("ID_Dificultad:", ID_Dificultad);
     let queryExclusion = '';
     if (excluirEjercicios.length > 0) {
         const listaExcluidos = excluirEjercicios.join(',');
         queryExclusion = `AND ID_Ejercicio NOT IN (${listaExcluidos})`;
     }
-    console.log(equiposDisponibles);
-    console.log(modalidades);
+    // console.log(equiposDisponibles);
+    // console.log(modalidades);
     let queryEquipo = '';
     if (modalidades.length === 2) {
         queryEquipo = `AND (ID_Equipo IS NULL OR ID_Equipo IN (${equiposDisponibles.join(',')}))`;
-        console.log("queryEquipo:" ,queryEquipo);
+        // console.log("queryEquipo:" ,queryEquipo);
     }
 
     let queryModalidad = modalidades.length === 1 ? `AND ID_Modalidad = ${modalidades[0]}` : `AND ID_Modalidad IN (${modalidades.join(',')})`;
 
 
-    console.log("Parametros: ", ID_Dificultad, ID_Musculo, modalidades, ID_LesionExcluir);
+    // console.log("Parametros: ", ID_Dificultad, ID_Musculo, modalidades, ID_LesionExcluir);
     try {
       const result = await pool.request()
         .input('ID_Dificultad', sql.Int, ID_Dificultad)
@@ -399,10 +404,10 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, modalidades,
             ORDER BY NEWID();
         `);
 
-        console.log("Consulta como resultado:", result.recordset);
+        // console.log("Consulta como resultado:", result.recordset);
   
       if (result.recordset.length > 0) {
-        console.log("Ejercicio aleatorio:", result.recordset[0].ID_Ejercicio);
+        // console.log("Ejercicio aleatorio:", result.recordset[0].ID_Ejercicio);
         return result.recordset[0].ID_Ejercicio;
       } else {
         return null; // No se encontraron ejercicios que coincidan con los criterios
@@ -495,7 +500,7 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, modalidades,
 
             if (ID_Ejercicio) {
                 ejerciciosSeleccionados.push(ID_Ejercicio);
-                console.log("Ejercicio encontrado:", ID_Ejercicio);
+                // console.log("Ejercicio encontrado:", ID_Ejercicio);
                 // Información del ejercicio basada en el objetivo
                 const infoEjercicio = obtenerInfoEjercicioPorObjetivo(datosCuestionarioCompleto.cuestionario.ID_Objetivo);
 
@@ -519,8 +524,7 @@ async function obtenerEjercicioAleatorio(ID_Dificultad, ID_Musculo, modalidades,
                             TiempoPorSerie: infoEjercicio.tiempoPorSerie
                         })
                     });
-                    
-                    // Restar el tiempo utilizado por los ejercicios agregados del tiempo restante del músculo.
+                    //RQF78
                     tiempoRestanteMusculo -= tiempoPorEjercicio;
                 }
             }
@@ -754,6 +758,7 @@ function calcularTiempoPorMusculo(rutinaAsignada, tiempoFuerzaMinutos, importanc
         // Asignar tiempo a cada músculo basado en su importancia inversa
         const musculosConTiempo = dia.idMusculos.map(idMusculo => {
             const importanciaInversaMusculo = 1 / importancias[idMusculo];
+            //RQF74
             const porcentajeDelTotal = importanciaInversaMusculo / sumaImportanciasInversas;
             const tiempoMusculo = tiempoFuerzaMinutos * porcentajeDelTotal;
             return { idMusculo, tiempo: Math.round(tiempoMusculo) };

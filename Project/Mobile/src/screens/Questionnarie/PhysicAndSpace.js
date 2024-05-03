@@ -120,8 +120,7 @@ const PhysicAndSpace = ({ navigation, route }) => {
         setTrainingLocation(espacioDisponible[data.cuestionario.ID_EspacioDisponible]);
       }
     } catch (error) {
-      console.error("Error al cargar los datos del cuestionario:", error);
-      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
+      console.log("Error al cargar los datos del cuestionario:", error);
     }
 };
 

@@ -162,7 +162,7 @@ export const updateRutina = async (req, res) => {
       .input("nombre", sql.NVarChar, routineName)
       .input("ID_Usuario", sql.VarChar, oid)
       .input("ID_Rutina", sql.Int, ID_Rutina)
-      .input("publica", sql.Bit, ID_Rutina)
+      .input("publica", sql.Bit, publica)
       .query(querys.updateRutina);
 
     // Obtener días actuales vinculados a la rutina
@@ -635,7 +635,7 @@ export const crearBloqueSetsConSeries = async (req, res) => {
     );
 
 
-    // Obtén el ID_Rutina usando el ID_EjerciciosDia
+    // Se obtiene el ID_Rutina usando el ID_EjerciciosDia
     const result = await pool
       .request()
       .input("ID_EjerciciosDia", sql.Int, ID_EjerciciosDia).query(`
@@ -650,7 +650,7 @@ export const crearBloqueSetsConSeries = async (req, res) => {
 
     const ID_Rutina = result.recordset[0].ID_Rutina;
 
-    // Ahora actualiza la duración en la tabla Rutina
+    // Ahora se actualiza la duración en la tabla Rutina
     await pool
       .request()
       .input("TiempoFormateado", sql.Int, promedioTiempo)

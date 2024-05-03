@@ -39,10 +39,10 @@ export const getRutinasSugeridas = async (req, res) => {
 
             const averageDays = result.recordset[0].PromedioDias;
             const averageDurationMinutes = result.recordset[0].PromedioDuracion / 60; // Convertir segundos a minutos
-            console.log(averageDays);
-            console.log(averageDurationMinutes);
-            console.log(result.recordset[0].PromedioIDObjetivo);
-            console.log(result.recordset[0].PromedioIDNivelFormaFisica);
+            console.log("Avarage days:", averageDays);
+            console.log("Avarage duration:", averageDurationMinutes);
+            console.log("Avarage objective:", result.recordset[0].PromedioIDObjetivo);
+            console.log("Avarage forma fisica:", result.recordset[0].PromedioIDNivelFormaFisica);
 
             const publicRoutinesResult = await pool.request()
                 .input('userID', sql.VarChar, userID) 
@@ -87,6 +87,9 @@ export const getRutinasSugeridas = async (req, res) => {
                   const nivelUsuario = mapearCondicionFisica(result.recordset[0].PromedioIDNivelFormaFisica);
                   const nivelRutina = mapearCondicionFisica(rutina.ID_NivelFormaFisica);
                   const diffNivel = Math.abs(nivelUsuario - nivelRutina);
+                  const diferenciaDias = Math.abs(averageDays - diasRutina);
+                  const coeffdias = (1 - (diferenciaDias / 7)) * 0.2;
+
                   const coeficienteCondicionFisica = 0.15 * (1 - diffNivel);
                   
                   // Obtener los ejercicios de la rutina
@@ -101,12 +104,12 @@ export const getRutinasSugeridas = async (req, res) => {
                 const coeficienteMusculoPreferente = await calcularCoeficienteMusculoPreferente(musculoPreferente, ejerciciosRutina);
 
                   // Calcula el coeficiente total\
-                  const coeficienteTotal = coeficienteDias + coefTiempo + coeficienteObjetivo + coeficienteCondicionFisica + coefLesiones + coeficienteEquipo + coeficienteMusculoPreferente;
+                  const coeficienteTotal = coeffdias + coefTiempo + coeficienteObjetivo + coeficienteCondicionFisica + coefLesiones + coeficienteEquipo + coeficienteMusculoPreferente;
 
               
                   // Logs para depuración
                   console.log("Rutina:", rutina.NombreRutina);
-                  console.log("Coeficiente dias:", coeficienteDias);
+                  console.log("Coeficiente dias:", coeffdias);
                   console.log("Coeficiente tiempo:", coefTiempo);
                   console.log("Coeficiente objetivo:", coeficienteObjetivo);
                   console.log("Coeficiente condicion fisica:", coeficienteCondicionFisica);
@@ -122,8 +125,8 @@ export const getRutinasSugeridas = async (req, res) => {
                 })
               );
               
-              // Ahora que todas las promesas están resueltas, puedes ordenar el array resultante
-              const rutinasSugeridasOrdenadas = rutinasSugeridas.sort((a, b) => b.coeficiente - a.coeficiente);
+              // Array de las 5 rutinas sugeridas ordenadas por su coeficiente
+              const rutinasSugeridasOrdenadas = rutinasSugeridas.sort((a, b) => b.coeficiente - a.coeficiente).slice(0, 5);
               
 
         console.log(rutinasSugeridasOrdenadas);
@@ -139,6 +142,8 @@ export const getRutinasSugeridas = async (req, res) => {
     }
 };
 
+
+//1: Perder peso 2: Ganar masa muscular 3:Mantenimiento
 function calcularCoincidenciaObjetivos(objetivoUsuario, objetivoRutina) {
     if (objetivoUsuario === objetivoRutina) {
         return 0.2;
@@ -155,7 +160,7 @@ function calcularCoincidenciaObjetivos(objetivoUsuario, objetivoRutina) {
     } else if (objetivoUsuario === 2 && objetivoRutina === 3) {
         return 0.05;
     } else {
-        return 0; // Cubrir cualquier caso no especificado
+        return 0; 
     }
 }
 
@@ -188,7 +193,7 @@ const obtenerEjerciciosRutina = async (pool, ID_Rutina) => {
     const ejerciciosRutinaResult = await pool.request()
         .input('ID_Rutina', sql.Int, ID_Rutina)
         .query(`
-            SELECT E.ID_Ejercicio, E.ID_Lesion
+            SELECT E.ID_Ejercicio, E.ID_Lesion, E.ID_Equipo, E.ID_Musculo
             FROM Ejercicio E
             INNER JOIN EjerciciosDia ED ON E.ID_Ejercicio = ED.ID_Ejercicio
             INNER JOIN Dias_Entreno DE ON ED.ID_Dias_Entreno = DE.ID_Dias_Entreno
@@ -219,37 +224,49 @@ const calcularCoeficienteEquipo = (ID_EspacioDisponible, ID_EquiposUsuario, ejer
     }
 
     // Obtener la cantidad de ejercicios que no se pueden realizar con el equipo que el usuario dispone
+    // y que requieren equipo específico (ID_Equipo no es NULL)
     const ejerciciosNoDisponibles = ejerciciosRutina.filter(ejercicio => 
-        !ID_EquiposUsuario.includes(ejercicio.ID_Equipo)
+        ejercicio.ID_Equipo !== null && !ID_EquiposUsuario.includes(ejercicio.ID_Equipo)
     ).length;
 
-    // Calcular el coeficiente basado en la cantidad de ejercicios no disponibles
-    const coeficiente = (ejerciciosRutina.length - ejerciciosNoDisponibles) / ejerciciosRutina.length * 0.1;
+    // Calcula el coeficiente basado en la cantidad de ejercicios no disponibles
+    const totalEjerciciosRequeridosEquipo = ejerciciosRutina.filter(ejercicio => ejercicio.ID_Equipo !== null).length;
 
+    // Si no hay ejercicios que requieran equipo, evita división por cero
+    if (totalEjerciciosRequeridosEquipo === 0) {
+        return 0.1;  // Puedes decidir devolver 0.1 o algún otro valor que consideres adecuado
+    }
+
+    const coeficiente = (totalEjerciciosRequeridosEquipo - ejerciciosNoDisponibles) / totalEjerciciosRequeridosEquipo * 0.1;
     return coeficiente;
 };
 
-const calcularCoeficienteMusculoPreferente = async (musculoPreferente, ejerciciosRutina) => {
-    let contadorMusculoPreferente = 0;
 
-    // Contar la presencia del músculo preferente en los ejercicios de la rutina
-    ejerciciosRutina.forEach(ejercicio => {
-        if (ejercicio.ID_Musculo === musculoPreferente) {
-            contadorMusculoPreferente++;
+const calcularCoeficienteMusculoPreferente = (musculoPreferente, ejerciciosRutina) => {
+    const musculoPreferenteInt = parseInt(musculoPreferente, 10); // Parsea el músculo preferente como un entero
+
+    const resultado = ejerciciosRutina.reduce((acumulador, ejercicio) => {
+        const ejercicioMusculoID = parseInt(ejercicio.ID_Musculo, 10); // Parsea el ID_Musculo de cada ejercicio como un entero
+
+        if (ejercicioMusculoID === musculoPreferenteInt && ejercicio.ID_Musculo !== null) {
+            acumulador++;
         }
-    });
+        return acumulador;
+    }, 0);
 
-    // Calcular el coeficiente basado en la cantidad de veces que aparece el músculo preferente
-    if (contadorMusculoPreferente === 0) {
+    // Calcular el coeficiente basado en el número de coincidencias
+    if (resultado === 0) {
         return 0; // No aparece el músculo preferente
-    } else if (contadorMusculoPreferente === 1) {
+    } else if (resultado === 1) {
         return 0.033; // Aparece una vez
-    } else if (contadorMusculoPreferente === 2) {
+    } else if (resultado === 2) {
         return 0.066; // Aparece dos veces
     } else {
         return 0.1; // Aparece tres o más veces
     }
 };
+
+
 
 const obtenerMusculoPreferente = async (pool, ID_UsuarioMovil) => {
     try {
@@ -302,6 +319,7 @@ const obtenerMusculoPreferente = async (pool, ID_UsuarioMovil) => {
             }
         }
     });
+    console.log("Musculo preferente:", musculoPreferente);
   
       return musculoPreferente;
     } catch (error) {

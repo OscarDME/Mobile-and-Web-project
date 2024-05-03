@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SelectList } from "react-native-dropdown-select-list";
 import config from "../../utils/conf";
 
+
 const dayOptions = [
   { key: '1', value: '1 día' },
   { key: '2', value: '2 días' },
@@ -62,7 +63,7 @@ const MainMenu = ({ navigation }) => {
 
         setRutinas(data);
       } else {
-        console.error("Error al obtener las rutinas");
+        console.log("Error al obtener las rutinas");
       }
     } catch (error) {
       console.error("Error al cargar las rutinas:", error);
@@ -93,7 +94,7 @@ const MainMenu = ({ navigation }) => {
 
         setRutinasPublicas(data);
       } else {
-        console.error("Error al obtener las rutinas públicas");
+        console.log("Error al obtener las rutinas públicas");
       }
     } catch (error) {
       console.error("Error al cargar las rutinas públicas:", error);
@@ -118,7 +119,7 @@ const MainMenu = ({ navigation }) => {
                 console.log(rutinasSugeridasObtenidas);
                 setRutinasSugeridas(rutinasSugeridasObtenidas); // Usa el mismo estado si quieres reemplazar las publicas con sugeridas
             } else {
-                console.error("Error al obtener las rutinas sugeridas");
+                console.log("Error al obtener las rutinas sugeridas");
             }
         }
     } catch (error) {
@@ -181,20 +182,20 @@ const MainMenu = ({ navigation }) => {
         style={styles.rutinasContainer}
         showsHorizontalScrollIndicator={false}
       >
-        {rutinas.map((rutina) => (
+      {rutinas.length > 0 ? (
+        rutinas.map((rutina) => (
           <TouchableOpacity
             key={rutina.ID_Rutina}
             style={styles.rutinaCard}
-            onPress={() =>
-              navigation.navigate("DetallesRutina", {
-                routineId: rutina.ID_Rutina,
-              })
-            }
+            onPress={() => navigation.navigate("DetallesRutina", { routineId: rutina.ID_Rutina })}
           >
             <Text style={styles.rutinaNombre}>{rutina.NombreRutina}</Text>
             <Text style={styles.rutinaAutor}>Por: {rutina.Autor}</Text>
           </TouchableOpacity>
-        ))}
+        ))
+      ) : (
+        <Text style={styles.noRutinasText}>No hay rutinas para mostrar</Text>
+      )}
       </ScrollView>
       <View style={styles.header}>
       <Text style={styles.secondTitle}>Rutinas Públicas</Text>
@@ -218,20 +219,20 @@ const MainMenu = ({ navigation }) => {
         style={styles.rutinasContainer2}
         showsHorizontalScrollIndicator={false}
       >
-        {rutinasPublicas.map((rutina) => (
+        {rutinasPublicas.length > 0 ? (
+        rutinasPublicas.map((rutina) => (
           <TouchableOpacity
             key={rutina.ID_Rutina}
             style={styles.rutinaCard}
-            onPress={() =>
-              navigation.navigate("DetallesRutinaVisualizar", {
-                routineId: rutina.ID_Rutina,
-              })
-            }
+            onPress={() => navigation.navigate("DetallesRutinaVisualizar", { routineId: rutina.ID_Rutina })}
           >
             <Text style={styles.rutinaNombre}>{rutina.NombreRutina}</Text>
             <Text style={styles.rutinaAutor}>Por: {rutina.Autor}</Text>
           </TouchableOpacity>
-        ))}
+        ))
+      ) : (
+        <Text style={styles.noRutinasText}>No hay rutinas públicas para mostrar</Text>
+      )}
       </ScrollView>
       <Text style={styles.thirdTitle}>Rutinas Sugeridas</Text>
       <ScrollView
@@ -239,20 +240,20 @@ const MainMenu = ({ navigation }) => {
         style={styles.rutinasContainer3}
         showsHorizontalScrollIndicator={false}
       >
-        {rutinasSugeridas.map((rutina) => (
+         {rutinasSugeridas.length > 0 ? (
+        rutinasSugeridas.map((rutina) => (
           <TouchableOpacity
             key={rutina.ID_Rutina}
             style={styles.rutinaCard}
-            onPress={() =>
-              navigation.navigate("DetallesRutinaVisualizar", {
-                routineId: rutina.ID_Rutina,
-              })
-            }
+            onPress={() => navigation.navigate("DetallesRutinaVisualizar", { routineId: rutina.ID_Rutina })}
           >
             <Text style={styles.rutinaNombre}>{rutina.NombreRutina}</Text>
             <Text style={styles.rutinaAutor}>Por: {rutina.Autor}</Text>
           </TouchableOpacity>
-        ))}
+        ))
+      ) : (
+        <Text style={styles.noRutinasText}>No hay rutinas sugeridas para mostrar</Text>
+      )}
       </ScrollView>
     </View>
   );
@@ -340,7 +341,14 @@ const styles = StyleSheet.create({
   },
   firstFilter: {
     marginRight: 10,
-  }
+  },
+  noRutinasText: {
+    fontSize: 18,
+    color: 'grey',
+    textAlign: 'center',
+    marginTop: 20,
+    alignSelf: 'center', // Asegúrate de que el texto se centre correctamente en el ScrollView
+  },
 });
 
 export default MainMenu;

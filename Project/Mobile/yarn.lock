@@ -2387,6 +2387,13 @@
   resolved "https://registry.npmjs.org/@react-native-community/masked-view/-/masked-view-0.1.11.tgz"
   integrity sha512-rQfMIGSR/1r/SyN87+VD8xHHzDYeHaJq6elOSCAD+0iLagXkSI2pfA0LmSXP21uw5i3em7GkkRjfJ8wpqWXZNw==
 
+"@react-native-community/push-notification-ios@^1.10.1":
+  version "1.11.0"
+  resolved "https://registry.npmjs.org/@react-native-community/push-notification-ios/-/push-notification-ios-1.11.0.tgz"
+  integrity sha512-nfkUs8P2FeydOCR4r7BNmtGxAxI22YuGP6RmqWt6c8EEMUpqvIhNKWkRSFF3pHjkgJk2tpRb9wQhbezsqTyBvA==
+  dependencies:
+    invariant "^2.2.4"
+
 "@react-native-community/slider@4.4.2":
   version "4.4.2"
   resolved "https://registry.npmjs.org/@react-native-community/slider/-/slider-4.4.2.tgz"
@@ -10368,6 +10375,11 @@ react-native-progress@^5.0.1:
   dependencies:
     prop-types "^15.7.2"
 
+react-native-push-notification@^8.1.1:
+  version "8.1.1"
+  resolved "https://registry.npmjs.org/react-native-push-notification/-/react-native-push-notification-8.1.1.tgz"
+  integrity sha512-XpBtG/w+a6WXTxu6l1dNYyTiHnbgnvjoc3KxPTxYkaIABRmvuJZkFxqruyGvfCw7ELAlZEAJO+dthdTabCe1XA==
+
 "react-native-randombytes@>=2.0.0 <4.0.0":
   version "3.6.1"
   dependencies:
@@ -10482,7 +10494,7 @@ react-native-wheel-picker@^1.2.0:
   resolved "https://registry.npmjs.org/react-native-wheel-picker/-/react-native-wheel-picker-1.2.0.tgz"
   integrity sha512-uWkkVyNfhXEJwjHyRMk1h/EAjJl+PTigm6z3j3dUKbcbTnG5qRgmDA1L9KLEE5dQ+7ptONMO3vL27r5io/b6KQ==
 
-react-native@*, "react-native@^0.0.0-0 || 0.60 - 0.72 || 1000.0.0", react-native@^0.60, "react-native@>= 0.30.0", "react-native@>= 0.50.0", "react-native@>= 0.64.3", "react-native@>= 0.67", react-native@>=0.47, react-native@>=0.56, react-native@>=0.57, "react-native@>=0.64.0 <1.0.x", react-native@>0.60.0, react-native@0.72.10:
+react-native@*, "react-native@^0.0.0-0 || 0.60 - 0.72 || 1000.0.0", react-native@^0.60, "react-native@>= 0.30.0", "react-native@>= 0.50.0", "react-native@>= 0.64.3", "react-native@>= 0.67", react-native@>=0.33, react-native@>=0.47, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, "react-native@>=0.64.0 <1.0.x", react-native@>0.60.0, react-native@0.72.10:
   version "0.72.10"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.72.10.tgz"
   integrity sha512-AjVA1+hCm2VMk3KE9Ve5IeDR3aneEhhQJmBAM9xP3i2WqqS3GksxCz8+JdB83bV6x9mBLv5qPMP71vCged3USw==
@@ -10652,7 +10664,7 @@ react-transform-hmr@^1.0.4:
     global "^4.3.0"
     react-proxy "^1.1.7"
 
-react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.11.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@> 16.7.0", "react@>= 15.2.1", "react@>= 17.0.1", react@>=16, react@>=16.0, react@>=16.3.0, react@>=16.6.0, react@>=16.8, react@>=17.0.0, react@>17.0.0, react@18.2.0:
+react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.11.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@> 16.7.0", "react@>= 15.2.1", "react@>= 17.0.1", react@>=16, react@>=16.0, react@>=16.3.0, react@>=16.6.0, react@>=16.6.3, react@>=16.8, react@>=17.0.0, react@>17.0.0, react@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==

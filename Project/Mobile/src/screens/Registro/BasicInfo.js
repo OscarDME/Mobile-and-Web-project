@@ -24,6 +24,8 @@ const FirstPageForm = ({ navigation, route }) => {
 
   const handleContinue = async () => {
   await AsyncStorage.setItem('oid', oid);
+  const age = calculateAge(dateOfBirth);
+  console.log("Edad:", age);
     if (
       !oid ||
       !name ||
@@ -31,10 +33,14 @@ const FirstPageForm = ({ navigation, route }) => {
       !surname ||
       !email ||
       !dateOfBirth ||
-      !selectedGender
+      !selectedGender|| 
+      age < 15
     ) {
       if (!selectedGender) {
         setGenderError("Por favor, selecciona tu género.");
+      }
+      if (age < 15) {
+        setGenderError("Debes tener al menos 15 años.");
       }
       return;
     }
@@ -73,12 +79,33 @@ const FirstPageForm = ({ navigation, route }) => {
     const currentDate = selectedDate || dateOfBirth;
     setShowDatePicker(false);
     setDateOfBirth(currentDate);
+
+    const age = calculateAge(currentDate);
+    console.log("Edad:", age);
+
+      if (age < 15) {
+        setGenderError("Debes tener al menos 15 años.");
+      } else {
+        setGenderError("");
+      }
   };
 
   const handleGenderChange = (gender) => {
     setSelectedGender(gender);
     setGenderError("");
   };
+
+  const calculateAge = (birthdate) => {
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+  
 
   return (
     <View style={styles.container}>

@@ -62,8 +62,7 @@ const TrainingGoalsScreen = ({ navigation, route }) => {
         setFocusedBodyPart(data.cuestionario.ID_Musculo);
       }
     } catch (error) {
-      Alert.alert("Error", "No se pudieron cargar los datos del cuestionario");
-      console.error(error);
+      console.log(error);
     }
 };
 

@@ -96,6 +96,8 @@ const Login = () => {
 
           // Guardar el oid en AsyncStorage
           await AsyncStorage.setItem('userOID', oid);
+          // await AsyncStorage.setItem('userOID', "b243e468-d8d4-4055-ba08-45106be2fb14");
+
           console.log('OID guardado con éxito en AsyncStorage');
 
           

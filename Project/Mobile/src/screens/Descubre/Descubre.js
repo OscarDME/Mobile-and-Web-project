@@ -87,7 +87,7 @@ const MainMenu = ({ navigation }) => {
         <FlatList
           data={filteredTrainers}
           renderItem={({ item }) => <TrainerCard trainer={item} />}
-          keyExtractor={item => item.ID_Usuario_WEB.toString()}
+          keyExtractor={item => item}
         />
       )}
     </View>

@@ -62,7 +62,14 @@ const TrainingSchedule = ({ navigation, route }) => {
     if (preferredDays.includes(dayNumber)) {
       setPreferredDays(preferredDays.filter((d) => d !== dayNumber));
     } else {
+      if (preferredDays.length >= 6) {
+        setErrorMessage("No puedes seleccionar más de 6 días.");
+        return; // Previene la adición de más días si ya se seleccionaron 6
+      }
       setPreferredDays([...preferredDays, dayNumber]);
+      if (errorMessage) {
+        setErrorMessage(''); 
+      }
     }
   };
 

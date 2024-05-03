@@ -6,7 +6,8 @@ import Progress_Body_MeasuresEdit from './Progress_Body_MeasuresEdit';
 import { milestones } from '../DATA_MILESTONES';
 import config from "../../utils/conf";
 import { Galleria } from 'primereact/galleria';
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function Progress_Body_Measures({selectedUser}) {
 
@@ -21,7 +22,53 @@ export default function Progress_Body_Measures({selectedUser}) {
   const galleria = useRef(null);
 
 
-  //datos de la grafica
+
+  const downloadPdfDocument = () => {
+    const input = document.getElementById('capture');
+    if (!input) {
+      console.error('No se encontró el elemento para capturar');
+      return;
+    }
+  
+    html2canvas(input, { scale: 2 })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait', 
+          unit: 'pt',
+          format: 'a4'
+        });
+  
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        // Ajustar la imagen a la página
+        const imgWidth = pdfWidth;
+        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+        
+        // Comprobar si la altura ajustada es mayor que la altura de la página
+        if (imgHeight > pdfHeight) {
+          // Si es mayor, ajustar el ancho basado en la altura de la página para mantener la proporción
+          const imgWidthNew = (imgWidth * pdfHeight) / imgHeight;
+          const marginLeft = (pdfWidth - imgWidthNew) / 2; // Para centrar horizontalmente
+          pdf.addImage(imgData, 'PNG', marginLeft, 0, imgWidthNew, pdfHeight);
+        } else {
+          // Si la altura ajustada es menor o igual, usar la altura y ancho ajustados
+          const marginTop = (pdfHeight - imgHeight) / 2; // Para centrar verticalmente
+          pdf.addImage(imgData, 'PNG', 0, marginTop, imgWidth, imgHeight);
+        }
+  
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString('es-ES').replace(/\//g, '-');
+    
+
+        pdf.save(`mediciones-${formattedDate}-cliente-${selectedUser.nombre}-medida-${selectedMeasureToShow.label}.pdf`);
+      })
+      .catch(err => console.error("Error al capturar el PDF", err));
+  };
+  
+  
 
 
   const [chartData, setChartData] = useState({});
@@ -278,7 +325,8 @@ export default function Progress_Body_Measures({selectedUser}) {
   return (
     <>
       <div className='MainContainer'>
-      <div className='body-measure-container'>
+      <div className='body-measure-container' id='capture'>
+      <div className='body-measure-header'>
       <div className='body-dropdown-container'>
       <div>
       Selecciona una medida para ver la gráfica
@@ -288,6 +336,10 @@ export default function Progress_Body_Measures({selectedUser}) {
             selectedOption={selectedMeasureToShow} 
             onChange={handleMeasureToShowChange}
           />
+      </div>
+      <div className="row_edit">
+        <i className={`bi bi-download card-icon`} onClick={downloadPdfDocument}></i>
+      </div>
       </div>
       <Chart type="line" data={chartData} options={chartOptions} />
       </div>

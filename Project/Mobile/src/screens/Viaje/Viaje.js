@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../../utils/conf";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import axios from 'axios';
 
 
 
@@ -18,54 +19,107 @@ const MainMenu = ({ navigation }) => {
   const [reminder, setReminder] = useState(false);
   const [region, setRegion] = useState({});
   const [oid, setOid] = useState('');
+  const [travelTime, setTravelTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const onChangeTime = (event, selectedTime) => {
+
     setShowTimePicker(false);
     const currentTime = selectedTime || preferredWorkoutTime;
     setPreferredWorkoutTime(currentTime);
   };
 
   useEffect(() => {
-    console.log("useEffect is running");
 
-    getLocationPermission().then(() => {
-        console.log("Location permissions handled");
-    }).catch(console.error);
+  handleCheckTravelTime();
 
-    const fetchOID = async () => {
-      console.log("Fetching OID");
-      const oid = await AsyncStorage.getItem("userOID");
-      console.log("OID fetched:", oid);
-      if (!oid) {
-          console.error("OID not found");
-          return;
-      }
-  
-      try {
-          console.log("Making API call");
-          const response = await fetch(`${config.apiBaseUrl}/viaje/${oid}`);
-          const jsonData = await response.json();
-          console.log("Data received from API:", jsonData);
-          if (jsonData[0]) {
-              const { Hora_Preferida, Lugar_Gimnasio, Lugar_Salida, Notificaciones_Activas } = jsonData[0];
-              if (Hora_Preferida) {
-                  setPreferredWorkoutTime(new Date(Hora_Preferida));
-              }
-              setDefaultStartingLocation(Lugar_Salida);
-              setGymAddress(Lugar_Gimnasio);
-              setReminder(Notificaciones_Activas);
-          }
-      } catch (error) {
-          console.error("Error fetching data:", error);
-      }
-  
-      setOid(oid);
+  }, [defaultStartingLocation, gymAddress]);
+
+
+  const handleCheckTravelTime = async () => {
+    if (!defaultStartingLocation || !gymAddress) {
+        console.log("Both locations must be set.");
+        return;
+    }
+    const time = await getTravelTime(defaultStartingLocation, gymAddress);
+    setTravelTime(time);
+    console.log(`Travel time: ${time}`);
   };
-  
 
-    fetchOID();
+  const getTravelTime = async (origin, destination) => {
+    try {
+      const params = {
+        origin: origin,
+        destination: destination,
+        key: 'AIzaSyB-Odwa_VfMK_UPPhAcRyU31K8Lnm0KAPo',
+        mode: 'driving'
+    };
+        const response = await axios.get('https://maps.googleapis.com/maps/api/directions/json', { params });
+        const route = response.data.routes[0];
+        const durationText = route.legs[0].duration.text;  
+        const durationValue = route.legs[0].duration.value;  
+
+
+        let date = new Date();
+        date.setHours(0, 0, 0, 0); 
+        date.setSeconds(durationValue); 
+
+        setTravelTime(date); 
+        console.log(`Estimated travel time: ${durationText}`);
+        return date;
+    } catch (error) {
+        console.error("Failed to fetch travel time:", error);
+        return null;
+    }
+};
+
+
+
+useEffect(() => {
+  console.log("useEffect is running");
+
+  getLocationPermission().then(() => {
+      console.log("Location permissions handled");
+  }).catch(console.error);
+
+  const fetchOID = async () => {
+    console.log("Fetching OID");
+    const oid = await AsyncStorage.getItem("userOID");
+    console.log("OID fetched:", oid);
+    if (!oid) {
+        console.error("OID not found");
+        return;
+    }
+
+    try {
+        console.log("Making API call");
+        const response = await fetch(`${config.apiBaseUrl}/viaje/${oid}`);
+        const jsonData = await response.json();
+        console.log("Data received from API:", jsonData);
+        if (jsonData[0]) {
+            const { Hora_Preferida, Lugar_Gimnasio, Lugar_Salida, Notificaciones_Activas } = jsonData[0];
+            if (Hora_Preferida) {
+                setPreferredWorkoutTime(new Date(Hora_Preferida));
+            } else {
+                // Set time to 12:00 PM if Hora_Preferida is not provided
+                const defaultTime = new Date();
+                defaultTime.setHours(12, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds
+                setPreferredWorkoutTime(defaultTime);
+            }
+            setDefaultStartingLocation(Lugar_Salida);
+            setGymAddress(Lugar_Gimnasio);
+            setReminder(Notificaciones_Activas);
+        }
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+
+    setOid(oid);
+  };
+
+  fetchOID();
 }, []);
+
 
 
 
@@ -95,6 +149,7 @@ const MainMenu = ({ navigation }) => {
 
   const handleStartJourney = async () => {
     try {
+
   
       // Abrir Google Maps
       const encodedAddress = encodeURIComponent(gymAddress);
@@ -112,11 +167,16 @@ const MainMenu = ({ navigation }) => {
   };
 
   const handleSaveInfo = async () => {
+    handleCheckTravelTime();
+    const timeString = `${travelTime.getHours()}:${travelTime.getMinutes()}:${travelTime.getSeconds()}`;
+    const timeP = `${preferredWorkoutTime.getHours()}:${preferredWorkoutTime.getMinutes()}:${preferredWorkoutTime.getSeconds()}`;
+
     const data = {
-      Hora_Preferida: preferredWorkoutTime.getHours() + ":" + preferredWorkoutTime.getMinutes(),
+      Hora_Preferida: timeP,
       Lugar_Salida: defaultStartingLocation,
       Lugar_Gimnasio: gymAddress,
       Notificaciones_Activas: reminder,
+      Tiempo_Estimado: timeString,
     };
 
     try {
@@ -190,6 +250,7 @@ const MainMenu = ({ navigation }) => {
           value={reminder}
         />
       </View> 
+      <Text style={styles.tiempo}>Tiempo estimado de viaje: {travelTime.getHours()} hrs {travelTime.getMinutes()} minutos</Text>
       <MapView
           onPress={handleStartJourney}
           style={styles.map}
@@ -288,6 +349,17 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 10,
     borderWidth: 1,
+    height: 40,
+    marginTop: 5,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 10,
+  },
+  tiempo:{
+    fontSize:16,
+    fontWeight:'bold',
+    marginVertical:10,
     height: 40,
     marginTop: 5,
     paddingHorizontal: 10,

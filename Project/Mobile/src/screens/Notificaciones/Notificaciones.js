@@ -4,13 +4,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import config from "../../utils/conf";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
-const MainMenu = () => {
+const MainMenu = (navigation) => {
   const [notifications, setNotifications] = useState([]);
+  const [travelNotifications, setTravelNotifications] = useState([]);
 
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchNotifications();
+    }, [])
+  );
 
   const fetchNotifications = async () => {
     const userOID = await AsyncStorage.getItem('userOID');
@@ -30,6 +39,19 @@ const MainMenu = () => {
       setNotifications(data); // Asumiendo que `data` es un arreglo de notificaciones
     } catch (error) {
       console.error("Error fetching notifications:", error);
+    }
+
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/viajeNotificaciones/${userOID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const datos = await response.json();
+      setTravelNotifications(datos);
+    } catch (error) {
+      console.error("Error deleting notifications:", error);
     }
   };
 
@@ -87,6 +109,22 @@ const MainMenu = () => {
     }
   };
 
+  const format12HourTime = (timeString) => {
+    if (!timeString) return '';
+  
+    // Convertir el string de tiempo a un objeto Date
+    const timeParts = timeString.split(':');
+    const timeDate = new Date();
+    timeDate.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), parseInt(timeParts[2]));
+  
+    // Formatear a tiempo de 12 horas
+    return timeDate.toLocaleTimeString('es-MX', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    });
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.titlemajor}>Notificaciones:</Text>
@@ -114,6 +152,18 @@ const MainMenu = () => {
             </View>
           </View>
         </View>
+      ))}
+      {travelNotifications.map((notification, index) => (
+        <>
+        <View key={index} style={styles.notificationCard}>
+          <View style={styles.row}>
+            <View style={styles.textContainer}>
+              <Text style={styles.titlemajor}>¡Atiende a tu entrenamiento de Hoy!</Text>
+              <Text>Sal de tu lugar predeterminado de salida a las <Text style={styles.empha}>{format12HourTime(notification.Hora_De_Salida)}</Text> para llegar a tiempo a tu gimnasio.</Text>
+            </View>
+          </View>
+        </View>
+        </>
       ))}
     </ScrollView>
   );
@@ -161,7 +211,9 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     marginBottom: 5,
   },
-  // Agrega más estilos según necesites
+  empha: {
+    fontWeight: 'bold',
+  }
 });
 
 export default MainMenu;

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ModalDropdown from "react-native-modal-dropdown";
@@ -21,7 +22,7 @@ const EditRoutineScreen = ({ navigation, route }) => {
   const { routineDetails } = route.params; // Recibe los detalles de la rutina desde los parámetros de navegación
   const [refreshKey, setRefreshKey] = useState(0);
   const [isPublic, setIsPublic] = useState(routineDetails.publica || false);
-
+  const [disablePublicSwitch, setDisablePublicSwitch] = useState(routineDetails.publica || false);
 
 
   useEffect(() => {
@@ -217,6 +218,26 @@ const EditRoutineScreen = ({ navigation, route }) => {
     }
   };
 
+  const handlePublicChange = () => {
+    if (!isPublic) {  // Solo si la rutina no es pública actualmente
+      Alert.alert(
+        "Hacer Pública la Rutina",
+        "Esta acción es irreversible. ¿Deseas continuar?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Confirmar",
+            onPress: () => {
+              setIsPublic(true);
+              setDisablePublicSwitch(true);  // Deshabilitar el switch permanentemente
+              // Aquí puedes añadir lógica adicional, como actualizar en el servidor...
+            }
+          }
+        ]
+      );
+    }
+  };
+
   const renderDropdown = (index) => {
     // Usa el índice almacenado en el estado de cada entrenamiento para seleccionar la opción correcta
     const dayIndex = workouts[index].dayIndex;
@@ -266,14 +287,15 @@ const EditRoutineScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         ))}
         <View style={styles.switchContainer}>
-  <Text>¿Hacer Rutina Pública?</Text>
-  <Switch
-    trackColor={{ false: "#767577", true: "#81b0ff" }}
-    thumbColor={isPublic ? "#f5dd4b" : "#f4f3f4"}
-    onValueChange={() => setIsPublic(previousState => !previousState)}
-    value={isPublic}
-  />
-</View>
+        <Text>¿Hacer Rutina Pública?</Text>
+        <Switch
+          trackColor={{ false: "#767577", true: "#81b0ff" }}
+          thumbColor={isPublic ? "#f5dd4b" : "#f4f3f4"}
+          onValueChange={handlePublicChange}
+          value={isPublic}
+          disabled={disablePublicSwitch}
+        />
+      </View>
       </ScrollView>
       <Text style={{ color: "red", margin: 10 }}>{error}</Text>
       <TouchableOpacity
