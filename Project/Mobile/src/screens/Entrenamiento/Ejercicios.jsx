@@ -9,7 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const WorkoutScreen = ({route, navigation}) => {
 
-  const { workoutSession } = route.params;
+  const { workoutSession, date } = route.params;
   const [currentSetIndex, setCurrentSetIndex] = useState(0); 
   const [oid, setOid] = useState(route.params?.oid || "");
   const [workoutSessionTime, setWorkoutSessionTime] = useState(0);
@@ -33,6 +33,13 @@ const WorkoutScreen = ({route, navigation}) => {
       }
     };
     fetchOID();
+
+
+        const timerInterval = setInterval(() => {
+          setWorkoutSessionTime(prevTime => prevTime + 1);
+        }, 1000);
+    
+        return () => clearInterval(timerInterval);
   }, []);
 
 
@@ -185,9 +192,11 @@ const WorkoutScreen = ({route, navigation}) => {
       );
       const responseJson = await response.json();
       console.log(responseJson);
-/*
+
+      const formattedDate = date.toISOString().split("T")[0];
+
       const response2 = await fetch(
-        `${config.apiBaseUrl}/allWarnings/timeAnalisis/${oid}/${workoutSessionTime}`,
+        `${config.apiBaseUrl}/allWarnings/timeAnalisis/${oid}/${formattedDate}/${workoutSessionTime}`,
         {
           method: "POST",
           headers: {
@@ -196,7 +205,7 @@ const WorkoutScreen = ({route, navigation}) => {
         }
       );
       const responseJson2 = await response2.json();
-      console.log(responseJson2);*/
+      console.log(responseJson2);
     } catch (error) {
       console.error(error);
     }

@@ -16,7 +16,7 @@ export const getWarnings = async (req, res) => {
     from Advertencia a
     left join Dias_Entreno e on a.ID_Dias_Entreno = e.ID_Dias_Entreno
     left join Dia d on e.ID_Dia = d.ID_Dia
-    inner join Rutina r on a.ID_Rutina = r.ID_Rutina
+    left join Rutina r on a.ID_Rutina = r.ID_Rutina
     inner join DescripcionAdvertencia da on a.ID_DescripcionAdvertencia = da.ID_DescripcionAdvertencia
     inner join TipoAdvertencia t on da.ID_TipoAdvertencia = t.ID_TipoAdvertencia
     where a.ID_Usuario = @ID_Usuario
@@ -711,7 +711,7 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
             const item = result.recordset[i];
             try {
               const addingWarningResult = await pool.request()
-                .input("ID_Usuario", sql.VarChar, ID_Usuario)
+                .input("ID_Usuario", sql.VarChar, oid)
                 .input("ID_DescripcionAdvertencia", sql.Int, 16) 
                 .input("ID_AdvertenciaTiempo", sql.Int, 3)
                 .input("NombreEjercicio", sql.VarChar, item.NombreEjercicio)
@@ -747,6 +747,8 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
   export const createWarningTimeAnalisis = async (req, res) => {
     try {
       const oid = req.params.id; 
+      const date = req.params.date; 
+      const duration = req.params.duration; 
   
       const pool = await getConnection();
   
@@ -766,38 +768,45 @@ export const createWarningFourExercisesSameMuscleADay = async (req, res) => {
         DELETE FROM Advertencia 
         WHERE ID_Usuario = @ID_Usuario 
         AND ID_AdvertenciaTiempo = @ID_AdvertenciaTiempo 
-        AND DATEDIFF(day, FechaUltimo, GETDATE()) > 7
+        AND DATEDIFF(day, FechaUltimo, GETDATE()) > 1
       `);
       // Compara la sesión actual con la ultima sesión de entrenamiento para buscar el criterio para agregar la advertencia
       const result = await pool
         .request()
-        .input("ID_UsuarioMovil", sql.VarChar, ID_UsuarioMovil) 
-        .query(`     
+        .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil) 
+        .input("Duracion", sql.Int, duration)
+        .input("Fecha", sql.DateTime, date)
+        .query(`
+        SELECT RSU.ID_ResultadoSeriesUsuario, R.ID_Rutina, R.duracion
+        FROM ResultadoSeriesUsuario RSU 
+        INNER JOIN Rutina_Asignada RA ON RA.ID_Rutina_Asignada = RSU.ID_Rutina_Asignada
+        INNER JOIN Rutina R ON R.ID_Rutina = RA.ID_Rutina
+        WHERE RSU.fecha = @Fecha
+          AND RSU.ID_Rutina_Asignada IN (
+              SELECT ID_Rutina_Asignada 
+              FROM Rutina_Asignada 
+              WHERE ID_UsuarioMovil = @ID_UsuarioMovil
+          )
+          AND R.duracion > @Duracion;      
         `);
 
         if (result.recordset.length > 0) {
-          for (let i = 0; i < result.recordset.length; i++) {
-            const item = result.recordset[i];
             try {
               const addingWarningResult = await pool.request()
-                .input("ID_Usuario", sql.VarChar, ID_Usuario)
+                .input("ID_Usuario", sql.VarChar, oid)
                 .input("ID_DescripcionAdvertencia", sql.Int, 15) 
                 .input("ID_AdvertenciaTiempo", sql.Int, 3)
-                .input("NombreEjercicio", sql.VarChar, item.NombreEjercicio)
-                .input("FechaUltimo", sql.DateTime, item.FechaUltimo)
-                .input("AumentoPeso", sql.Int, item.PesoUltimo - item.PesoPenultimo)
-                .input("PorcentajeAumento", sql.Int, (item.PesoUltimo - item.PesoPenultimo) / item.PesoPenultimo)
                 .query(`
                   INSERT INTO Advertencia
-                  (ID_Usuario, ID_DescripcionAdvertencia, ID_AdvertenciaTiempo, NombreEjercicio, FechaUltimo, AumentoPeso, PorcentajeAumento)
+                  (ID_Usuario, ID_DescripcionAdvertencia, ID_AdvertenciaTiempo)
                   VALUES 
-                  (@ID_Usuario, @ID_DescripcionAdvertencia, @ID_AdvertenciaTiempo, @NombreEjercicio, @FechaUltimo, @AumentoPeso, @PorcentajeAumento)
+                  (@ID_Usuario, @ID_DescripcionAdvertencia, @ID_AdvertenciaTiempo)
                 `);
               console.log("Advertencia agregada:", addingWarningResult);
             } catch (error) {
-              console.error("Error al insertar advertencia para", item.NombreEjercicio, ":", error);
+              console.error("Error al insertar advertencia para", ":", error);
             }
-          }
+          
         
           return res.status(200).json({
             warning: "Se agregaron las advertencias al terminar un entrenamiento correctamente.",

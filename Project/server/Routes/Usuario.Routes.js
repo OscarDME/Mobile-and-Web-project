@@ -200,7 +200,7 @@ router.post("/allWarnings/intensity/threeExercisesHighIntensityADay/:id/:ID_Dias
 router.post("/allWarnings/overTraining/shortRestTime/:id/:ID_Dias_Entreno", createWarningLessThanAMinuteOfRestPerExercise );
 router.post("/allWarnings/weeklyCheck/:id", createWarningWeeklyCheck );
 router.post("/allWarnings/weightAnalisis/:id", createWarningWeightAnalisis );
-router.post("/allWarnings/timeAnalisis/:id", createWarningTimeAnalisis );
+router.post("/allWarnings/timeAnalisis/:id/:date/:duration", createWarningTimeAnalisis );
 router.post("/allWarnings/assign/:id/:ID_Rutina", createWarningsWhenAssigning );
 router.post("/allWarnings/overTraining/longsession/:id/:ID_Dias_Entreno", createWarningTwoHoursNoRestADay );
 

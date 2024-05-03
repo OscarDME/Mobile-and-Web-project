@@ -137,7 +137,7 @@ const TrainingScreen = ({ navigation, route }) => {
         onPress={() => {
           navigation.navigate("TrainingStack", {
             screen: "WorkoutScreen",
-            params: { workoutSession: allSession },
+            params: { workoutSession: allSession, date: selectedDate },
           });
         }}
       >
