@@ -223,6 +223,7 @@ export const acceptClientRequest = async (req, res) => {
         .request()
         .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
         .query(`UPDATE UsuarioMovil SET ID_Tipo = 2 WHERE ID_UsuarioMovil = @ID_UsuarioMovil`);
+        console.log("Usuario actualizado: ", ID_UsuarioMovil);                                                
 
         // Eliminar la solicitud después de aceptarla
         const deleteResult = await pool
@@ -258,6 +259,7 @@ export const getTrainerInfo = async (req, res) => {
             .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
             .query(`
                 SELECT 
+                    U.ID_Usuario,
                     U.nombre AS nombre_entrenador,
                     U.apellido AS apellido_entrenador,
                     TW.tipo AS tipo_usuario_web,
@@ -734,8 +736,7 @@ export const getApplicationDetails = async (req, res) => {
                 tw.tipo AS tipo_servicio,
                 u.nombre, u.apellido, u.sexo, u.correo, u.fecha_nacimiento
             FROM Solicitud_WEB sw
-            INNER JOIN Usuario_WEB uw ON sw.ID_Usuario = uw.ID_Usuario
-            INNER JOIN Usuario u ON uw.ID_Usuario = u.ID_Usuario
+            INNER JOIN Usuario u ON sw.ID_Usuario = u.ID_Usuario
             INNER JOIN Tipo_Web tw ON sw.ID_Tipo_Web = tw.ID_Tipo_Web
         `;
 
@@ -817,5 +818,74 @@ export const deleteSolicitudById = async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar la solicitud:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+export const clientLeaveTrainer = async (req, res) => {
+    try {
+        const { clientUserID, trainerUserID } = req.body;
+
+        const pool = await getConnection();
+
+        // Obtener ID_UsuarioMovil del cliente
+        const clientResult = await pool.request()
+            .input("ID_Usuario", sql.VarChar, clientUserID)
+            .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+        if (clientResult.recordset.length === 0) {
+            return res.status(404).json({ message: "Cliente no encontrado." });
+        }
+        const ID_UsuarioMovil = clientResult.recordset[0].ID_UsuarioMovil;
+
+        // Obtener ID_Usuario_WEB del entrenador/nutricionista
+        const trainerResult = await pool.request()
+            .input("ID_Usuario", sql.VarChar, trainerUserID)
+            .query("SELECT ID_Usuario_WEB FROM Usuario_WEB WHERE ID_Usuario = @ID_Usuario");
+        if (trainerResult.recordset.length === 0) {
+            return res.status(404).json({ message: "Entrenador/Nutricionista no encontrado." });
+        }
+        const ID_Usuario_WEB = trainerResult.recordset[0].ID_Usuario_WEB;
+
+        const currentDate = new Date().toISOString().split('T')[0];
+                await pool.request()
+                .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
+                .input("ID_Usuario_WEB", sql.Int, ID_Usuario_WEB)
+                .input("fecha_eliminacion", sql.Date, currentDate)
+                .query(`
+                    UPDATE Rutina_Asignada
+                    SET fecha_eliminacion = @fecha_eliminacion
+                    WHERE ID_UsuarioMovil = @ID_UsuarioMovil
+                    AND ID_Rutina IN (
+                        SELECT ID_Rutina 
+                        FROM Rutina
+                        WHERE ID_Usuario = (
+                        SELECT ID_Usuario 
+                        FROM Usuario_WEB
+                        WHERE ID_Usuario_WEB = @ID_Usuario_WEB
+                        )
+                    )
+                `);
+
+        // Eliminar la relación en la tabla EsCliente
+        const deleteResult = await pool.request()
+            .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
+            .input("ID_Usuario_WEB", sql.Int, ID_Usuario_WEB)
+            .query(`
+                DELETE FROM EsCliente
+                WHERE ID_UsuarioMovil = @ID_UsuarioMovil AND ID_Usuario_WEB = @ID_Usuario_WEB
+            `);
+
+        if (deleteResult.rowsAffected[0] === 0) {
+            return res.status(404).json({ message: "Relación entre cliente y entrenador no encontrada." });
+        }
+
+        // Actualizar el tipo de usuario del cliente a 1 (usuario móvil sin entrenador)
+        await pool.request()
+            .input("ID_UsuarioMovil", sql.Int, ID_UsuarioMovil)
+            .query("UPDATE UsuarioMovil SET ID_Tipo = 1 WHERE ID_UsuarioMovil = @ID_UsuarioMovil");
+
+        res.json({ message: "Cliente desligado del entrenador/nutricionista exitosamente." });
+    } catch (error) {
+        console.error("Error al desligar al cliente del entrenador/nutricionista:", error);
+        res.status(500).json({ error: "Error interno del servidor." });
     }
 };

@@ -15,11 +15,24 @@ import config from "../../utils/conf";
 
 const TrainingScreen = ({ navigation, route }) => {
   
-  const [selectedDate, setSelectedDate] = useState(route.params?.selectedDate ? new Date(route.params.selectedDate) : new Date());
+  const selectedDate = route.params?.selectedDate ? new Date(route.params.selectedDate) : new Date();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [workoutSession, setWorkoutSession] = useState([]);
   const [nextTrainingDate, setNextTrainingDate] = useState(null);
   const [allSession, setAllSession] = useState([]);
+
+  const isToday = (dateString) => {
+    if (!dateString) return false;  // Si no hay fecha de entrenamiento, retorna falso
+    const today = new Date();
+    const dateToCheck = new Date(dateString);
+    dateToCheck.setDate(dateToCheck.getDate() + 1);
+  
+    today.setHours(0, 0, 0, 0);  // Establece la hora a medianoche
+    dateToCheck.setHours(0, 0, 0, 0);  // Establece la hora a medianoche
+    console.log
+    return today.getTime() === dateToCheck.getTime();
+  };
+  
 
   // Carga el OID del usuario al iniciar el componente
   useEffect(() => {
@@ -133,13 +146,16 @@ const TrainingScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, (!isToday(nextTrainingDate) || (workoutSession?.length ?? 0) === 0) ? styles.buttonDisabled : null]}
         onPress={() => {
-          navigation.navigate("TrainingStack", {
-            screen: "WorkoutScreen",
-            params: { workoutSession: allSession, date: selectedDate },
-          });
+          if (isToday(nextTrainingDate) && workoutSession?.length > 0) {
+            navigation.navigate("TrainingStack", {
+              screen: "WorkoutScreen",
+              params: { workoutSession: allSession, date: selectedDate },
+            });
+          }
         }}
+        disabled={!isToday(nextTrainingDate) || (workoutSession?.length ?? 0) === 0}
       >
         <Text style={styles.buttonText}>¡Comenzar Entrenamiento!</Text>
       </TouchableOpacity>
@@ -257,6 +273,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     rowGap: 5,
     justifyContent: "center",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",  // Color gris para indicar que el botón está deshabilitado
   },
 });
 

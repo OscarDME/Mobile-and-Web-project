@@ -10,7 +10,7 @@ import {
 getAllMobileUsersInfo,
 getMobileUserTypeByID,
 checkPerformanceComparisonEnabled,
-getWEBUserTypeByID
+getWebUserTypeById
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
@@ -20,8 +20,8 @@ import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, cre
 import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta } from "../Controllers/Recetas.Controllers.js";
 import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas, getRutinasPublicasByUsuario, cloneRutinaById } from "../Controllers/Rutinas.Controllers.js";
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
-import { createCompleteRutinaForClient, getAssignedRoutines, assignRoutine, removeAssignedRoutine } from "../Controllers/AsignarRutinas.Controllers.js";
-import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById} from "../Controllers/Solicitudes.js";
+import { createCompleteRutinaForClient, getAssignedRoutines, assignRoutine, removeAssignedRoutine, getRoutinesEndingSoonForUser } from "../Controllers/AsignarRutinas.Controllers.js";
+import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById, clientLeaveTrainer} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
 import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights, getAverageStrengthByAgeGroup, getMaximumAbsoluteStrength, getAllMaximumAbsoluteStrength } from "../Controllers/Progreso.Ejercicios.Controllers.js";
@@ -49,7 +49,7 @@ router.put('/ViajeGimnasio/:id', updateViajeGimnasio);
 router.get("/mobileuser", getAllMobileUsersInfo);
 router.get("/userType/:oid", getMobileUserTypeByID);
 router.get("/isPerformanceComparisonEnabled/:oid", checkPerformanceComparisonEnabled);
-router.get("/webType/:oid", getWEBUserTypeByID);
+router.get("/webType/:id", getWebUserTypeById);
 
 //Solicitudes
 router.post("/solicitud", createTrainerClientRequest);
@@ -69,6 +69,7 @@ router.post("/acceptclienttrainer", acceptClientTrainerRequest);
 router.post("/deletesolicitudtrainer", deleteClientTrainerRequest);
 router.post("/checkpendingrequest", checkPendingRequest);
 router.post("/checkrequest", checkRequest);
+router.post("/clientLeaveTrainer", clientLeaveTrainer);
 
 //Solitudes Entrenador-Nutricionista
 router.post("/insertTrainer", insertTrainerNutritionistRequest);
@@ -140,6 +141,7 @@ router.post("/rutinaasignar", createCompleteRutinaForClient);
 router.get("/rutinasasignar/:id", getAssignedRoutines);
 router.post("/asignar", assignRoutine);
 router.post("/borrarasignacion/:id", removeAssignedRoutine);
+router.get("/rutinaspronto/:id", getRoutinesEndingSoonForUser);
 
 //Dietas
 router.get("/tiemposComida", getTiemposComida);

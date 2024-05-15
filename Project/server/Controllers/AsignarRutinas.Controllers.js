@@ -506,3 +506,49 @@ export const removeAssignedRoutine = async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 };
+
+export const getRoutinesEndingSoonForUser = async (req, res) => {
+  try {
+      const userID = req.params.id; // Asegúrate de pasar el ID del usuario como parámetro en la ruta
+      const pool = await getConnection();
+      const mobileUserResult = await pool
+      .request()
+      .input("ID_Usuario", sql.VarChar, userID)
+      .query("SELECT ID_UsuarioMovil FROM UsuarioMovil WHERE ID_Usuario = @ID_Usuario");
+
+      const ID_UsuarioMovil = mobileUserResult.recordset[0].ID_UsuarioMovil;
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1); // Setea la fecha para mañana
+      const formattedDate = `${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}-${tomorrow.getDate()}`; // Formato 'YYYY-MM-DD'
+
+      const result = await pool.request()
+          .input('FechaFin', sql.Date, formattedDate)
+          .input('ID_UsuarioMovil', sql.Int, ID_UsuarioMovil)
+          .query(`
+              SELECT 
+                  RA.ID_Rutina_Asignada, 
+                  R.nombre AS NombreRutina, 
+                  RA.fecha_fin
+              FROM 
+                  Rutina_Asignada RA
+              INNER JOIN 
+                  Rutina R ON RA.ID_Rutina = R.ID_Rutina
+              INNER JOIN 
+                  UsuarioMovil UM ON RA.ID_UsuarioMovil = UM.ID_UsuarioMovil
+              WHERE 
+                  UM.ID_UsuarioMovil = @ID_UsuarioMovil
+                  AND CONVERT(char(10), RA.fecha_fin, 126) = @FechaFin
+                  AND RA.fecha_eliminacion IS NULL;
+          `);
+
+      if (result.recordset.length > 0) {
+          res.json(result.recordset);
+      } else {
+          res.status(404).send('No hay rutinas que terminen mañana para el usuario especificado.');
+      }
+  } catch (error) {
+      console.error('Error al obtener las rutinas que terminan pronto para el usuario:', error);
+      res.status(500).send('Error interno del servidor');
+  }
+};

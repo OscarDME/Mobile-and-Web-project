@@ -50,6 +50,11 @@ const EntrenadorNutricionista2 = ({ navigation, route }) => {
     
         const response = await fetch(document);
         const blob = await response.blob();
+
+        if (blob.size > 5000000) { // Comprueba nuevamente el tamaño del blob
+          alert('El documento no debe ser mayor de 5 MB.');
+          return;
+      }
     
         await uploadBytes(documentRef, blob);
         const documentUrl = await getDownloadURL(documentRef);
@@ -64,7 +69,7 @@ const EntrenadorNutricionista2 = ({ navigation, route }) => {
 
 
         // Llamada a la API
-        // Suponiendo que tienes una función para hacer la llamada POST a tu API
+        // Suponiendo que tienes una función para hacer la llamada POST a tu AP
         const postData = {
           ID_Tipo_Web,
           descripcion: description,
@@ -124,7 +129,13 @@ const EntrenadorNutricionista2 = ({ navigation, route }) => {
             <Text style={styles.descriptionText}>Describe el servicio que brindas</Text>
             <TextInput
                 style={styles.input}
-                onChangeText={setServiceDescription}
+                onChangeText={(text) => {
+                    if (text.length <= 2000) {
+                        setServiceDescription(text);
+                    } else {
+                        alert('La descripción del servicio no puede exceder los 2000 caracteres.');
+                    }
+                }}                
                 value={serviceDescription}
                 multiline
                 numberOfLines={4}

@@ -8,4 +8,4 @@ const config = {
 
 export default config;
 
-//status: desquiciado
+//status: desquiciad

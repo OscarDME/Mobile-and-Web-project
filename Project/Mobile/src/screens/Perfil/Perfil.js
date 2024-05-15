@@ -6,10 +6,11 @@ import {
   Switch,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faCheck, faTimes, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faEdit, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as WebBrowser from "expo-web-browser";
 import signOut from "../Inicio/authService";
@@ -110,6 +111,54 @@ const ProfileScreen = ({ route }) => {
     updatePreference("ViajeGimnasio", newValue);
   };
 
+  const handleLogoutFromTrainer = async (trainer) => {
+    try {
+      // Muestra una alerta de confirmación
+      const confirmLogout = await new Promise((resolve) => {
+        Alert.alert(
+          "Confirmación",
+          "¿Estás seguro de que quieres desligarte de tu entrenador?",
+          [
+            {
+              text: "Cancelar",
+              onPress: () => resolve(false),
+              style: "cancel",
+            },
+            {
+              text: "Aceptar",
+              onPress: () => resolve(true),
+            },
+          ],
+          { cancelable: false }
+        );
+      });
+  
+      if (confirmLogout) {
+        const userOID = await AsyncStorage.getItem("userOID");
+        const response = await fetch(`${config.apiBaseUrl}/clientLeaveTrainer`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            clientUserID: userOID,
+            trainerUserID: trainer.ID_Usuario,
+          }),
+        });
+  
+        if (response.ok) {
+          // Si la llamada a la API es exitosa, actualiza los datos del entrenador en el estado
+          setTrainerData(null);
+          console.log("Te has desligado exitosamente del entrenador");
+        } else {
+          throw new Error("Error al desligarse del entrenador");
+        }
+      }
+    } catch (error) {
+      console.error("Error al desligarse del entrenador:", error);
+    }
+  };
+
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -135,7 +184,7 @@ const ProfileScreen = ({ route }) => {
       setPerformanceModule(data.ComparacionRendimiento);
       setGymModule(data.ViajeGimnasio);
 
-      // Obtener las invitaciones pendientes de solicitud de entrenador a cliente
+      // Obtener las invitaciones pendientes de solicitud de entrenador a clientE
       const invitationsResponse = await fetch(
         `${config.apiBaseUrl}/pendingclient/${userOID}`,
         {
@@ -202,7 +251,7 @@ const ProfileScreen = ({ route }) => {
 
   const handleAcceptInvitation = async (ID_SolicitudEntrenadorCliente) => {
     try {
-      // Llama a la función para aceptar la invitación
+      // Llama a la función para aceptar la invitació
       const response = await fetch(`${config.apiBaseUrl}/acceptclient`, {
         method: "POST",
         headers: {
@@ -301,7 +350,7 @@ const ProfileScreen = ({ route }) => {
         </Text>
       </TouchableOpacity>
 
-      {trainerData.length > 0 ? (
+      {trainerData && trainerData.length > 0 ? (
         trainerData.map((trainer, index) => (
           <View key={index} style={styles.card}>
             <Text style={styles.sectionTitle}>
@@ -314,12 +363,15 @@ const ProfileScreen = ({ route }) => {
             <View style={styles.ratingContainer}>
               <Rating
                 imageSize={30}
-                startingValue={trainer.calificacion_cliente} // Usar la calificación del entrenador/nutricionista
+                startingValue={trainer.calificacion_cliente} // Usar la calificación del entrenador/nutricionisto
                 ratingColor="#f1c40f" // Cambia el color de las estrellas
                 onFinishRating={handleRatingCompleted}
                 style={{ marginTop: 15 }} // Espaciado vertical desde el nombre
               />
             </View>
+            <TouchableOpacity onPress={() => handleLogoutFromTrainer(trainer)}>
+              <FontAwesomeIcon icon={faSignOutAlt} size={24} color="#cf0709"/>
+            </TouchableOpacity>
           </View>
         ))
       ) : (

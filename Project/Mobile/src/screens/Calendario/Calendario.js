@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../../utils/conf";
 
@@ -12,9 +13,11 @@ const Calendario = ({ navigation, route }) => {
   const [selectedDate, setSelectedDate] = useState(''); // Nuevo estado para almacenar la fecha seleccionada
 
 
-  useEffect(() => {
-    fetchEventData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchEventData();
+    }, [])
+  );
 
   const fetchEventData = async () => {
     try {
@@ -108,11 +111,14 @@ const Calendario = ({ navigation, route }) => {
   const handleDayPress = (day) => {
     const dayEvents = allMarkedDates[day.dateString]?.dots || [];
     setSelectedDayEvents(dayEvents);
-    setSelectedDate(day.dateString); // Guarda la fecha seleccionada
+    setSelectedDate(day.dateString);
+    console.log('Day pressed', day.dateString);
+    console.log(selectedDate);
   };
 
 
-  const handleEventPress = (key) => {
+  const handleEventPress = (key, selectedDate) => {
+    console.log('Event pressed', selectedDate);
     if (key.includes('Dieta')) {
       navigation.navigate('Comidas', { selectedDate: selectedDate });
     } else if (key.includes('Entrenamiento')) {
@@ -136,7 +142,7 @@ const Calendario = ({ navigation, route }) => {
           <TouchableOpacity
             key={index}
             style={[styles.eventItem, { backgroundColor: event.color }]}
-            onPress={() => handleEventPress(event.key)} // Actualiza esta línea
+            onPress={() => handleEventPress(event.key, selectedDate)} // Actualiza esta línea
           >
             <Text style={styles.eventText}>{event.key}</Text>
           </TouchableOpacity>

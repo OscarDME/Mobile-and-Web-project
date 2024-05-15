@@ -293,36 +293,29 @@ export const checkPerformanceComparisonEnabled = async (req, res) => {
   }
 };
 
-export const getWEBUserTypeByID = async (req, res) => {
-  
-  const oid = req.params.oid; 
+
+export const getWebUserTypeById = async (req, res) => {
+  const id = req.params.id;  // Asume que el ID del usuario se pasa como parámetro en la URL
 
   try {
     const pool = await getConnection();
-
-    // Consulta para obtener la información de todos los usuarios móviles y su tipo
     const result = await pool.request()
-    .input("oid", sql.VarChar, oid) 
-    .query(`
-      SELECT 
-        u.ID_Usuario, 
-        um.ID_Tipo_WEB, 
-        t.tipo AS tipo_descripcion
-      FROM 
-        Usuario u
-      INNER JOIN Usuario_WEB um ON u.ID_Usuario = um.ID_Usuario
-      INNER JOIN Tipo_WEB t ON um.ID_Tipo_Web = t.ID_Tipo_Web
-      WHERE u.ID_Usuario = @oid
-    `);
+      .input('ID_Usuario', sql.VarChar, id)  
+      .query(`
+        SELECT u.ID_Usuario, uw.ID_Tipo_WEB, tw.tipo AS tipo_descripcion
+        FROM Usuario u
+        INNER JOIN Usuario_WEB uw ON u.ID_Usuario = uw.ID_Usuario
+        INNER JOIN Tipo_WEB tw ON uw.ID_Tipo_WEB = tw.ID_Tipo_WEB
+        WHERE u.ID_Usuario = @ID_Usuario
+      `);
 
-    // Verificar si se encontró información para los usuarios móviles
     if (result.recordset.length > 0) {
-      res.json(result.recordset);
+      res.json(result.recordset[0]);  // Devuelve los datos del tipo de usuario WEB
     } else {
-      res.status(404).json({ message: "No se encontraron usuarios móviles" }); // Manejo de usuarios no encontrados
+      res.status(404).json({ message: "Usuario no encontrado" });
     }
   } catch (error) {
-    console.error('Error al obtener la información de los usuarios móviles:', error);
-    res.status(500).json({ error: 'Error interno del servidor' }); // Manejo de error de servidor
+    console.error('Error al obtener el tipo de usuario WEB:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
+};

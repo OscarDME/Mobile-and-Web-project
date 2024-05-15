@@ -29,11 +29,13 @@ const Progreso = ({ route, navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchPerformanceComparisonEnabled().then(isEnabled => {
-      setIsComparisonEnabled(isEnabled);
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPerformanceComparisonEnabled().then(isEnabled => {
+        setIsComparisonEnabled(isEnabled);
+      });
+    }, [])
+  );
 
   const handleScreenChange = (screen) => {
     console.log("Changing screen to:", screen);

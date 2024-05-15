@@ -52,8 +52,8 @@ const RoutineDetailsScreen = ({ navigation, route }) => {
       year: endDateObj.getFullYear(),
       month: endDateObj.getMonth(), // en JavaScript, los meses comienzan desde 0
       day: endDateObj.getDate(),
-      hour: 3, // Configurar la hora específica, por ejemplo, las 8 AM
-      minute: 6, // a las 00 minutos
+      hour: 0, // Configurar la hora específica, por ejemplo, las 8 AM
+      minute: 0, // a las 00 minutos
       repeats: false // Asegúrate de que no se repita
     };
   

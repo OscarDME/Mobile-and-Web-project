@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 const MainMenu = (navigation) => {
   const [notifications, setNotifications] = useState([]);
   const [travelNotifications, setTravelNotifications] = useState([]);
+  const [rutinasPronto, setRutinasPronto] = useState([]);
 
   useEffect(() => {
     fetchNotifications();
@@ -20,40 +21,58 @@ const MainMenu = (navigation) => {
       fetchNotifications();
     }, [])
   );
-
   const fetchNotifications = async () => {
     const userOID = await AsyncStorage.getItem('userOID');
     if (!userOID) {
       console.log("No user OID found");
       return;
     }
-
+  
     try {
-      const response = await fetch(`${config.apiBaseUrl}/citaspendientes/${userOID}`, {
+      // Fetch pending appointments
+      const citasResponse = await fetch(`${config.apiBaseUrl}/citaspendientes/${userOID}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
-      const data = await response.json();
-      setNotifications(data); // Asumiendo que `data` es un arreglo de notificaciones
+      if (citasResponse.ok) {
+        const citasData = await citasResponse.json();
+        setNotifications(citasData);
+      } else {
+        console.error("Failed to fetch appointments", citasResponse.status);
+      }
+  
+      // Fetch travel notifications
+      const viajeResponse = await fetch(`${config.apiBaseUrl}/viajeNotificaciones/${userOID}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (viajeResponse.ok) {
+        const viajeData = await viajeResponse.json();
+        setTravelNotifications(viajeData);
+      } else {
+        console.error("Failed to fetch travel notifications", viajeResponse.status);
+      }
+  
+      // Fetch routines about to end
+      const rutinasResponse = await fetch(`${config.apiBaseUrl}/rutinaspronto/${userOID}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (rutinasResponse.ok) {
+        const rutinasData = await rutinasResponse.json();
+        setRutinasPronto(rutinasData);
+      } else if (rutinasResponse.status === 404) {
+        console.log("No hay rutinas próximas a terminar.");
+        setRutinasPronto([]); // Asegura que no se muestren datos antiguos o incorrectos
+      } else {
+        console.error("Failed to fetch routines about to end", rutinasResponse.status);
+      }
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-
-    try {
-      const response = await fetch(`${config.apiBaseUrl}/viajeNotificaciones/${userOID}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const datos = await response.json();
-      setTravelNotifications(datos);
-    } catch (error) {
-      console.error("Error deleting notifications:", error);
-    }
   };
+  
+  
 
   const handlePressLocation = (location) => {
     // Abrir el enlace al lugar de la cita
@@ -165,6 +184,17 @@ const MainMenu = (navigation) => {
         </View>
         </>
       ))}
+      {rutinasPronto.map((rutina, index) => (
+      <View key={index} style={styles.notificationCard}>
+        <View style={styles.row}>
+          <View style={styles.textContainer}>
+            <Text style={styles.titlemajor}>Rutina a punto de terminar</Text>
+            <Text style={styles.title}>{rutina.NombreRutina}</Text>
+            <Text>Termina el: {new Date(rutina.fecha_fin).toLocaleDateString()}</Text>
+          </View>
+        </View>
+      </View>
+    ))}
     </ScrollView>
   );
 };

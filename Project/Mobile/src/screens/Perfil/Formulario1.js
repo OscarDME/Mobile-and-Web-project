@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Image, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Progress from "react-native-progress";
@@ -23,6 +23,7 @@ const EntrenadorNutricionista1 = ({ navigation, route }) => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
+        aspect: [9, 12],  //Forzar el aspecto a 16:9
         quality: 1,
       });
   
@@ -46,12 +47,18 @@ const EntrenadorNutricionista1 = ({ navigation, route }) => {
         alert('Por favor, selecciona una imagen antes de continuar.');
         return;
       }
-      const storage = getStorage(FIREBASE_APP); // Utiliza getStorage para obtener la instancia de Firebase Storage
+      const storage = getStorage(FIREBASE_APP); // Utiliza getStorage para obtener la instancia de Firebase Storag
       const imageName = `profile_images/${Date.now()}-${image.split('/').pop()}`;
       const imageRef = ref(storage, imageName);
       try {
         const response = await fetch(image);
         const blob = await response.blob();
+
+        if (blob.size > 3000000) { 
+          alert('La imagen no debe ser mayor de 3 MB.');
+          return;
+        }
+
         await uploadBytes(imageRef, blob);
         const imageUrl = await getDownloadURL(imageRef);
         navigation.navigate('Formulario2', { serviceType, description, imageUrl });
@@ -93,7 +100,13 @@ const EntrenadorNutricionista1 = ({ navigation, route }) => {
         style={styles.descriptionInput}
         multiline
         numberOfLines={4}
-        onChangeText={setDescription}
+        onChangeText={(text) => {
+          if (text.length <= 700) {  // Limita a 700 caracteres
+            setDescription(text);
+          } else {
+            Alert.alert("Límite de caracteres", "La descripción no puede exceder los 700 caracteres.");
+          }
+        }}        
         value={description}
       />
 

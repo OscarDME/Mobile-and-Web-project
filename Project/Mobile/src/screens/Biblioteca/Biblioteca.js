@@ -10,11 +10,19 @@ import {
 import SearchBar from "../../components/SearchBar";
 import config from "../../utils/conf";
 
+const difficulties = [
+  { id: "Todos", label: "Todos" },
+  { id: 1, label: "Bajo" },
+  { id: 2, label: "Medio" },
+  { id: 3, label: "Alto" }
+];
+
 const ExerciseLibrary = ({ navigation }) => {
   const [exercises, setExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("Todos"); // Nuevo estado para la categoría seleccionada
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(null);
 
   useEffect(() => {
     fetchExercises();
@@ -77,6 +85,32 @@ const ExerciseLibrary = ({ navigation }) => {
 
     setFilteredExercises(filtered);
 };
+
+const filterByDifficulty = (difficultyID) => {
+  console.log(difficultyID);
+  setSelectedDifficulty(difficultyID);
+  let filtered = [...exercises];
+
+  if (difficultyID !== "Todos") {
+    filtered = filtered.filter(exercise => exercise.ID_Dificultad === difficultyID);
+  }
+
+  // Reapply other filters if an
+  if (selectedCategory !== "Todos") {
+    filtered = filtered.filter(exercise =>
+      selectedCategory === "Sin equipo" ? !exercise.Equipo : exercise.ID_Modalidad === 3
+    );
+  }
+
+  if (selectedMuscle) {
+    filtered = filtered.filter(exercise =>
+      exercise.Musculo && exercise.Musculo.includes(selectedMuscle)
+    );
+  }
+
+  setFilteredExercises(filtered);
+};
+
 
   const navigateToDetailScreen = (exercise) => {
     navigation.navigate("DetallesEjercicio", { exercise });
@@ -170,6 +204,17 @@ const ExerciseLibrary = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        <ScrollView horizontal style={styles.difficultyContainer} showsHorizontalScrollIndicator={false}>
+      {difficulties.map((difficulty) => (
+        <TouchableOpacity 
+          key={difficulty.id} 
+          onPress={() => filterByDifficulty(difficulty.id === "Todos" ? null : difficulty.id)}
+          style={[styles.categoryButton, selectedDifficulty === difficulty.id ? styles.selectedButton : null]}
+        >
+          <Text style={styles.categoryButtonText}>{difficulty.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
       </View>
       <ScrollView style={styles.exerciseList}>
         {filteredExercises.map((exercise, index) => (
@@ -224,6 +269,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     height: 50,
   },
+  difficultyContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    height: 50,
+  },
   selectedButton: {
     backgroundColor: "#a0a0a0", // Un color diferente para destacar la selección
   },
@@ -246,7 +296,7 @@ const styles = StyleSheet.create({
   },
   exerciseList: {
     flex: 1,
-    marginTop: 10,
+    marginTop: 20,
   },
   exerciseItem: {
     padding: 20,
@@ -268,7 +318,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   muscleContainer: {
-    height: 50,
+    height: 100,
     marginTop: 20,
   },
   muscleButton: {
