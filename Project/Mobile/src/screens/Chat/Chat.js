@@ -10,12 +10,14 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { collection, query, where, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../../FirebaseConfig"; 
+import * as Notifications from 'expo-notifications';
 import config from "../../utils/conf";
 
 
 const Chat = ({ navigation }) => {
   const [conversaciones, setConversaciones] = useState([]);
   const [userInfo, setUserInfo] = useState({});
+  
 
   useEffect(() => {
     const fetchConversaciones = async () => {

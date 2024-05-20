@@ -440,7 +440,8 @@ useEffect(() => {
                   onChangeText={updateWeight}
                   value={weight}
                   keyboardType="numeric"
-                />
+                  editable={workoutSession.session[currentSetIndex].Modificable === 'true'}               
+                   />
               </View>
               <View style={styles.exerciseDetailRow}>
                 <Text style={styles.timerLabel}>Reps</Text>

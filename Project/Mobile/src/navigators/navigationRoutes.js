@@ -49,6 +49,7 @@ import Notificaciones from "../screens/Notificaciones/Notificaciones";
 import Mas from "../components/modal";
 import Descubre from "../screens/Descubre/Descubre";
 import Comidas from "../screens/Comidas/Comidas";
+import DetallesAlimento from "../screens/Comidas/DetallesAlimento";
 import Biblioteca from "../screens/Biblioteca/Biblioteca";
 import Advertencias from "../screens/Advertencias/Advertencias";
 import Viaje from "../screens/Viaje/Viaje";
@@ -82,7 +83,9 @@ import AddEjercicioView from "../screens/Rutinas/AddEjercicioView";
 import AddSetsView from "../screens/Rutinas/AddSetsView";
 import AssignRoutineScreen from "../screens/Rutinas/AsignarRutina";
 import AssignRoutine from "../screens/Questionnarie/AsignarRutina2";
-import Calentamiento from "../screens/PhysicalTestScreens/Calentamiento"
+import Calentamiento from "../screens/PhysicalTestScreens/Calentamiento";
+import Visualizacion from "../screens/Entrenamiento/VisulizacionEntrenamiento";
+import Request from "../screens/Biblioteca/Request";
 
 import Header from "../components/Header";
 {
@@ -227,7 +230,7 @@ const FooterTabs = () => {
       <Tab.Screen name="Notificaciones" component={Notificaciones} />
       <Tab.Screen name="Perfil" component={ProfileStack} />
       <Tab.Screen name="Descubre" component={DescubreStack} />
-      <Tab.Screen name="Comidas" component={Comidas} />
+      <Tab.Screen name="Comidas" component={ComidasStack} />
       <Tab.Screen name="Biblioteca" component={BibliotecaStack} />
       <Tab.Screen name="Advertencias" component={Advertencias} />
       <Tab.Screen name="Viaje" component={Viaje} />
@@ -252,6 +255,22 @@ const MainStack = () => {
     >
       <StackMain.Screen name="Login" component={Login} />
     </StackMain.Navigator>
+  );
+};
+
+const StackComidas = createNativeStackNavigator();
+
+const ComidasStack = () => {
+  return (
+    <StackComidas.Navigator
+      initialRouteName="Comidas"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <StackComidas.Screen name="Comidas" component={Comidas} />
+      <StackComidas.Screen name="DetallesAlimento" component={DetallesAlimento} />
+    </StackComidas.Navigator>
   );
 };
 
@@ -283,6 +302,7 @@ const TrainingStackScreen = () => {
     }}
   >
       <TrainingStack.Screen name="WorkoutScreen" component={WorkoutScreen} />
+      <TrainingStack.Screen name="Visualizar" component={Visualizacion} />
     </TrainingStack.Navigator>
   );
 };
@@ -394,6 +414,10 @@ const BibliotecaStack = () => {
       <StackBiblioteca.Screen
         name="DetallesEjercicio"
         component={DetallesEjercicio}
+      />
+      <StackBiblioteca.Screen
+        name="Request"
+        component={Request}
       />
     </StackBiblioteca.Navigator>
   );

@@ -151,7 +151,7 @@ useEffect(() => {
     try {
 
   
-      // Abrir Google Maps
+      // Abrir Google 
       const encodedAddress = encodeURIComponent(gymAddress);
       const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
       const supported = await Linking.canOpenURL(url);

@@ -10,20 +10,22 @@ import {
 getAllMobileUsersInfo,
 getMobileUserTypeByID,
 checkPerformanceComparisonEnabled,
-getWebUserTypeById
+getWebUserTypeById,
+isUserNutritionistClient,
+getUserClients
 } from "../Controllers/Usuario.Controller.js";
 
 import { getMaterials } from "../Controllers/Materiales.Controllers.js";
 import { createCuestionario, getCuestionarioData } from "../Controllers/Cuestionario.Controllers.js";
 import { createEjercicio, getExercises, getEjercicioById, updateEjercicio, getAlternativeExercises, requestEjercicio, getRequests, updateEstadoEjercicio, deleteEjercicio, updateRequest } from "../Controllers/EjerciciosControllers.js";
-import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, createAlimentoRequest, getAllAlimentosWithMacronutrientesRequest, updateEstadoAlimento, deleteAlimento, updateAndAcceptAlimento} from "../Controllers/Alimento.Controllers.js";
-import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta } from "../Controllers/Recetas.Controllers.js";
+import { createAlimento, getAllAlimentosWithMacronutrientes, updateAlimento, createAlimentoRequest, getAllAlimentosWithMacronutrientesRequest, updateEstadoAlimento, deleteAlimento, updateAndAcceptAlimento, getAlimentoWithMacronutrientesByID} from "../Controllers/Alimento.Controllers.js";
+import { createReceta, getReceta, updateReceta, getIngredientes, createRecetaRequest, getRecetaRequests, updateEstadoReceta, deleteReceta, updateAndAcceptReceta, getRecetaByID } from "../Controllers/Recetas.Controllers.js";
 import { createRutina, getRutinasByUsuario, getRutinaByID, updateRutina, createEjerciciosDia, getEjerciciosPorDia, updateEjerciciosDia, crearBloqueSetsConSeries, actualizarBloqueSetsConSeries, obtenerSetsPorEjercicioDia, deleteRutina, createCompleteRutina, getCompleteRutinas, getRutinasPublicasByUsuario, cloneRutinaById } from "../Controllers/Rutinas.Controllers.js";
 import { getTiemposComida, getAllAlimentosAndRecetas, createAndAssignDiet, getDietasByID, getCurrentOrUpcomingDiet, obtenerCompletadosPorFecha, registrarCompletado, eliminarCompletado } from "../Controllers/Dietas.Controllers.js";
 import { createCompleteRutinaForClient, getAssignedRoutines, assignRoutine, removeAssignedRoutine, getRoutinesEndingSoonForUser } from "../Controllers/AsignarRutinas.Controllers.js";
 import { createTrainerClientRequest, getPendingTrainerClientRequests, deleteTrainerClientRequest, getPendingClient, deleteTrainerClient, acceptClientRequest, getTrainerInfo, updateClientRating, getAllClientsOfTrainer, deleteClientFromTrainer, getAllTrainersInfo, createClientTrainerRequest, getPendingRequestsForTrainer, acceptClientTrainerRequest, deleteClientTrainerRequest, checkPendingRequest, checkRequest, insertTrainerNutritionistRequest, getApplicationDetails, acceptAndCreateTrainerNutritionist, deleteSolicitudById, clientLeaveTrainer} from "../Controllers/Solicitudes.js";
 import { createCita, getCitas, aceptarCita, cancelarCita, completarCita, pendienteCita, rechazarCita, getRejectedCitas, actualizarCita, getCitasMobile, getAceptadasCitas, getAcceptedCitasMobile, getAcceptedCitasMobileAndDate } from "../Controllers/Citas.Controllers.js"
-import { getWorkoutSession, updateWorkoutSeries } from "../Controllers/Entrenamiento.Controllers.js";
+import { getWorkoutSession, updateWorkoutSeries, createWarmupSession } from "../Controllers/Entrenamiento.Controllers.js";
 import { get1RMForExercise, getHistorical1RMForExercise, getHistorical1RMForTime, get1RMForTime, getWeights, getAverageStrengthByAgeGroup, getMaximumAbsoluteStrength, getAllMaximumAbsoluteStrength } from "../Controllers/Progreso.Ejercicios.Controllers.js";
 import { createMilestone, deleteMilestone, getIndividualMeasurements, getIndividualMeasurementsWithInterval, getMilestones, updateMilestone } from "../Controllers/Progress.Controllers.js";
 import { createRutinaPersonalizada } from "../Controllers/RutinaPersonalizada.js";
@@ -39,6 +41,7 @@ import { getTrainersInfo } from "../Controllers/Chat.Controllers.js";
 const router = Router();
 //Usuarios
 router.get("/users", getUsers);
+router.get("/clients/:oid", getUserClients);
 router.get("/users/:oid", checkIfUserExists);
 router.get("/birthdate/:oid", getBirthDate);
 router.post("/users", createUser);
@@ -50,6 +53,7 @@ router.get("/mobileuser", getAllMobileUsersInfo);
 router.get("/userType/:oid", getMobileUserTypeByID);
 router.get("/isPerformanceComparisonEnabled/:oid", checkPerformanceComparisonEnabled);
 router.get("/webType/:id", getWebUserTypeById);
+router.get("/esNutricionista/:oid", isUserNutritionistClient);
 
 //Solicitudes
 router.post("/solicitud", createTrainerClientRequest);
@@ -106,6 +110,7 @@ router.get("/alimentorequest", getAllAlimentosWithMacronutrientesRequest);
 router.put("/estadoalimento/:id", updateEstadoAlimento);
 router.delete("/alimento/:id", deleteAlimento);
 router.put("/alimento/:id", updateAndAcceptAlimento);
+router.get("/alimento/:id", getAlimentoWithMacronutrientesByID);
 
 //Recetas
 router.post("/recetas", createReceta);
@@ -117,6 +122,7 @@ router.get("/recetarequest", getRecetaRequests);
 router.put("/estadoreceta/:id", updateEstadoReceta);
 router.delete("/receta/:id", deleteReceta);
 router.put("/receta/:id", updateAndAcceptReceta);
+router.get("/receta/:id", getRecetaByID);
 
 //Rutinas
 router.post("/rutinas", createRutina);
@@ -171,6 +177,7 @@ router.get("/citasaceptada2/:id/:selectedDate", getAcceptedCitasMobileAndDate);
 //Entrenamiento
 router.get("/entrenamiento/:id/:fecha", getWorkoutSession);
 router.post("/entrenamiento", updateWorkoutSeries);
+router.post("/createWarmUp", createWarmupSession);
 
 //Progreso de Ejercicios
 router.get("/RM/:id/:ejercicio", get1RMForExercise);

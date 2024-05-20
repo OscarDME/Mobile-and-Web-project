@@ -86,7 +86,7 @@ export const getExercises = async (req, res) => {
     try {
         const pool = await getConnection();
         const request = pool.request();
-        request.requestTimeout = 45000;
+        request.requestTimeout = 1000000;
         const result = await pool.request().query(querys.getEjercicios);
 
         const exercises = result.recordset;

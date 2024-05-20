@@ -100,28 +100,7 @@ const UserChat = ({ route }) => {
     }
   };
 
-  const subirYEnviarArchivo = async (uri, fileType) => {
-    console.log(`Inicio de la subida del archivo. URI: ${uri}, Tipo: ${fileType}`);
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      console.log('Blob creado con éxito');
   
-      const fileExtension = uri.split('.').pop();
-      const fileName = `chat-files/${new Date().getTime()}.${fileExtension}`;
-      const fileRef = storageRef(STORAGE_BUCKET, fileName);
-  
-      const uploadTask = await uploadBytes(fileRef, blob); // Asegúrate de esperar esta tarea con await
-      console.log('Archivo subido con éxito');
-  
-      const url = await getDownloadURL(fileRef);
-      console.log(`URL obtenida con éxito: ${url}`);
-      enviarMensaje(null, url, fileType);
-    } catch (error) {
-      console.error('Error al subir archivo:', error);
-    }
-  };
-
   const subirYEnviarArchivoPDF = async (uri, mimeType) => {
     console.log(`Inicio de la subida del archivo. URI: ${uri}, Tipo: ${mimeType}`);
     

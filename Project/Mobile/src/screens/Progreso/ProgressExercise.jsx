@@ -368,7 +368,6 @@ const ProgressExercise = ({ navigation }) => {
           },
         ],
       });
-      // Puedes ajustar cómo y dónde mostrar la tasa de crecimiento y las bandas de confianza según tu UI
       setOtherCalculationsCompleted(true);
       console.log("RM VALUES:", rmValues);
       console.log(`Tasa de crecimiento: ${growthRate.toFixed(2)}%`);
@@ -479,6 +478,7 @@ const ProgressExercise = ({ navigation }) => {
                       <Text style={styles.exercise}>
                         {" "}
                         {growthRate.toFixed(2)}%{" "}
+                        por sesión de entrenamiento
                       </Text>
                     </Text>
                     <LineChart

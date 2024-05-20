@@ -58,10 +58,11 @@ export const getTrainersInfo = async (req, res) => {
             JOIN 
                 Usuario U ON UW.ID_Usuario = U.ID_Usuario
             LEFT JOIN 
-                (SELECT * FROM EsCliente WHERE ID_UsuarioMovil = @ID_UsuarioMovil AND ID_EsCliente = 1) R ON UW.ID_Usuario_WEB = R.ID_Usuario_WEB
+                (SELECT * FROM EsCliente WHERE ID_UsuarioMovil = @ID_UsuarioMovil AND ID_EsCliente = 13) R ON UW.ID_Usuario_WEB = R.ID_Usuario_WEB
             WHERE 
                 UW.ID_Usuario_WEB = @ID_Usuario_WEB;
         `);
+        console.log(trainersResult);
 
         res.json(trainersResult);
     } catch (error) {

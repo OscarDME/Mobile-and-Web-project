@@ -20,7 +20,7 @@ export default function BenchMarking() {
       try {
         const response = await fetch(`${config.apiBaseUrl}/ejercicio`);
         const data = await response.json();
-        // Transformar datos si es necesario para que coincidan con lo esperado por SelectList
+        // Transformar datos si es necesario para que coincidan con lo esperado por SelectLi
         const ejerciciosTransformados = data.map((ejercicio) => ({
           key: ejercicio.ID_Ejercicio.toString(),
           value: ejercicio.ejercicio,

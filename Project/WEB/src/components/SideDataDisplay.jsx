@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/SideDataDisplay.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { UserCard } from './DATA_USER_CARD';
+import { useMsal } from "@azure/msal-react";
 import SearchBar from './SearchBar';
 import config from '../utils/conf'
 
@@ -10,13 +11,15 @@ export default function SideDataDisplay(props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const { instance } = useMsal();
+  const activeAccount = instance.getActiveAccount();
 
   // Efecto para solicitar los datos de los usuarios al cargar el componente
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // Asume que tienes un endpoint '/api/users' para obtener los usuarios
-        const response = await fetch (`${config.apiBaseUrl}/users`);
+        const ID_Usuario = activeAccount.idTokenClaims.oid; 
+        const response = await fetch (`${config.apiBaseUrl}/clients/${ID_Usuario}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }

@@ -14,20 +14,54 @@ export const getUsers = async (req, res) => {
   }
 };
 
+export const getUserClients = async (req, res) => {
+  const oid = req.params.oid; // Obtener el OID del usuario desde los parámetros de la URL
+
+  try {
+    const pool = await getConnection();
+
+    // Consulta para obtener los clientes del usuario
+    const result = await pool.request()
+      .input('ID_Usuario', sql.VarChar, oid)
+      .query(`
+        SELECT 
+          u.ID_Usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.correo,
+          u.sexo,
+          u.fecha_nacimiento
+        FROM 
+          Usuario u
+          INNER JOIN UsuarioMovil um ON u.ID_Usuario = um.ID_Usuario
+          INNER JOIN EsCliente ec ON um.ID_UsuarioMovil = ec.ID_UsuarioMovil
+          INNER JOIN Usuario_WEB uw ON ec.ID_Usuario_WEB = uw.ID_Usuario_WEB
+        WHERE 
+          uw.ID_Usuario = @ID_Usuario
+      `);
+
+    if (result.recordset.length > 0) {
+      res.json(result.recordset); // Devuelve los clientes del usuario
+    } else {
+      res.status(404).json({ message: "No se encontraron clientes para este usuario" });
+    }
+  } catch (error) {
+    console.error('Error al obtener los clientes del usuario:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 export const createUser = async (req, res) => {
   try {
-    // Obtener los datos del cuerpo de la solicitud
     const { oid, name, givenName, surname, email, dateOfBirth, gender } =
       req.body;
 
-    console.log("Datos del cuerpo de la solicitud:", req.body); // Registra los datos recibidos
+    console.log("Datos del cuerpo de la solicitud:", req.body); 
 
-    // Realizar la conexión a la base de datos
     const pool = await getConnection();
 
-    console.log("Conexión a la base de datos exitosa"); // Registro de conexión exitosa
-
-    // Consulta SQL para insertar un nuevo usuario
+    console.log("Conexión a la base de datos exitosa"); 
     const result = await pool
       .request()
       .input("oid", sql.VarChar, oid)
@@ -39,12 +73,11 @@ export const createUser = async (req, res) => {
       .input("dateOfBirth", sql.Date, new Date(dateOfBirth))
       .query(querys.createUser);
 
-    console.log("Resultado de la inserción:", result); // Registra el resultado de la inserción
-
+    console.log("Resultado de la inserción:", result); 
     if (result.rowsAffected.length > 0) {
       const userMovilResult = await pool
         .request()
-        .input("ID_Usuario", sql.VarChar, oid) // ID_Usuario relacionado en UsuarioMovil
+        .input("ID_Usuario", sql.VarChar, oid) 
         .query(querys.createMovileUser);
       if (userMovilResult.rowsAffected.length > 0) {
         return res
@@ -57,7 +90,7 @@ export const createUser = async (req, res) => {
       return res.status(500).json({ error: "No se pudo crear el usuario" });
     }
   } catch (error) {
-    console.error("Error en la creación de usuario:", error); // Registra cualquier error que ocurra
+    console.error("Error en la creación de usuario:", error); 
     return res.status(500).json({ error: error.message });
   }
 };
@@ -316,6 +349,49 @@ export const getWebUserTypeById = async (req, res) => {
     }
   } catch (error) {
     console.error('Error al obtener el tipo de usuario WEB:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+export const isUserNutritionistClient = async (req, res) => {
+  const oid = req.params.oid; // Obtener el OID del usuario desde los parámetros de la URL
+
+  try {
+    const pool = await getConnection();
+
+    // Consulta para obtener el ID_UsuarioMovil correspondiente al usuario
+    const usuarioMovilResult = await pool.request()
+      .input('ID_Usuario', sql.VarChar, oid)
+      .query(`
+        SELECT ID_UsuarioMovil
+        FROM UsuarioMovil
+        WHERE ID_Usuario = @ID_Usuario
+      `);
+
+    if (usuarioMovilResult.recordset.length > 0) {
+      const ID_UsuarioMovil = usuarioMovilResult.recordset[0].ID_UsuarioMovil;
+
+      // Consulta para verificar si el usuario es cliente de un nutricionista
+      const result = await pool.request()
+        .input('ID_UsuarioMovil', sql.Int, ID_UsuarioMovil)
+        .query(`
+          SELECT 1
+          FROM EsCliente ec
+          INNER JOIN Usuario_WEB uw ON ec.ID_Usuario_WEB = uw.ID_Usuario_WEB
+          INNER JOIN Tipo_WEB tw ON uw.ID_Tipo_WEB = tw.ID_Tipo_WEB
+          WHERE ec.ID_UsuarioMovil = @ID_UsuarioMovil AND tw.ID_Tipo_WEB = 1 
+        `);
+
+      if (result.recordset.length > 0) {
+        res.json({ isNutritionistClient: true }); // El usuario es un cliente de un nutricionista
+      } else {
+        res.json({ isNutritionistClient: false }); // El usuario no es un cliente de un nutricionista
+      }
+    } else {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al verificar si el usuario es un cliente de un nutricionista:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

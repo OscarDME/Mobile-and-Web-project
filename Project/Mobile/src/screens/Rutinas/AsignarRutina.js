@@ -73,10 +73,10 @@ const AssignRoutineScreen = ({ navigation, route }) => {
   };
 
   const handleAssignRoutine = async () => {
-    if (!selectedStartDate || !selectedEndDate) {
-      console.log('Por favor, seleccione un rango de fechas válido.');
-      return;
-    }
+    // if (!selectedStartDate || !selectedEndDate) {
+    //   console.log('Por favor, seleccione un rango de fechas válido.');
+    //   return;
+    // }
 
     //Falta validar que no se pongan fechas anteriores pero por pruebas luego lo hago
 

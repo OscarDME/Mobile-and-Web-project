@@ -5,13 +5,30 @@ import config from "../../utils/conf";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-
+const macronutrientesMap = {
+  1: 'Grasas',
+  2: 'Carbohidratos',
+  3: 'Proteinas',
+};
 
 const MainMenu = ({ navigation, route }) => {
+  const [caloriasTotales, setCaloriasTotales] = useState(0);
+  const [macronutrientesTotales, setMacronutrientesTotales] = useState({
+    Grasas: 0,
+    Carbohidratos: 0,
+    Proteinas: 0,
+  });
   const [dietData, setDietData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [checkedItems, setCheckedItems] = useState(new Set());
+
+  const [caloriasTotalesDia, setCaloriasTotalesDia] = useState(0);
+  const [macronutrientesTotalesDia, setMacronutrientesTotalesDia] = useState({
+    Grasas: 0,
+    Carbohidratos: 0,
+    Proteinas: 0,
+  });
 
   useEffect(() => {
     // Asume que 'selectedDate' se pasa como YYYY-MM-DD
@@ -22,7 +39,23 @@ const MainMenu = ({ navigation, route }) => {
     }
   
     fetchDietData();
+    resetCounters();
   }, [route.params?.selectedDate]);
+
+  const resetCounters = () => {
+    setCaloriasTotales(0);
+    setMacronutrientesTotales({
+      Grasas: 0,
+      Carbohidratos: 0,
+      Proteinas: 0,
+    });
+    setCaloriasTotalesDia(0);
+    setMacronutrientesTotalesDia({
+      Grasas: 0,
+      Carbohidratos: 0,
+      Proteinas: 0,
+    });
+  };
   
   const MealTimeItem = ({ data, onCheck }) => {
 
@@ -30,18 +63,26 @@ const MainMenu = ({ navigation, route }) => {
       const itemId = `${item.ID_Alimento || item.ID_Receta}`; 
       const isChecked = checkedItems.has(itemId);
   
-      let content = item.nombre || item.receta; // Usa 'nombre' para alimentos o 'receta' para recetas
+      let content = item.nombre || item.receta; // Usa 'nombre' para alimentos o 'receta' para receta
       let details = `Porción: ${item.porcion}g`;
+
+      const caloriasPorcion = item.calorias_porcion || item.calorias;
+
   
       if (item.calorias) { // Agrega 'calorias' si el ítem es una receta
-        details += ` - Calorías: ${item.calorias}`;
+        details += ` - Calorías: ${caloriasPorcion.toFixed(1)}`;
       }
   
       return (
         <TouchableOpacity key={index} style={styles.card} onPress={() => onCheck(item, data.ID_DiasComida)}>
         <View style={styles.cardContent}>
+        <TouchableOpacity onPress={() => {
+          const detalleItemId = item.ID_Alimento ? `A${item.ID_Alimento}` : `R${item.ID_Receta}`;
+          navigation.navigate('DetallesAlimento', { itemId: detalleItemId });
+        }}>
           <Text style={styles.foodName}>{item.nombre || item.receta}</Text>
-          <Text style={styles.calories}>{item.calorias ? item.calorias + ' cal' : ''}</Text>
+        </TouchableOpacity>    
+          <Text style={styles.calories}>{caloriasPorcion + ' cal' }</Text>
           <Text style={styles.amount}>{item.porcion + 'g'}</Text>
         </View>
         <Icon
@@ -77,6 +118,8 @@ const fetchDietData = async () => {
           return;
         }
         const formattedDate = selectedDate.toISOString().split('T')[0];
+        resetCounters(); // Reiniciar contadores antes de obtener los nuevos datos
+
         const response = await fetch(`${config.apiBaseUrl}/dietaactual/${oid}/${formattedDate}`);
         const { diasComida } = await response.json();
         if (diasComida && diasComida.length > 0) {
@@ -89,9 +132,89 @@ const fetchDietData = async () => {
         console.error('Error fetching diet data:', error);
       }
     };
-  useEffect(() => {
-    fetchDietData();
-  }, [selectedDate]);
+    useEffect(() => {
+      fetchDietData();
+    }, [selectedDate]);
+    
+    useEffect(() => {
+      calculateTotalesDia();
+    }, [selectedDate, dietData]);
+
+  const calculateTotalesDia = () => {
+    let caloriasTotalDia = 0;
+    const macronutrientesTotalDia = {
+      Grasas: 0,
+      Carbohidratos: 0,
+      Proteinas: 0,
+    };
+  
+    // Reiniciar totales del día
+    setCaloriasTotalesDia(0);
+    setMacronutrientesTotalesDia({
+      Grasas: 0,
+      Carbohidratos: 0,
+      Proteinas: 0,
+    });
+  
+    dietData.forEach(dia => {
+      const alimentos = Array.isArray(dia.alimentos) ? dia.alimentos : [];
+      const recetas = Array.isArray(dia.recetas) ? dia.recetas : [];
+  
+      alimentos.forEach(alimento => {
+        caloriasTotalDia += alimento.calorias_porcion || 0;
+        const macronutrientes = JSON.parse(alimento.macronutrientes || '[]');
+        macronutrientes.forEach(macro => {
+          const macroNombre = getMacronutrienteName(macro);
+          macronutrientesTotalDia[macroNombre] += macro.cantidad || 0;
+        });
+      });
+  
+      recetas.forEach(receta => {
+        caloriasTotalDia += receta.calorias || 0;
+        const macronutrientes = JSON.parse(receta.macronutrientes || '[]');
+        macronutrientes.forEach(macro => {
+          const macroNombre = getMacronutrienteName(macro);
+          macronutrientesTotalDia[macroNombre] += macro.cantidad || 0;
+        });
+      });
+    });
+  
+    setCaloriasTotalesDia(caloriasTotalDia);
+    setMacronutrientesTotalesDia(macronutrientesTotalDia);
+  };
+
+  const updateTotals = (item, isAdding) => {
+    let itemCalorias;
+    if ('ID_Alimento' in item) {
+      // Es un alimento
+      itemCalorias = item.calorias_porcion || item.calorias || 0;
+    } else {
+      // Es una receta
+      itemCalorias = item.calorias || 0;
+    }
+  
+    const itemMacronutrientes = JSON.parse(item.macronutrientes || '[]');
+  
+    const updateCaloriasTotal = isAdding
+      ? caloriasTotales + itemCalorias
+      : caloriasTotales - itemCalorias;
+  
+    setCaloriasTotales(updateCaloriasTotal);
+  
+    const nuevosMacronutrientes = { ...macronutrientesTotales };
+  
+    itemMacronutrientes.forEach(macro => {
+      const macroNombre = getMacronutrienteName(macro);
+      const cantidadMacro = macro.cantidad || 0;
+  
+      nuevosMacronutrientes[macroNombre] = isAdding
+        ? nuevosMacronutrientes[macroNombre] + cantidadMacro
+        : nuevosMacronutrientes[macroNombre] - cantidadMacro;
+    });
+  
+    setMacronutrientesTotales(nuevosMacronutrientes);
+  };
+
 
   const handleCheckItem = async (item, dayId) => {
     const oid = await AsyncStorage.getItem('userOID');
@@ -152,8 +275,12 @@ const fetchDietData = async () => {
           const updated = new Set(prev);
           if (isChecked) {
             updated.delete(itemId);
+            updateTotals(item, false);
+
           } else {
             updated.add(itemId);
+            updateTotals(item, true);
+
           }
           return updated;
         });
@@ -173,6 +300,14 @@ const fetchDietData = async () => {
     setShowDatePicker(false);
     if (newDate) {
       setSelectedDate(newDate);
+    }
+  };
+
+  const getMacronutrienteName = (macro) => {
+    if (macro.hasOwnProperty('macronutriente')) {
+      return macro.macronutriente;
+    } else {
+      return macronutrientesMap[macro.ID_Macronutriente];
     }
   };
 
@@ -233,7 +368,23 @@ const fetchDietData = async () => {
           display="default"
           onChange={handleDateChange}
         />
-      )}      
+      )}  
+      <View style={styles.totalsContainer}>
+        <Text style={styles.totalsTitle}>Totales consumidos:</Text>
+        <Text style={styles.totalItem}>Calorías: {caloriasTotales}</Text>
+        <Text style={styles.totalItem}>Grasas: {macronutrientesTotales.Grasas}g</Text>
+        <Text style={styles.totalItem}>Carbohidratos: {macronutrientesTotales.Carbohidratos}g</Text>
+        <Text style={styles.totalItem}>Proteínas: {macronutrientesTotales.Proteinas}g</Text>
+      </View>
+
+      {/* Sección de totales del día */}
+      <View style={styles.totalsContainer}>
+        <Text style={styles.totalsTitle}>Totales del día:</Text>
+        <Text style={styles.totalItem}>Calorías: {caloriasTotalesDia}</Text>
+        <Text style={styles.totalItem}>Grasas: {macronutrientesTotalesDia.Grasas}g</Text>
+        <Text style={styles.totalItem}>Carbohidratos: {macronutrientesTotalesDia.Carbohidratos}g</Text>
+        <Text style={styles.totalItem}>Proteínas: {macronutrientesTotalesDia.Proteinas}g</Text>
+      </View>
       <ScrollView>
       <MealTimeTabs onTabSelect={handleTabSelect} selectedTab={selectedMealTime} />
       <FlatList
@@ -373,7 +524,22 @@ const styles = StyleSheet.create({
     color: '#007bff',
     textDecorationLine: 'underline',
   },
-
+  totalsContainer: {
+    marginTop: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  totalsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  totalItem: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
 });
 
 export default MainMenu;

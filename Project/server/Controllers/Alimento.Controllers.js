@@ -92,6 +92,32 @@ export const getAllAlimentosWithMacronutrientes = async (req, res) => {
   }
 };
 
+export const getAlimentoWithMacronutrientesByID = async (req, res) => {
+  try {
+      const ID_Alimento = req.params.id;
+      console.log("ID_Alimento: ", ID_Alimento);
+      const pool = await getConnection();
+      
+      const alimentosResult = await pool.request().input("ID_Alimento", sql.Int, ID_Alimento).query(querys.getAlimentoByID); 
+      
+      const alimentos = alimentosResult.recordset;
+      console.log(alimentos);
+      
+      for (let alimento of alimentos) {
+          const macronutrientesResult = await pool.request()
+              .input('ID_Alimento', sql.Int, alimento.ID_Alimento)
+              .query(querys.getContiene);
+
+          alimento.macronutrientes = macronutrientesResult.recordset;
+      }
+      console.log(alimentos);
+      res.json(alimentos);
+  } catch (error) {
+      console.error("Error al obtener los alimentos y sus macronutrientes:", error);
+      res.status(500).json({ error: error.message });
+  }
+};
+
 export const getAllAlimentosWithMacronutrientesRequest = async (req, res) => {
   try {
       const pool = await getConnection();

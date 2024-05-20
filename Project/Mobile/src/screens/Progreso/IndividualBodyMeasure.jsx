@@ -133,7 +133,7 @@ const IndividualBodyMeasure = ({navigation, route }) => {
       return;
     }
 
-    if (resultado.type === 'image' && resultado.fileSize <= 3 * 1024 * 1024) {
+    if (resultado.type === 'image' && resultado.fileSize <= 3000 * 1024 * 1024) {
       subirYEnviarArchivo(resultado.uri, 'image/jpeg');
     } else {
       Alert.alert('Error', 'La imagen debe ser menor de 3 MB.');

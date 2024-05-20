@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import SearchBar from "../../components/SearchBar";
 import config from "../../utils/conf";
+import { Ionicons } from '@expo/vector-icons'; 
 
 const difficulties = [
   { id: "Todos", label: "Todos" },
@@ -20,7 +21,7 @@ const difficulties = [
 const ExerciseLibrary = ({ navigation }) => {
   const [exercises, setExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("Todos"); // Nuevo estado para la categoría seleccionada
+  const [selectedCategory, setSelectedCategory] = useState("Todos"); // Nuevo estado para la categoría seleccionado
   const [selectedMuscle, setSelectedMuscle] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState(null);
 
@@ -136,6 +137,9 @@ const filterByDifficulty = (difficultyID) => {
           <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ejercicios</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Request")}>
+            <Ionicons name="add" size={24} color="black" />
+        </TouchableOpacity>
       </View>
       <SearchBar onSearch={handleSearch} />
       <View style={styles.categoryContainer}>

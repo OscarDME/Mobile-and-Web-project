@@ -3,8 +3,8 @@ import { sql } from "../Database/connection.js";
 import { querys } from "../Database/querys.js";
 
 export const getWorkoutSession = async (req, res) => {
-  const ID_Usuario = req.params.id; // Asumiendo que obtienes estos valores de alguna manera
-  const fecha = req.params.fecha; // Asumiendo que obtienes estos valores de alguna manera
+  const ID_Usuario = req.params.id; 
+  const fecha = req.params.fecha; 
   try {
       const pool = await getConnection();
       const mobileUserResult = await pool
@@ -45,11 +45,14 @@ export const getWorkoutSession = async (req, res) => {
             rest: row.descansoEnSegundos ||0,
             superset: row.superset,
             ID_SeriePrincipal: row.ID_SeriePrincipal,
+            Modificable: row.Modificable,
             exerciseToWork: {
                 id: row.ID_Ejercicio,
                 name: row.nombreEjercicio,
                 difficulty: row.dificultad,
                 modalidad: row.Modalidad,
+                musculo: row.ID_Musculo,
+                musculoDescripcion: row.Musculos,
             }
         }));
         console.log(sessionDetails);
@@ -122,4 +125,57 @@ export const updateWorkoutSeries = async (req, res) => {
         console.error("Error al actualizar la serie:", error.message);
         res.status(500).json({ error: "Error interno del servidor" });
     }
+};
+
+export const createWarmupSession = async (req, res) => {
+  try {
+    const { muscleIds } = req.body;
+    console.log(muscleIds);
+    const pool = await getConnection();
+    const exercises = [];
+
+    if (Array.isArray(muscleIds)) {
+      console.log("Entre a calentamiento");
+      for (const muscleId of muscleIds) {
+        const result = await pool.request()
+          .input('ID_Musculo', sql.Int, muscleId)
+          .query(`
+            SELECT TOP 1 E.ID_Ejercicio, E.ejercicio AS nombreEjercicio, E.ID_Musculo, M.descripcion AS Musculos
+            FROM Ejercicio E
+            LEFT JOIN Musculo M ON E.ID_Musculo = M.ID_Musculo
+            WHERE E.ID_Modalidad = 4 AND E.ID_Musculo = @ID_Musculo
+            ORDER BY NEWID()
+          `);
+
+        if (result.recordset.length > 0) {
+          exercises.push(result.recordset[0]);
+        }
+      }
+    }
+
+    const sessionDetails = exercises.map((exercise, index) => ({
+      id: index + 150000,
+      reps: 12,
+      weight: 0,
+      time: 0,
+      rest: 30,
+      superset: false,
+      ID_SeriePrincipal: null,
+      Modificable: 'true',
+      exerciseToWork: {
+        id: exercise.ID_Ejercicio,
+        name: exercise.nombreEjercicio,
+        difficulty: null,
+        modalidad:'Pesas',
+        musculo: exercise.ID_Musculo,
+        musculoDescripcion: exercise.Musculos,
+      }
+    }));
+    console.log(sessionDetails);
+    res.json({
+      session: sessionDetails
+  });  } catch (error) {
+    console.error("Error al crear la sesión de calentamiento:", error.message);
+    res.status(500).json({ error: 'Error interno del servidor' }); // Envía una respuesta de error
+  }
 };

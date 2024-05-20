@@ -15,7 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as WebBrowser from "expo-web-browser";
 import signOut from "../Inicio/authService";
 import Chat from "../Chat/UserChat";
-import { Rating } from "react-native-elements"; // Importar Rating
+import { Rating } from "react-native-elements"; 
 import config from "../../utils/conf";
 
 const ProfileScreen = ({ route }) => {
@@ -113,7 +113,7 @@ const ProfileScreen = ({ route }) => {
 
   const handleLogoutFromTrainer = async (trainer) => {
     try {
-      // Muestra una alerta de confirmación
+      // Muestra una alerta de c
       const confirmLogout = await new Promise((resolve) => {
         Alert.alert(
           "Confirmación",
@@ -169,22 +169,17 @@ const ProfileScreen = ({ route }) => {
       console.log("No user OID found");
       return;
     }
-
     try {
       const response = await fetch(`${config.apiBaseUrl}/user/${userOID}`, {
         method: "GET",
       });
-
       if (!response.ok) {
         throw new Error("Failed to fetch user data");
       }
-
       const data = await response.json();
       setUserData(data);
       setPerformanceModule(data.ComparacionRendimiento);
       setGymModule(data.ViajeGimnasio);
-
-      // Obtener las invitaciones pendientes de solicitud de entrenador a clientE
       const invitationsResponse = await fetch(
         `${config.apiBaseUrl}/pendingclient/${userOID}`,
         {
@@ -195,10 +190,8 @@ const ProfileScreen = ({ route }) => {
       if (!invitationsResponse.ok) {
         throw new Error("Failed to fetch pending invitation");
       }
-
       const invitationsData = await invitationsResponse.json();
       setPendingInvitations(invitationsData);
-
       const trainerResponse = await fetch(
         `${config.apiBaseUrl}/trainerinfo/${userOID}`,
         {
@@ -251,7 +244,6 @@ const ProfileScreen = ({ route }) => {
 
   const handleAcceptInvitation = async (ID_SolicitudEntrenadorCliente) => {
     try {
-      // Llama a la función para aceptar la invitació
       const response = await fetch(`${config.apiBaseUrl}/acceptclient`, {
         method: "POST",
         headers: {
@@ -261,11 +253,9 @@ const ProfileScreen = ({ route }) => {
           requestId: ID_SolicitudEntrenadorCliente,
         }),
       });
-
       if (!response.ok) {
         throw new Error("Respuesta de red no fue ok");
       }
-
       setPendingInvitations((prevInvitations) =>
         prevInvitations.filter(
           (invitation) =>
@@ -273,7 +263,6 @@ const ProfileScreen = ({ route }) => {
             ID_SolicitudEntrenadorCliente
         )
       );
-
       console.log("Invitación aceptada exitosamente");
     } catch (error) {
       console.error("Error al aceptar la invitación:", error);
@@ -282,10 +271,8 @@ const ProfileScreen = ({ route }) => {
 
   const handleRejectInvitation = async (ID_SolicitudEntrenadorCliente) => {
     try {
-      // Elimina la solicitud de entrenador a cliente
       await deleteTrainerClientRequest(ID_SolicitudEntrenadorCliente);
 
-      // Actualiza el estado de las invitaciones pendientes
       setPendingInvitations((prevInvitations) =>
         prevInvitations.filter(
           (invitation) =>
@@ -363,7 +350,7 @@ const ProfileScreen = ({ route }) => {
             <View style={styles.ratingContainer}>
               <Rating
                 imageSize={30}
-                startingValue={trainer.calificacion_cliente} // Usar la calificación del entrenador/nutricionisto
+                startingValue={trainer.calificacion_cliente} // Usar la califdentrenador/nutricionist
                 ratingColor="#f1c40f" // Cambia el color de las estrellas
                 onFinishRating={handleRatingCompleted}
                 style={{ marginTop: 15 }} // Espaciado vertical desde el nombre

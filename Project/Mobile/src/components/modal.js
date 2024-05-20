@@ -13,11 +13,13 @@ const height_proportion = '-180%';
 
 const Mas = ({ onDismiss }) => {
   const [preferences, setPreferences] = useState({});
+  const [isNutritionistClient, setIsNutritionistClient] = useState(false); 
 
   const navigation = useNavigation();
 
   useEffect(() => {
     fetchUserData();
+    checkIfUserIsNutritionistClient(); 
   }, []);
 
   const fetchUserData = async () => {
@@ -45,6 +47,29 @@ const Mas = ({ onDismiss }) => {
     }
   };
 
+   const checkIfUserIsNutritionistClient = async () => {
+    const userOID = await AsyncStorage.getItem('userOID');
+    if (!userOID) {
+      console.log("No user OID found");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/esNutricionista/${userOID}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check if user is a nutritionist client');
+      }
+      const data = await response.json();
+      console.log(data.isNutritionistClient);
+      setIsNutritionistClient(data.isNutritionistClient); // Actualizar el estado `isNutritionistClient`
+    } catch (error) {
+      console.error("Error checking if user is a nutritionist client:", error);
+    }
+  };
+
 
   const handleModalClose = () => {
     onDismiss();
@@ -69,10 +94,12 @@ const Mas = ({ onDismiss }) => {
               <Text>Descubre</Text>
             </TouchableOpacity>
 
+            {isNutritionistClient && ( 
             <TouchableOpacity onPress={() => handleIconPress("Comidas")} style={styles.touchableOpacity}>
-              <Image source={Comidas} style={styles.icon} />              
+              <Image source={Comidas} style={styles.icon} />
               <Text>Comidas</Text>
             </TouchableOpacity>
+          )}
 
             <TouchableOpacity onPress={() => handleIconPress("Biblioteca")} style={styles.touchableOpacity}>
             <Image source={Biblioteca} style={styles.icon} />              

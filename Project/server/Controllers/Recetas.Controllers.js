@@ -368,6 +368,56 @@ export const getReceta = async (req, res) => {
   }
 };
 
+export const getRecetaByID = async (req, res) => {
+  try {
+    const ID_Receta = req.params.id;
+    const pool = await getConnection();
+    let recetas = [];
+
+    const resultRecetas = await pool.request().input("ID_Receta", sql.Int, ID_Receta).query(querys.getRecetaByID);
+    console.log(resultRecetas.recordset);
+    const recetasBasics = resultRecetas.recordset;
+
+    for (const receta of recetasBasics) {
+      let recetaDetails = { ...receta };
+
+      // Obtener ingredientes de la receta
+      console.log(receta.ID_Receta);
+      const resultIngredientes = await pool
+        .request()
+        .input("ID_Receta", sql.Int, receta.ID_Receta)
+        .query(querys.getIngredientes);
+      recetaDetails.ingredientes = resultIngredientes.recordset;
+      console.log(recetaDetails.ingredientes);
+
+      // Obtener clasificaciones de la receta
+      const resultClasificaciones = await pool
+        .request()
+        .input("ID_Receta", sql.Int, receta.ID_Receta)
+        .query(querys.getClasificaReceta);
+      recetaDetails.clasificaciones = resultClasificaciones.recordset.map(
+        (c) => c.clasificacion
+      );
+      console.log(recetaDetails.clasificaciones);
+
+      // Obtener macronutrientes de la receta
+      const resultMacronutrientes = await pool
+        .request()
+        .input("ID_Receta", sql.Int, receta.ID_Receta)
+        .query(querys.getObtiene);
+      recetaDetails.macronutrientes = resultMacronutrientes.recordset;
+      console.log(recetaDetails.macronutrientes);
+
+      recetas.push(recetaDetails);
+    }
+
+    res.json(recetas);
+  } catch (error) {
+    console.error("Error al obtener todas las recetas:", error);
+    res.status(500).json({ error: "Error al obtener todas las recetas" });
+  }
+};
+
 export const getRecetaRequests = async (req, res) => {
   try {
     const pool = await getConnection();

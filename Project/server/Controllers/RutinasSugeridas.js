@@ -5,8 +5,7 @@ import { querys } from "../Database/querys.js";
 
 export const getRutinasSugeridas = async (req, res) => {
     try {
-        const userID = req.params.id; // Asegúrate de pasar el ID del usuario como parámetro en la ruta
-       
+        const userID = req.params.id;   
         const pool = await getConnection();
         const mobileUserResult = await pool
         .request()
@@ -38,7 +37,7 @@ export const getRutinasSugeridas = async (req, res) => {
             `);
 
             const averageDays = result.recordset[0].PromedioDias;
-            const averageDurationMinutes = result.recordset[0].PromedioDuracion / 60; // Convertir segundos a minutos
+            const averageDurationMinutes = result.recordset[0].PromedioDuracion / 60; 
             console.log("Avarage days:", averageDays);
             console.log("Avarage duration:", averageDurationMinutes);
             console.log("Avarage objective:", result.recordset[0].PromedioIDObjetivo);
@@ -76,9 +75,8 @@ export const getRutinasSugeridas = async (req, res) => {
 
             const rutinasSugeridas = await Promise.all(
                 publicRoutinesResult.recordset.map(async (rutina) => {
-                  // Variables para calcular los coeficientes
                   const diasRutina = rutina.DiasRutina;
-                  const duracionRutinaMinutes = rutina.DuracionRutina / 60; // Convertir segundos a minutos
+                  const duracionRutinaMinutes = rutina.DuracionRutina / 60; 
                   const coeficienteDias = (Math.min(averageDays, diasRutina) / 7) * 0.2;
                   const diffTiempo = Math.abs(averageDurationMinutes - duracionRutinaMinutes);
                   const coefTiempo = 0.15 * (1 - Math.min(diffTiempo, 60) / 60);
@@ -92,10 +90,8 @@ export const getRutinasSugeridas = async (req, res) => {
 
                   const coeficienteCondicionFisica = 0.15 * (1 - diffNivel);
                   
-                  // Obtener los ejercicios de la rutina
                   const ejerciciosRutina = await obtenerEjerciciosRutina(pool, rutina.ID_Rutina);
                   
-                  // Calcular el coeficiente de lesiones
                   const coefLesiones = calcularCoeficienteLesiones(lesionesUsuario, ejerciciosRutina);
                   const coeficienteEquipo = calcularCoeficienteEquipo(ID_EspacioDisponible, ID_EquiposUsuario, ejerciciosRutina);
 
@@ -103,11 +99,7 @@ export const getRutinasSugeridas = async (req, res) => {
 
                 const coeficienteMusculoPreferente = await calcularCoeficienteMusculoPreferente(musculoPreferente, ejerciciosRutina);
 
-                  // Calcula el coeficiente total\
                   const coeficienteTotal = coeffdias + coefTiempo + coeficienteObjetivo + coeficienteCondicionFisica + coefLesiones + coeficienteEquipo + coeficienteMusculoPreferente;
-
-              
-                  // Logs para depuración
                   console.log("Rutina:", rutina.NombreRutina);
                   console.log("Coeficiente dias:", coeffdias);
                   console.log("Coeficiente tiempo:", coefTiempo);
@@ -115,22 +107,15 @@ export const getRutinasSugeridas = async (req, res) => {
                   console.log("Coeficiente condicion fisica:", coeficienteCondicionFisica);
                   console.log("Coeficiente lesiones:", coefLesiones);
                   console.log("Coeficiente equipo:", coeficienteEquipo);
-                  console.log("Coeficiente musculo preferente:", coeficienteMusculoPreferente);
-                  
-                  // Devuelve la rutina con su coeficiente total
+                  console.log("Coeficiente musculo preferente:", coeficienteMusculoPreferente);  
                   return {
                     ...rutina,
                     coeficiente: coeficienteTotal
                   };
                 })
-              );
-              
-              // Array de las 5 rutinas sugeridas ordenadas por su coeficiente
+              );              
               const rutinasSugeridasOrdenadas = rutinasSugeridas.sort((a, b) => b.coeficiente - a.coeficiente).slice(0, 5);
-              
-
         console.log(rutinasSugeridasOrdenadas);
-
         if (rutinasSugeridas.length > 0) {
             res.json(rutinasSugeridasOrdenadas);
         } else {

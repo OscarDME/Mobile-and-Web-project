@@ -261,20 +261,82 @@ export const getCurrentOrUpcomingDiet = async (req, res) => {
       const alimentosResult = await pool.request()
         .input('ID_DiasComida', sql.Int, dia.ID_DiasComida)
         .query(`
-          SELECT a.*, cdca.porcion, cdca.ID_TiempoComida
-          FROM ComponeDiasComidaAlimento cdca
+        WITH Macronutrientes AS (
+          SELECT
+            c.ID_Alimento,
+            m.macronutriente,
+            c.cantidad * cdca.porcion / a.peso AS cantidad
+          FROM
+            Contiene c
+            INNER JOIN Macronutriente m ON c.ID_Macronutriente = m.ID_Macronutriente
+            INNER JOIN ComponeDiasComidaAlimento cdca ON c.ID_Alimento = cdca.ID_Alimento
+            INNER JOIN Alimento a ON cdca.ID_Alimento = a.ID_Alimento
+          WHERE
+            cdca.ID_DiasComida = @ID_DiasComida
+        ),
+        CaloriasPorcion AS (
+          SELECT
+            a.ID_Alimento,
+            (a.calorias * cdca.porcion / a.peso) AS calorias_porcion
+          FROM
+            Alimento a
+            INNER JOIN ComponeDiasComidaAlimento cdca ON a.ID_Alimento = cdca.ID_Alimento
+          WHERE
+            cdca.ID_DiasComida = @ID_DiasComida
+        )
+        SELECT
+          a.*,
+          cdca.porcion,
+          cdca.ID_TiempoComida,
+          (
+            SELECT
+              m.macronutriente,
+              (c.cantidad * cdca.porcion / a.peso) AS cantidad
+            FROM
+              Contiene c
+              INNER JOIN Macronutriente m ON c.ID_Macronutriente = m.ID_Macronutriente
+            WHERE
+              c.ID_Alimento = a.ID_Alimento
+            FOR JSON PATH
+          ) AS macronutrientes,
+          cp.calorias_porcion
+        FROM
+          ComponeDiasComidaAlimento cdca
           INNER JOIN Alimento a ON cdca.ID_Alimento = a.ID_Alimento
-          WHERE cdca.ID_DiasComida = @ID_DiasComida
+          INNER JOIN CaloriasPorcion cp ON a.ID_Alimento = cp.ID_Alimento
+        WHERE
+          cdca.ID_DiasComida = @ID_DiasComida;              
         `);
+      console.log(alimentosResult.recordset);
       dia.alimentos = alimentosResult.recordset;
 
       const recetasResult = await pool.request()
         .input('ID_DiasComida', sql.Int, dia.ID_DiasComida)
         .query(`
-          SELECT r.*, cdcr.porcion, cdcr.ID_TiempoComida
-          FROM ComponeDiasComidaReceta cdcr
-          INNER JOIN Receta r ON cdcr.ID_Receta = r.ID_Receta
-          WHERE cdcr.ID_DiasComida = @ID_DiasComida
+        SELECT
+        r.*,
+        cdcr.porcion,
+        cdcr.ID_TiempoComida,
+        (
+          SELECT
+            m.macronutriente,
+            SUM(c.cantidad * ti.porcion / a.peso) AS cantidad
+          FROM
+            TieneIngredientes ti
+            INNER JOIN Alimento a ON ti.ID_Alimento = a.ID_Alimento
+            INNER JOIN Contiene c ON a.ID_Alimento = c.ID_Alimento
+            INNER JOIN Macronutriente m ON c.ID_Macronutriente = m.ID_Macronutriente
+          WHERE
+            ti.ID_Receta = r.ID_Receta
+          GROUP BY
+            m.macronutriente
+          FOR JSON PATH
+        ) AS macronutrientes
+      FROM
+        ComponeDiasComidaReceta cdcr
+        INNER JOIN Receta r ON cdcr.ID_Receta = r.ID_Receta
+      WHERE
+        cdcr.ID_DiasComida = @ID_DiasComida
         `);
       dia.recetas = recetasResult.recordset;
       console.log(dia.recetas)

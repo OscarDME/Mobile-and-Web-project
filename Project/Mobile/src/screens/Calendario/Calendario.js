@@ -46,7 +46,7 @@ const Calendario = ({ navigation, route }) => {
     }
   };
 
-  const transformEventDates = (events, color, eventType, singleDay = false) => {
+  const transformEventDates = (events, color, eventType, singleDay = false, pastColor = color) => {
     if (!Array.isArray(events)) {
       console.log('Expected events to be an array, got:', events);
       return {}; // Return empty object or handle as needed
@@ -65,12 +65,14 @@ const Calendario = ({ navigation, route }) => {
   
       while (currentDate <= endDate) {
         const dateString = currentDate.toISOString().split('T')[0];
+        const isPastEvent = currentDate < new Date().setHours(0, 0, 0, 0);
+        const eventColor = isPastEvent ? pastColor : color;
         if (!markedDates[dateString]) {
           markedDates[dateString] = {
-            dots: [{ color, key: getEventKey(event, eventType) }]
+            dots: [{ color: eventColor, key: getEventKey(event, eventType) }]
           };
         } else {
-          markedDates[dateString].dots.push({ color, key: getEventKey(event, eventType) });
+          markedDates[dateString].dots.push({ color: eventColor, key: getEventKey(event, eventType) });
         }
         currentDate.setDate(currentDate.getDate() + 1);
       }
@@ -92,7 +94,7 @@ const Calendario = ({ navigation, route }) => {
   
 
   const dietMarkedDates = transformEventDates(dietEvents, '#28B463', 'Dieta');
-  const routineMarkedDates = transformEventDates(routineEvents, '#3498DB', 'NombreRutina');
+  const routineMarkedDates = transformEventDates(routineEvents, '#3498DB', 'NombreRutina', false, '#9B59B6');
   const appointmentMarkedDates = transformEventDates(appointmentEvents, '#FFA07A', 'Cita', true); // Color naranja para citas
 
   const mergeMarkedDates = (...datesArrays) => {
@@ -122,7 +124,14 @@ const Calendario = ({ navigation, route }) => {
     if (key.includes('Dieta')) {
       navigation.navigate('Comidas', { selectedDate: selectedDate });
     } else if (key.includes('Entrenamiento')) {
-      navigation.navigate('Entrenamiento', { selectedDate: selectedDate });
+      const pressedDate = new Date(selectedDate);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      if (pressedDate < currentDate) {
+        navigation.navigate('TrainingStack', { screen: 'Visualizar', params: { selectedDate: selectedDate } });
+      } else {
+        navigation.navigate('Entrenamiento', { selectedDate: selectedDate });
+      }
     } else if (key.includes('Cita')) {
       navigation.navigate('DetallesCita', { selectedDate: selectedDate });
     }

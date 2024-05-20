@@ -44,7 +44,7 @@ const MainMenu = ({ navigation }) => {
 
     // Agrega esta funció
     const navigateToDetails = () => {
-      navigation.navigate('DetallesEntre', { trainer }); // Asegúrate de que 'Detalles' es el nombre correcto de la ruta en tu Stack Navig
+      navigation.navigate('DetallesEntre', { trainer }); // Asegúrate de que 'Detalles' es el nombre correcto de la ruta en tStaNavig
     };
 
     return (
