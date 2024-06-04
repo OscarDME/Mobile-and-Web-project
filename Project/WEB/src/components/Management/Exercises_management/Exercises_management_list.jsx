@@ -4,6 +4,7 @@ import SearchBar from '../../SearchBar';
 import '../../../styles/Management.css';
 import Exercises_management_add from './Exercises_management_add';
 import Exercises_management_edit from './Exercises_management_edit';
+import SelectFilter from "../../SelectFilter";
 import config from "../../../utils/conf";
 
 export default function Exercises_management_list() {
@@ -13,6 +14,41 @@ export default function Exercises_management_list() {
     const [expandedRow, setExpandedRow] = useState(null);
     const [editingExercise, setEditingExercise] = useState(null);
     const [showAddPage, setShowAddPage] = useState(false); // Estado para controlar la visibilidad del nuevo componente
+    const [muscleFilter, setMuscleFilter] = useState(null);
+    const [equipmentFilter, setEquipmentFilter] = useState(null);
+    const [exerciseTypeFilter, setExerciseTypeFilter] = useState(null);
+
+    const muscleOptions = [
+      { value: 'Pecho', label: 'Pecho' },
+      { value: 'Espalda', label: 'Espalda' },
+      { value: 'Hombro', label: 'Hombro' },
+      { value: 'Bicep', label: 'Bicep' },
+      { value: 'Tricep', label: 'Tricep' },
+      { value: 'Cuadricep', label: 'Cuadricep' },
+      { value: 'Femoral', label: 'Femoral' },
+      { value: 'Gluteo', label: 'Gluteo' },
+      { value: 'Pantorrilla', label: 'Pantorrilla' },
+      { value:  null , label: 'Cardiovascular' },
+    ];
+    
+    const equipmentOptions = [
+      { value: 'Barra', label: 'Barra' },
+      { value: 'Mancuernas', label: 'Mancuernas' },
+      { value: 'Ligas Resistencia', label: 'Ligas Resistencia' },
+      { value: 'Soga', label: 'Soga' },
+      { value: 'Pelota de Yoga', label: 'Pelota de Yoga' },
+      { value: 'Tapete', label: 'Tapete' },
+      { value: 'Maquina', label: 'Maquina' },
+      { value: 'Polea', label: 'Polea' },
+      { value:  '', label: 'Ninguno' },
+    ];
+    
+    const exerciseTypeOptions = [
+      { value: 'Compuesto', label: 'Compuesto' },
+      { value: 'Auxiliar', label: 'Auxiliar' },
+      { value: 'Aislamiento', label: 'Aislamiento' },
+      { value: 'Funcional', label: 'Funcional' },
+    ];
 
     useEffect(() => {
       // Función para cargar los ejercicios desde el backend
@@ -29,13 +65,16 @@ export default function Exercises_management_list() {
               console.error("Error al obtener los ejercicios:", error);
           }
       };
-
       loadExercises();
   }, []); 
+
     // Filtrado de ejercicios basado en la búsqueda
     const filteredExercises = exercises.filter(exercise =>
-      exercise.ejercicio.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      exercise.ejercicio.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (muscleFilter !== null ? (exercise.Musculo === muscleFilter || (muscleFilter === null && exercise.Modalidad === ES_CARDIOVASCULAR)) : true) &&
+      (equipmentFilter !== null ? (exercise.Equipo === equipmentFilter || (equipmentFilter === null && (exercise.Equipo === null || exercise.Equipo === ''))) : true) &&
+      (exerciseTypeFilter !== null ? exercise.Tipo_Ejercicio === exerciseTypeFilter : true)
+    );
 
   
     const handleRowClick = (exercise) => {
@@ -74,7 +113,6 @@ export default function Exercises_management_list() {
     const handleBackToList = () => {
         setShowAddPage(false); // Volver a la lista de ejercicios
     };
-    
     // Si showAddPage es verdadero, renderiza el componente de agregar ejercicio
     if (showAddPage) {
         return <Exercises_management_add onBackToList={handleBackToList} />;
@@ -93,6 +131,35 @@ export default function Exercises_management_list() {
               <a className="iconadd" role="button" onClick={handleAddClick}><i className="bi bi-plus-circle-fill"></i></a>
             </div>
           </div>
+          <div className="filters-container">
+  <div className='filter-row'>
+    Filtrar por músculo:
+    <SelectFilter
+      value={muscleFilter}
+      onChange={(value) => setMuscleFilter(value)}
+      options={muscleOptions}
+      defaultOption="Todos los músculos"
+    />
+  </div>
+  <div className='filter-row'>
+    Filtrar por equipo:
+    <SelectFilter
+      value={equipmentFilter}
+      onChange={(value) => setEquipmentFilter(value)}
+      options={equipmentOptions}
+      defaultOption="Todos los equipos"
+    />
+  </div>
+  <div className='filter-row'>
+    Filtrar por tipo de ejercicio:
+    <SelectFilter
+      value={exerciseTypeFilter}
+      onChange={(value) => setExerciseTypeFilter(value)}
+      options={exerciseTypeOptions}
+      defaultOption="Todos los tipos"
+    />
+  </div>
+</div>
           <ul className='cardcontainer'>
           {filteredExercises.map((exercise) => (
               <li key={exercise.ID_Ejercicio} className={`row ${((selectedExercise && selectedExercise.ID_Ejercicio === exercise.ID_Ejercicio) || (editingExercise && editingExercise.ID_Ejercicio === exercise.ID_Ejercicio)) ? 'selected' : ''}`}>

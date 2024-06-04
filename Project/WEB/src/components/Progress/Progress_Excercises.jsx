@@ -7,7 +7,7 @@ import { useMsal } from "@azure/msal-react";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-export default function Progress_Excercises() {
+export default function Progress_Excercises({selectedUser}) {
   const { instance } = useMsal();
   const activeAccount = instance.getActiveAccount();
   console.log(activeAccount.idTokenClaims.oid);
@@ -73,7 +73,7 @@ export default function Progress_Excercises() {
 
       const fetchExerciseLoads = async () => {
         try {
-          const url = `${config.apiBaseUrl}/Weights/${ID_Usuario}/${ID_Ejercicio}/${escala}`;
+          const url = `${config.apiBaseUrl}/Weights/${selectedUser.ID_Usuario}/${ID_Ejercicio}/${escala}`;
           const response = await fetch(url);
           const data = await response.json();
 
@@ -100,7 +100,7 @@ export default function Progress_Excercises() {
         const escala = 'seisMeses'; // Predefinido a seis meses como requerido
   
         try {
-          const url = `${config.apiBaseUrl}/HistoricalRMs/${ID_Usuario}/${ID_Ejercicio}/${escala}`;
+          const url = `${config.apiBaseUrl}/HistoricalRMs/${selectedUser.ID_Usuario}/${ID_Ejercicio}/${escala}`;
           const response = await fetch(url);
           if (!response.ok) {
             throw new Error('La solicitud a la API falló');
@@ -128,7 +128,7 @@ export default function Progress_Excercises() {
       const ID_Ejercicio = selectedExercise.value;
   
       const fetchHistoricalRMData = async () => {
-        const url = `${config.apiBaseUrl}/HistoricalRM/${ID_Usuario}/${ID_Ejercicio}`;
+        const url = `${config.apiBaseUrl}/HistoricalRM/${selectedUser.ID_Usuario}/${ID_Ejercicio}`;
   
         try {
           const response = await fetch(url);
@@ -312,12 +312,10 @@ const exercisesOptions = [
         const currentDate = new Date();
         const formattedDate = currentDate.toLocaleDateString('es-ES').replace(/\//g, '-');
     
-
         pdf.save(`mediciones-${formattedDate}-cliente-${activeAccount.idTokenClaims.oid}-medida-${selectedExercise.label}.pdf`);
       })
       .catch(err => console.error("Error al capturar el PDF", err));
   };
-  
 
   return (
     <div className='MainContainer progress-exercise-container' id='capture'>

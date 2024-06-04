@@ -68,7 +68,10 @@ const Login = () => {
 
   // Define handleCodeExchange outside of useEffect
   const handleCodeExchange = async (codeResponse) => {
-    
+    navigation.replace("Main", {
+      screen: "MainMenu",
+      params: { token: "5aaf0aa2-85ed-462b-a996-1bfa7f8ab0df" },
+    });
     console.log("Code exchange initiated..");
     
     if (request && codeResponse?.type === "success" && discovery) {
@@ -95,8 +98,8 @@ const Login = () => {
           console.log("OID:", oid);
 
           // Guardar el oid en AsyncStorage
-          await AsyncStorage.setItem('userOID', oid);
-          // await AsyncStorage.setItem('userOID', "b243e468-d8d4-4055-ba08-45106be2fb14");
+          // await AsyncStorage.setItem('userOID', oid);
+          await AsyncStorage.setItem('userOID', "5aaf0aa2-85ed-462b-a996-1bfa7f8ab0df");
 
           console.log('OID guardado con éxito en AsyncStorage');
 
@@ -110,7 +113,7 @@ const Login = () => {
             // });
             navigation.replace("Main", {
               screen: "MainMenu",
-              params: { token: res.idToken },
+              params: { token: "5aaf0aa2-85ed-462b-a996-1bfa7f8ab0df" },
             });
           } else {
             navigation.navigate("Validation", {
@@ -135,6 +138,7 @@ const Login = () => {
   }, [request, discovery, redirectUri, clientId]);
 
   const handleLoginPress = () => {
+    
     console.log("Login button pressed. Initiating prompt...");
     promptAsync()
       .then(handleCodeExchange)

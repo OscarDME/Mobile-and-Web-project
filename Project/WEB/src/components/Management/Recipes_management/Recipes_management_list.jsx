@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { RecipeCard } from "../../DATA_RECIPES";
 import SearchBar from "../../SearchBar";
+import SelectFilter from "../../SelectFilter";
 import "../../../styles/Management.css";
 import Recipes_management_add from "./Recipes_management_add";
 import Recipes_management_edit from "./Recipes_management_edit";
@@ -13,6 +14,27 @@ export default function Recipes_management_list() {
   const [expandedRow, setExpandedRow] = useState(null);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [showAddPage, setShowAddPage] = useState(false); // Estado para controlar la visibilidad del nuevo componente
+  const [proteinFilter, setProteinFilter] = useState(null);
+  const [carbFilter, setCarbFilter] = useState(null);
+  const [fatFilter, setFatFilter] = useState(null);
+
+  const proteinOptions = [
+    { value: "high", label: "Alto en proteínas" },
+    { value: "medium", label: "Medio en proteínas" },
+    { value: "low", label: "Bajo en proteínas" },
+  ];
+  
+  const carbOptions = [
+    { value: "high", label: "Alto en carbohidratos" },
+    { value: "medium", label: "Medio en carbohidratos" },
+    { value: "low", label: "Bajo en carbohidratos" },
+  ];
+  
+  const fatOptions = [
+    { value: "high", label: "Alto en grasas" },
+    { value: "medium", label: "Medio en grasas" },
+    { value: "low", label: "Bajo en grasas" },
+  ];
 
   const loadRecipes = async () => {
     try {
@@ -29,8 +51,36 @@ export default function Recipes_management_list() {
     loadRecipes();
   }, []); // Cargar recetas al montar el componente
 
-  const filteredRecipes = recipes.filter((recipe) =>
-    recipe.receta.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRecipes = recipes.filter(
+    (recipe) =>
+      recipe.receta.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (proteinFilter
+        ? recipe.clasificaciones.includes(
+            proteinFilter === "high"
+              ? "Alto en proteinas"
+              : proteinFilter === "medium"
+              ? "Medio en proteinas"
+              : "Bajo en proteinas"
+          )
+        : true) &&
+      (carbFilter
+        ? recipe.clasificaciones.includes(
+            carbFilter === "high"
+              ? "Alto en carbohidratos"
+              : carbFilter === "medium"
+              ? "Medio en carbohidratos"
+              : "Bajo en carbohidratos"
+          )
+        : true) &&
+      (fatFilter
+        ? recipe.clasificaciones.includes(
+            fatFilter === "high"
+              ? "Alto en grasas"
+              : fatFilter === "medium"
+              ? "Medio en grasas"
+              : "Bajo en grasas"
+          )
+        : true)
   );
 
   const handleRowClick = (recipe) => {
@@ -90,6 +140,35 @@ export default function Recipes_management_list() {
           </a>
         </div>
       </div>
+      <div className="filters-container">
+  <div className="filter-row">
+    Filtrar por proteínas:
+    <SelectFilter
+      value={proteinFilter}
+      onChange={(value) => setProteinFilter(value)}
+      options={proteinOptions}
+      defaultOption="Todas las proteínas"
+    />
+  </div>
+  <div className="filter-row">
+    Filtrar por carbohidratos:
+    <SelectFilter
+      value={carbFilter}
+      onChange={(value) => setCarbFilter(value)}
+      options={carbOptions}
+      defaultOption="Todos los carbohidratos"
+    />
+  </div>
+  <div className="filter-row">
+    Filtrar por grasas:
+    <SelectFilter
+      value={fatFilter}
+      onChange={(value) => setFatFilter(value)}
+      options={fatOptions}
+      defaultOption="Todas las grasas"
+    />
+  </div>
+</div>
       <ul className="cardcontainer">
         {filteredRecipes.map((recipe) => (
           <li

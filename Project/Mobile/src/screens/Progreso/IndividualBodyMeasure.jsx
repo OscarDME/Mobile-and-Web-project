@@ -129,16 +129,36 @@ const IndividualBodyMeasure = ({navigation, route }) => {
       return; 
     }
 
-    if (resultado.cancelled) {
+    if (resultado.canceled) {
       return;
     }
 
-    if (resultado.type === 'image' && resultado.fileSize <= 3000 * 1024 * 1024) {
-      subirYEnviarArchivo(resultado.uri, 'image/jpeg');
+    console.log(resultado);
+    if (resultado.assets && resultado.assets.length > 0) {
+      const selectedAsset = resultado.assets[0];
+      if (selectedAsset.type === 'image') {
+        try {
+          const response = await fetch(selectedAsset.uri);
+          const blob = await response.blob();
+          const fileSize = blob.size;
+          console.log("tamano: ", fileSize);
+          
+          if (fileSize <= 3000000) {
+            subirYEnviarArchivo(selectedAsset.uri, 'image/jpeg');
+          } else {
+            Alert.alert('Error', 'La imagen debe ser menor de 3 MB.');
+          }
+        } catch (error) {
+          console.error('Error al obtener el tamaño del archivo:', error);
+          Alert.alert('Error', 'No se pudo obtener el tamaño del archivo.');
+        }
+      } else {
+        Alert.alert('Error', 'El archivo seleccionado no es una imagen.');
+      }
     } else {
-      Alert.alert('Error', 'La imagen debe ser menor de 3 MB.');
+      Alert.alert('Error', 'No se seleccionó ninguna imagen.');
     }
-  };
+  }
 
   const subirYEnviarArchivo = async (uri, fileType) => {
     console.log(`Inicio de la subida del archivo. URI: ${uri}, Tipo: ${fileType}`);

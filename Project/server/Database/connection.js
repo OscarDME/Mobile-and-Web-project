@@ -14,7 +14,9 @@ const config = {
 
   connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FithubBDFinal;Trusted_Connection=yes;TrustServerCertificate=yes"}
 
-  //connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FithubDB2;Trusted_Connection=yes;TrustServerCertificate=yes"}
+  // connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=tcp:fithubmx.database.windows.net;Database=FithubBD;Uid=FHAdmin;Pwd={4rXzVfK5vBSNp5M};Trusted_Connection=no;TrustServerCertificate=no"}
+
+
 
   //connectionString: "Driver={ODBC Driver 18 for SQL Server};Server=(LocalDb)\\MSSQLLocalDB;Database=FitHubDB2;Trusted_Connection=yes;TrustServerCertificate=yes"}
 
@@ -44,8 +46,8 @@ const config = {
 //     password: '4rXzVfK5vBSNp5M', // better stored in an app setting such as process.env.DB_PASSWORD
 //     server: 'fithubmx.database.windows.net', // better stored in an app setting such as process.env.DB_SERVER
 //     port: 1433, // optional, defaults to 1433, better stored in an app setting such as process.env.DB_PORT
-//     database: 'FitHubDB', // better stored in an app setting such as process.env.DB_NAME
-//     authentication: {1
+//     database: 'FitHubBD', // better stored in an app setting such as process.env.DB_NAME
+//     authentication: {
 //         type: 'default'
 //     },
 //     options: {
