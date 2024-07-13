@@ -7,6 +7,14 @@
 *.p12
 *.key
 *.mobileprovision
+*./Project/Mobile/node_modules
+*./Project/server/node_modules
+*./Project/WEB/node_modules
+*./Project/WEB/.env
+*./Project/Mobile/FirebaseConfig.js
+*./Project/server/Database/connection.js
+*./Project/Mobile/src/utils/conf.js
+*./Project/B2C-API/authConfig.js
 
 # Metro
 .metro-health-check*
